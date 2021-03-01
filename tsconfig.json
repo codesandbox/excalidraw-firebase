@@ -3,6 +3,9 @@
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["vite/client"],
+    "paths": {
+      "@excalidraw/excalidraw": ["./src/excalidraw.d.ts"]
+    },
     "allowJs": false,
     "skipLibCheck": false,
     "esModuleInterop": false,

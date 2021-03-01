@@ -1,0 +1,11 @@
+declare module "@excalidraw/excalidraw" {
+  let Excalidraw: (props: {
+    ref: React.Ref<HTMLDivElement>;
+    width: number | undefined;
+    height: number | undefined;
+    initialData: any;
+    onChange: (elements: any[], state: any) => void;
+  }) => any;
+
+  export default Excalidraw;
+}

@@ -4,11 +4,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "deploy": "npm run build && firebase deploy",
     "serve": "vite preview"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.4.0",
+    "@types/lodash.debounce": "^4.0.6",
     "firebase": "^8.2.9",
+    "lodash.debounce": "^4.0.8",
     "navigo": "^8.8.12",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

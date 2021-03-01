@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useReducer } from "react";
-import Navigo from "navigo";
-import { transition, PickAction, transform, exec } from "react-states";
+import React, { useEffect, useReducer } from "react";
+import { PickAction, transform, transition } from "react-states";
 import { Dashboard } from "./Dashboard";
 import { Excalidraw } from "./Excalidraw";
+import { useNavigation } from "./NavigationProvider";
 
-type Context =
+export type Context =
   | {
       state: "INITIALIZING";
     }
@@ -16,14 +16,23 @@ type Context =
       id: string;
     };
 
-type Action =
+export type Action =
   | {
       type: "OPEN_DASBHOARD";
     }
   | {
       type: "OPEN_EXCALIDRAW";
       id: string;
+    }
+  | {
+      type: "DASHBOARD_NAVIGATED";
+    }
+  | {
+      type: "EXCALIDRAW_NAVIGATED";
+      id: string;
     };
+
+export type RouterDispatch = React.Dispatch<Action>;
 
 const OPEN_EXCALIDRAW = ({ id }: PickAction<Action, "OPEN_EXCALIDRAW">) => ({
   state: "EXCALIDRAW" as const,
@@ -33,7 +42,7 @@ const OPEN_EXCALIDRAW = ({ id }: PickAction<Action, "OPEN_EXCALIDRAW">) => ({
 const OPEN_DASBHOARD = () => ({ state: "DASHBOARD" as const });
 
 export const Router = () => {
-  const router = useMemo(() => new Navigo("/"), []);
+  const navigation = useNavigation();
   const [context, dispatch] = useReducer(
     (context: Context, action: Action) =>
       transition(context, action, {
@@ -55,15 +64,15 @@ export const Router = () => {
   );
 
   useEffect(() => {
-    router.on("/", function () {
+    navigation.on("/", function () {
       dispatch({ type: "OPEN_DASBHOARD" });
     });
 
-    router.on("/:id", function ({ data }) {
+    navigation.on("/:id", function ({ data }) {
       dispatch({ type: "OPEN_EXCALIDRAW", id: data!.id });
     });
 
-    router.resolve();
+    navigation.resolve();
   }, []);
 
   return transform(context, {
