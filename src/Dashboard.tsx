@@ -70,7 +70,7 @@ export const Dashboard = () => {
             .add({
               elements: [],
               appState: {
-                viewBackgroundColor: "transparent",
+                viewBackgroundColor: "#FFF",
                 currentItemFontFamily: 1,
               },
               author: authContext.user.email,

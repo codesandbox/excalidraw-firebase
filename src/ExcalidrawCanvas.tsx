@@ -10,7 +10,7 @@ export const ExcalidrawCanvas = React.memo(
   }: {
     data: any;
     readOnly: boolean;
-    onChange: (elements: any[]) => void;
+    onChange: (elements: any[], appState: any) => void;
   }) => {
     const excalidrawRef = useRef<any>(null);
     const excalidrawWrapperRef = useRef<HTMLDivElement>(null);

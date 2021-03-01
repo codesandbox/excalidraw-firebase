@@ -51,6 +51,7 @@ type Action =
   | {
       type: "SYNC";
       elements: any[];
+      appState: any;
     }
   | {
       type: "SNAPSHOT";
@@ -65,12 +66,21 @@ type Action =
     };
 
 const SYNC = (
-  { elements }: PickAction<Action, "SYNC">,
+  { elements, appState }: PickAction<Action, "SYNC">,
   currentContext: PickState<Context, "SYNCED" | "SYNCING">
 ): PickState<Context, "SYNCED" | "SYNCING"> => ({
   state: "SYNCING",
   initialExcalidraw: currentContext.initialExcalidraw,
-  excalidraw: { ...currentContext.excalidraw, elements },
+  excalidraw: {
+    ...currentContext.excalidraw,
+    elements,
+    appState: {
+      ...currentContext.excalidraw.appState,
+      zoom: appState.zoom,
+      scrollX: appState.scrollX,
+      scrollY: appState.scrollY,
+    },
+  },
 });
 
 const TOGGLE_READONLY_MODE = (
@@ -85,7 +95,7 @@ const TOGGLE_READONLY_MODE = (
       }
     : {
         ...currentContext,
-        state: "SYNCED",
+        state: "READONLY",
       };
 
 export const Excalidraw = ({ id }: { id: string }) => {
@@ -158,6 +168,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
             .set(
               {
                 elements: excalidraw.elements,
+                appState: excalidraw.appState,
               },
               {
                 merge: true,
@@ -187,11 +198,27 @@ export const Excalidraw = ({ id }: { id: string }) => {
     [context]
   );
 
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => {
+      console.log(event.key);
+      if (event.key === " ") {
+        dispatch({ type: "TOGGLE_READONLY_MODE" });
+      }
+    };
+
+    window.addEventListener("keypress", listener);
+
+    return () => {
+      window.removeEventListener("keypress", listener);
+    };
+  }, []);
+
   const onChange = useCallback(
-    (elements) =>
+    (elements, appState) =>
       dispatch({
         type: "SYNC",
         elements,
+        appState,
       }),
     []
   );
@@ -200,19 +227,11 @@ export const Excalidraw = ({ id }: { id: string }) => {
     initialExcalidraw,
     state,
   }: PickState<Context, "READONLY" | "SYNCED" | "SYNCING">) => (
-    <div>
-      <button
-        className="edit-button"
-        onClick={() => dispatch({ type: "TOGGLE_READONLY_MODE" })}
-      >
-        edit
-      </button>
-      <ExcalidrawCanvas
-        data={initialExcalidraw}
-        onChange={onChange}
-        readOnly={state === "READONLY"}
-      />
-    </div>
+    <ExcalidrawCanvas
+      data={initialExcalidraw}
+      onChange={onChange}
+      readOnly={state === "READONLY"}
+    />
   );
 
   return transform(context, {
