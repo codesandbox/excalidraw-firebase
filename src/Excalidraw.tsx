@@ -21,13 +21,17 @@ type Context =
       state: "LOADING";
     }
   | {
-      state: "LOADED";
+      state: "READONLY";
       initialExcalidraw: ExcalidrawData;
-      excalidraw: ExcalidrawData;
     }
   | {
       state: "ERROR";
       error: string;
+    }
+  | {
+      state: "SYNCED";
+      initialExcalidraw: ExcalidrawData;
+      excalidraw: ExcalidrawData;
     }
   | {
       state: "SYNCING";
@@ -49,21 +53,40 @@ type Action =
       elements: any[];
     }
   | {
-      type: "SYNC_SUCCESS";
+      type: "SNAPSHOT";
+      excalidraw: ExcalidrawData;
     }
   | {
       type: "SYNC_ERROR";
       error: string;
+    }
+  | {
+      type: "TOGGLE_READONLY_MODE";
     };
 
 const SYNC = (
   { elements }: PickAction<Action, "SYNC">,
-  currentContext: PickState<Context, "LOADED" | "SYNCING">
-): PickState<Context, "LOADED" | "SYNCING"> => ({
+  currentContext: PickState<Context, "SYNCED" | "SYNCING">
+): PickState<Context, "SYNCED" | "SYNCING"> => ({
   state: "SYNCING",
   initialExcalidraw: currentContext.initialExcalidraw,
   excalidraw: { ...currentContext.excalidraw, elements },
 });
+
+const TOGGLE_READONLY_MODE = (
+  _: Action,
+  currentContext: PickState<Context, "READONLY" | "SYNCED" | "SYNCING">
+): PickState<Context, "SYNCED" | "READONLY"> =>
+  currentContext.state === "READONLY"
+    ? {
+        ...currentContext,
+        excalidraw: currentContext.initialExcalidraw,
+        state: "SYNCED",
+      }
+    : {
+        ...currentContext,
+        state: "SYNCED",
+      };
 
 export const Excalidraw = ({ id }: { id: string }) => {
   const [context, dispatch] = useReducer(
@@ -71,17 +94,25 @@ export const Excalidraw = ({ id }: { id: string }) => {
       transition(context, action, {
         LOADING: {
           LOADING_SUCCESS: ({ excalidraw }) => ({
-            state: "LOADED",
+            state: "READONLY",
             initialExcalidraw: excalidraw,
-            excalidraw,
           }),
           LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
         },
-        LOADED: {
+        READONLY: {
+          TOGGLE_READONLY_MODE,
+          SNAPSHOT: ({ excalidraw }) => ({
+            state: "READONLY",
+            initialExcalidraw: excalidraw,
+          }),
+        },
+        SYNCED: {
           SYNC,
+          TOGGLE_READONLY_MODE,
         },
         SYNCING: {
           SYNC,
+          TOGGLE_READONLY_MODE,
         },
         ERROR: {},
       }),
@@ -119,6 +150,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
             });
         },
         SYNCING: ({ excalidraw }) => {
+          console.log("SYNCING!");
           firebase
             .firestore()
             .collection(EXCALIDRAWS_COLLECTION)
@@ -132,6 +164,24 @@ export const Excalidraw = ({ id }: { id: string }) => {
               }
             )
             .then(() => {});
+        },
+        READONLY: () => {
+          let ignoredInitial = false;
+          return firebase
+            .firestore()
+            .collection(EXCALIDRAWS_COLLECTION)
+            .doc(id)
+            .onSnapshot((snapshot) => {
+              if (!ignoredInitial) {
+                ignoredInitial = true;
+                return;
+              }
+              console.log("Got snapshot!!", snapshot.data());
+              dispatch({
+                type: "SNAPSHOT",
+                excalidraw: snapshot.data() as ExcalidrawData,
+              });
+            });
         },
       }),
     [context]
@@ -148,14 +198,28 @@ export const Excalidraw = ({ id }: { id: string }) => {
 
   const renderExcalidraw = ({
     initialExcalidraw,
-  }: PickState<Context, "LOADED" | "SYNCING">) => (
-    <ExcalidrawCanvas data={initialExcalidraw} onChange={onChange} />
+    state,
+  }: PickState<Context, "READONLY" | "SYNCED" | "SYNCING">) => (
+    <div>
+      <button
+        className="edit-button"
+        onClick={() => dispatch({ type: "TOGGLE_READONLY_MODE" })}
+      >
+        edit
+      </button>
+      <ExcalidrawCanvas
+        data={initialExcalidraw}
+        onChange={onChange}
+        readOnly={state === "READONLY"}
+      />
+    </div>
   );
 
   return transform(context, {
     LOADING: () => "Loading...",
     ERROR: ({ error }) => `OMG, error, ${error}`,
-    LOADED: renderExcalidraw,
+    SYNCED: renderExcalidraw,
+    READONLY: renderExcalidraw,
     SYNCING: renderExcalidraw,
   });
 };

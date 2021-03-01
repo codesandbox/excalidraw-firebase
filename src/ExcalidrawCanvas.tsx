@@ -3,8 +3,16 @@ import ExcalidrawComponent from "@excalidraw/excalidraw";
 import debounce from "lodash.debounce";
 
 export const ExcalidrawCanvas = React.memo(
-  ({ data, onChange }: { data: any; onChange: (elements: any[]) => void }) => {
-    const excalidrawRef = useRef(null);
+  ({
+    data,
+    onChange,
+    readOnly,
+  }: {
+    data: any;
+    readOnly: boolean;
+    onChange: (elements: any[]) => void;
+  }) => {
+    const excalidrawRef = useRef<any>(null);
     const excalidrawWrapperRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState<{
       width: number | undefined;
@@ -31,6 +39,10 @@ export const ExcalidrawCanvas = React.memo(
       return () => window.removeEventListener("resize", onResize);
     }, [excalidrawWrapperRef]);
 
+    useEffect(() => {
+      excalidrawRef.current?.updateScene(data);
+    }, [data]);
+
     const debouncedChange = useMemo(() => debounce(onChange, 1000), []);
 
     return (
@@ -41,6 +53,8 @@ export const ExcalidrawCanvas = React.memo(
           height={dimensions.height}
           initialData={data}
           onChange={debouncedChange}
+          zenModeEnabled={readOnly}
+          viewModeEnabled={readOnly}
         />
       </div>
     );

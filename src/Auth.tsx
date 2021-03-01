@@ -1,5 +1,4 @@
 import React from "react";
-import "./App.css";
 import { transform } from "react-states";
 import { Router } from "./Router";
 import { useAuth } from "./AuthProvider";
