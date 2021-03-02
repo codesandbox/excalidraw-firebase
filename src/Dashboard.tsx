@@ -68,11 +68,11 @@ export const Dashboard = () => {
             .firestore()
             .collection(EXCALIDRAWS_COLLECTION)
             .add({
-              elements: [],
-              appState: {
+              elements: JSON.stringify([]),
+              appState: JSON.stringify({
                 viewBackgroundColor: "#FFF",
                 currentItemFontFamily: 1,
-              },
+              }),
               author: authContext.user.email,
             })
             .then((ref) => {

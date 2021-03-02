@@ -40,6 +40,7 @@ export const ExcalidrawCanvas = React.memo(
     }, [excalidrawWrapperRef]);
 
     useEffect(() => {
+      console.log("DATA", data);
       excalidrawRef.current?.updateScene(data);
     }, [data]);
 

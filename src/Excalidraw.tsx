@@ -103,10 +103,17 @@ export const Excalidraw = ({ id }: { id: string }) => {
     (context: Context, action: Action) =>
       transition(context, action, {
         LOADING: {
-          LOADING_SUCCESS: ({ excalidraw }) => ({
-            state: "READONLY",
-            initialExcalidraw: excalidraw,
-          }),
+          LOADING_SUCCESS: ({ excalidraw }) =>
+            window.parent === window
+              ? {
+                  state: "SYNCED",
+                  excalidraw,
+                  initialExcalidraw: excalidraw,
+                }
+              : {
+                  state: "READONLY",
+                  initialExcalidraw: excalidraw,
+                },
           LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
         },
         READONLY: {
@@ -146,7 +153,11 @@ export const Excalidraw = ({ id }: { id: string }) => {
               if (excalidraw) {
                 dispatch({
                   type: "LOADING_SUCCESS",
-                  excalidraw: excalidraw as ExcalidrawData,
+                  excalidraw: {
+                    author: excalidraw.author,
+                    appState: JSON.parse(excalidraw.appState),
+                    elements: JSON.parse(excalidraw.elements),
+                  } as ExcalidrawData,
                 });
               } else {
                 dispatch({
@@ -160,15 +171,14 @@ export const Excalidraw = ({ id }: { id: string }) => {
             });
         },
         SYNCING: ({ excalidraw }) => {
-          console.log("SYNCING!");
           firebase
             .firestore()
             .collection(EXCALIDRAWS_COLLECTION)
             .doc(id)
             .set(
               {
-                elements: excalidraw.elements,
-                appState: excalidraw.appState,
+                elements: JSON.stringify(excalidraw.elements),
+                appState: JSON.stringify(excalidraw.appState),
               },
               {
                 merge: true,
@@ -200,7 +210,6 @@ export const Excalidraw = ({ id }: { id: string }) => {
 
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
-      console.log(event.key);
       if (event.key === " ") {
         dispatch({ type: "TOGGLE_READONLY_MODE" });
       }
