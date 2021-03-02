@@ -244,8 +244,10 @@ export const Excalidraw = ({ id }: { id: string }) => {
   );
 
   return transform(context, {
-    LOADING: () => "Loading...",
-    ERROR: ({ error }) => `OMG, error, ${error}`,
+    LOADING: () => <div className="center-wrapper">Loading...</div>,
+    ERROR: ({ error }) => (
+      <div className="center-wrapper">OMG, error, {error}</div>
+    ),
     SYNCED: renderExcalidraw,
     READONLY: renderExcalidraw,
     SYNCING: renderExcalidraw,

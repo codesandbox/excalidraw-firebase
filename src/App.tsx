@@ -94,7 +94,9 @@ function Auth() {
             Sign In
           </button>
         ),
-        AUTHENTICATING: () => "Authenticating...",
+        AUTHENTICATING: () => (
+          <div className="center-wrapper">Authenticating...</div>
+        ),
         AUTHENTICATED: () => <Router />,
       })}
     </div>

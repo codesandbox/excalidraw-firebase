@@ -10,9 +10,15 @@ export const Auth = () => {
     <div className="App">
       {transform(context, {
         UNAUTHENTICATED: () => (
-          <button onClick={() => dispatch({ type: "SIGN_IN" })}>Sign In</button>
+          <div className="center-wrapper">
+            <button onClick={() => dispatch({ type: "SIGN_IN" })}>
+              Sign In
+            </button>
+          </div>
         ),
-        AUTHENTICATING: () => "Authenticating...",
+        AUTHENTICATING: () => (
+          <div className="center-wrapper">Authenticating...</div>
+        ),
         AUTHENTICATED: () => <Router />,
       })}
     </div>
