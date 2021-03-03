@@ -8,19 +8,24 @@ body {
   border: 2px solid black;
   box-sizing: border-box;
   height: 100vh;
+  overflow: hidden;
 }
 
 .edit {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 5px;
+  right: 40px;
   z-index: 999999;
-  width: 100%;
-  height: 100%;
+  margin: 8px;
+}
+
+.Island {
+  top: -5px;
 }
 
 .center-wrapper {
   display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   align-items: center;
@@ -42,4 +47,35 @@ body {
   .layer-ui__wrapper
   .zen-mode-transition.App-menu_bottom--transition-left {
   transform: none;
+}
+
+.lds-dual-ring {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 4px solid #333;
+  border-color: #333 transparent #333 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+  opacity: 0.2;
+}
+
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

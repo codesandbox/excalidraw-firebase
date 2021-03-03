@@ -76,7 +76,7 @@ export const Router = () => {
   }, []);
 
   return transform(context, {
-    INITIALIZING: () => "Initializing...",
+    INITIALIZING: () => null,
     DASHBOARD: () => <Dashboard />,
     EXCALIDRAW: ({ id }) => <Excalidraw id={id} />,
   });

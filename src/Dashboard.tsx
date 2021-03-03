@@ -93,7 +93,7 @@ export const Dashboard = () => {
   );
 
   return (
-    <div>
+    <div className="center-wrapper">
       <h1>Dashboard</h1>
       <button
         onClick={() => {

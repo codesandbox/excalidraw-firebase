@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ExcalidrawComponent from "@excalidraw/excalidraw";
-import debounce from "lodash.debounce";
 
 export const ExcalidrawCanvas = React.memo(
   ({
@@ -40,11 +39,10 @@ export const ExcalidrawCanvas = React.memo(
     }, [excalidrawWrapperRef]);
 
     useEffect(() => {
-      console.log("DATA", data);
-      excalidrawRef.current?.updateScene(data);
-    }, [data]);
-
-    const debouncedChange = useMemo(() => debounce(onChange, 1000), []);
+      if (readOnly) {
+        excalidrawRef.current?.updateScene(data);
+      }
+    }, [data, readOnly]);
 
     return (
       <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>
@@ -53,7 +51,7 @@ export const ExcalidrawCanvas = React.memo(
           width={dimensions.width}
           height={dimensions.height}
           initialData={data}
-          onChange={debouncedChange}
+          onChange={onChange}
           zenModeEnabled={readOnly}
           viewModeEnabled={readOnly}
         />
