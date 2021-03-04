@@ -10,4 +10,6 @@ declare module "@excalidraw/excalidraw" {
   }) => any;
 
   export default Excalidraw;
+
+  export function getSceneVersion(els: any[]): number;
 }

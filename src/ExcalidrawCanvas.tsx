@@ -44,6 +44,12 @@ export const ExcalidrawCanvas = React.memo(
       }
     }, [data, readOnly]);
 
+    useEffect(() => {
+      if (readOnly) {
+        excalidrawRef.current?.setScrollToCenter(data.elements);
+      }
+    }, [readOnly]);
+
     return (
       <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>
         <ExcalidrawComponent

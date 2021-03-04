@@ -1,6 +1,6 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect } from "react";
 import firebase from "firebase/app";
-import { exec, transition } from "react-states";
+import { useStates } from "react-states";
 import { EXCALIDRAWS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
@@ -35,26 +35,25 @@ type Action =
     };
 
 export const Dashboard = () => {
-  const [authContext] = useAuthenticatedAuth();
+  const auth = useAuthenticatedAuth();
   const navigation = useNavigation();
-  const [context, dispatch] = useReducer(
-    (context: Context, action: Action) =>
-      transition(context, action, {
-        IDLE: {
-          CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
-        },
-        CREATING_EXCALIDRAW: {
-          CREATE_EXCALIDRAW_SUCCESS: ({ id }) => ({
-            state: "EXCALIDRAW_CREATED",
-            id,
-          }),
-          CREATE_EXCALIDRAW_ERROR: ({ error }) => ({ state: "ERROR", error }),
-        },
-        EXCALIDRAW_CREATED: {},
-        ERROR: {
-          CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
-        },
-      }),
+  const dashboard = useStates<Context, Action>(
+    {
+      IDLE: {
+        CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
+      },
+      CREATING_EXCALIDRAW: {
+        CREATE_EXCALIDRAW_SUCCESS: ({ id }) => ({
+          state: "EXCALIDRAW_CREATED",
+          id,
+        }),
+        CREATE_EXCALIDRAW_ERROR: ({ error }) => ({ state: "ERROR", error }),
+      },
+      EXCALIDRAW_CREATED: {},
+      ERROR: {
+        CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
+      },
+    },
     {
       state: "IDLE",
     }
@@ -62,7 +61,7 @@ export const Dashboard = () => {
 
   useEffect(
     () =>
-      exec(context, {
+      dashboard.exec({
         CREATING_EXCALIDRAW: () => {
           firebase
             .firestore()
@@ -73,13 +72,16 @@ export const Dashboard = () => {
                 viewBackgroundColor: "#FFF",
                 currentItemFontFamily: 1,
               }),
-              author: authContext.user.email,
+              author: auth.context.user.email,
             })
             .then((ref) => {
-              dispatch({ type: "CREATE_EXCALIDRAW_SUCCESS", id: ref.id });
+              dashboard.dispatch({
+                type: "CREATE_EXCALIDRAW_SUCCESS",
+                id: ref.id,
+              });
             })
             .catch((error) => {
-              dispatch({
+              dashboard.dispatch({
                 type: "CREATE_EXCALIDRAW_ERROR",
                 error: error.message,
               });
@@ -89,7 +91,7 @@ export const Dashboard = () => {
           navigation.navigate(`/${id}`);
         },
       }),
-    [context]
+    [dashboard]
   );
 
   return (
@@ -97,7 +99,7 @@ export const Dashboard = () => {
       <h1>Dashboard</h1>
       <button
         onClick={() => {
-          dispatch({ type: "CREATE_EXCALIDRAW" });
+          dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
         }}
       >
         Create new Excalidraw

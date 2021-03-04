@@ -1,13 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useReducer } from "react";
+import React, { useEffect, useMemo } from "react";
 import debounce from "lodash.debounce";
 import firebase from "firebase/app";
-import {
-  exec,
-  PickAction,
-  PickState,
-  transform,
-  transition,
-} from "react-states";
+import { getSceneVersion } from "@excalidraw/excalidraw";
+import { PickState, useStates } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { EXCALIDRAWS_COLLECTION } from "./constants";
 
@@ -32,18 +27,22 @@ type Context =
   | {
       state: "EDIT";
       data: ExcalidrawData;
+      version: number;
     }
   | {
       state: "DIRTY";
       data: ExcalidrawData;
+      version: number;
     }
   | {
       state: "SYNCING";
       data: ExcalidrawData;
+      version: number;
     }
   | {
       state: "SYNCING_DIRTY";
       data: ExcalidrawData;
+      version: number;
     };
 
 type Action =
@@ -81,87 +80,118 @@ type Action =
       type: "SYNC_ERROR";
     };
 
+const createChangeDetectedHandler = <
+  C extends Context,
+  S extends Context["state"]
+>(
+  changeContext: (data: ExcalidrawData, version: number) => C
+) => (
+  { elements, appState }: { elements: any[]; appState: any },
+  currentContext: {
+    state: S;
+    version: number;
+    data: ExcalidrawData;
+  }
+) => {
+  const newVersion = getSceneVersion(elements);
+
+  if (
+    currentContext.version !== newVersion ||
+    currentContext.data.appState.viewBackgroundColor !==
+      appState.viewBackgroundColor
+  ) {
+    return changeContext(
+      { ...currentContext.data, elements, appState },
+      newVersion
+    );
+  }
+
+  return currentContext;
+};
+
 export const Excalidraw = ({ id }: { id: string }) => {
-  const [context, dispatch] = useReducer(
-    (context: Context, action: Action) =>
-      transition(context, action, {
-        LOADING: {
-          LOADING_SUCCESS: ({ data }) =>
-            window.parent === window
-              ? {
-                  state: "EDIT",
-                  data,
-                }
-              : {
-                  state: "READONLY",
-                  data,
-                },
-          LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
-        },
-        READONLY: {
-          TOGGLE_READONLY_MODE: (_, currentContext) => ({
-            ...currentContext,
-            state: "EDIT",
-          }),
-          SNAPSHOT: ({ data }) => ({
-            state: "READONLY",
-            data,
-          }),
-        },
-        EDIT: {
-          TOGGLE_READONLY_MODE: (_, currentContext) => ({
-            ...currentContext,
-            state: "READONLY",
-          }),
-          CHANGE_DETECTED: ({ elements, appState }, { data }) => ({
-            state: "DIRTY",
-            data: {
-              ...data,
-              elements,
-              appState,
-            },
-          }),
-        },
-        DIRTY: {
-          SYNC: (_, { data }) => ({
-            state: "SYNCING",
-            data: data,
-          }),
-          CHANGE_DETECTED: ({ elements, appState }, { data }) => ({
-            state: "DIRTY",
-            data: {
-              ...data,
-              elements,
-              appState,
-            },
-          }),
-        },
-        SYNCING: {
-          CHANGE_DETECTED: ({ elements, appState }, { data }) => ({
-            state: "SYNCING_DIRTY",
-            data: {
-              ...data,
-              elements,
-              appState,
-            },
-          }),
-          SYNC_SUCCESS: (_, { data }) => ({ state: "EDIT", data }),
-          SYNC_ERROR: (_) => ({ state: "ERROR", error: "Unable to sync" }),
-        },
-        SYNCING_DIRTY: {
-          CHANGE_DETECTED: ({ elements, appState }, { data }) => ({
-            state: "SYNCING_DIRTY",
-            data: {
-              ...data,
-              elements,
-              appState,
-            },
-          }),
-          SYNC_SUCCESS: (_, { data }) => ({ state: "DIRTY", data }),
-          SYNC_ERROR: (_, { data }) => ({ state: "DIRTY", data }),
-        },
-        ERROR: {},
-      }),
+  const excalidraw = useStates<Context, Action>(
+    {
+      LOADING: {
+        LOADING_SUCCESS: ({ data }) =>
+          window.parent === window
+            ? {
+                state: "EDIT",
+                data,
+                version: getSceneVersion(data.elements),
+              }
+            : {
+                state: "READONLY",
+                data,
+              },
+        LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
+      },
+      READONLY: {
+        TOGGLE_READONLY_MODE: (_, currentContext) => ({
+          ...currentContext,
+          state: "EDIT",
+          version: getSceneVersion(currentContext.data.elements),
+        }),
+        SNAPSHOT: ({ data }) => ({
+          state: "READONLY",
+          data,
+        }),
+      },
+      EDIT: {
+        TOGGLE_READONLY_MODE: (_, currentContext) => ({
+          ...currentContext,
+          state: "READONLY",
+        }),
+        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
+          state: "DIRTY",
+          data,
+          version,
+        })),
+      },
+      DIRTY: {
+        SYNC: (_, { data, version }) => ({
+          state: "SYNCING",
+          data: data,
+          version,
+        }),
+        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
+          state: "DIRTY",
+          data,
+          version,
+        })),
+      },
+      SYNCING: {
+        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
+          state: "SYNCING_DIRTY",
+          data,
+          version,
+        })),
+        SYNC_SUCCESS: (_, { data, version }) => ({
+          state: "EDIT",
+          data,
+          version,
+        }),
+        SYNC_ERROR: (_) => ({ state: "ERROR", error: "Unable to sync" }),
+      },
+      SYNCING_DIRTY: {
+        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
+          state: "SYNCING_DIRTY",
+          data,
+          version,
+        })),
+        SYNC_SUCCESS: (_, { data, version }) => ({
+          state: "DIRTY",
+          data,
+          version,
+        }),
+        SYNC_ERROR: (_, { data, version }) => ({
+          state: "DIRTY",
+          data,
+          version,
+        }),
+      },
+      ERROR: {},
+    },
     {
       state: "LOADING",
     }
@@ -169,7 +199,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
 
   useEffect(
     () =>
-      exec(context, {
+      excalidraw.exec({
         LOADING: () => {
           firebase
             .firestore()
@@ -180,7 +210,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
               const data = doc.data();
 
               if (data) {
-                dispatch({
+                excalidraw.dispatch({
                   type: "LOADING_SUCCESS",
                   data: {
                     author: data.author,
@@ -189,14 +219,17 @@ export const Excalidraw = ({ id }: { id: string }) => {
                   } as ExcalidrawData,
                 });
               } else {
-                dispatch({
+                excalidraw.dispatch({
                   type: "LOADING_ERROR",
                   error: "Found the excalidraw without any content, wtf?",
                 });
               }
             })
             .catch((error) => {
-              dispatch({ type: "LOADING_ERROR", error: error.message });
+              excalidraw.dispatch({
+                type: "LOADING_ERROR",
+                error: error.message,
+              });
             });
         },
         SYNCING: ({ data }) => {
@@ -214,10 +247,10 @@ export const Excalidraw = ({ id }: { id: string }) => {
               }
             )
             .then(() => {
-              dispatch({ type: "SYNC_SUCCESS" });
+              excalidraw.dispatch({ type: "SYNC_SUCCESS" });
             })
             .catch(() => {
-              dispatch({ type: "SYNC_ERROR" });
+              excalidraw.dispatch({ type: "SYNC_ERROR" });
             });
         },
         READONLY: () => {
@@ -231,7 +264,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
                 ignoredInitial = true;
                 return;
               }
-              dispatch({
+              excalidraw.dispatch({
                 type: "SNAPSHOT",
                 data: snapshot.data() as ExcalidrawData,
               });
@@ -239,7 +272,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
         },
         DIRTY: () => {
           const id = setTimeout(() => {
-            dispatch({
+            excalidraw.dispatch({
               type: "SYNC",
             });
           }, 1000);
@@ -249,13 +282,13 @@ export const Excalidraw = ({ id }: { id: string }) => {
           };
         },
       }),
-    [context.state]
+    [excalidraw]
   );
 
   const onChange = useMemo(
     () =>
       debounce((elements, appState) => {
-        dispatch({
+        excalidraw.dispatch({
           type: "CHANGE_DETECTED",
           elements,
           appState: { viewBackgroundColor: appState.viewBackgroundColor },
@@ -283,7 +316,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
       ) : (
         <button
           className="edit"
-          onClick={() => dispatch({ type: "TOGGLE_READONLY_MODE" })}
+          onClick={() => excalidraw.dispatch({ type: "TOGGLE_READONLY_MODE" })}
         >
           {state === "READONLY" ? "edit" : "view"}
         </button>
@@ -291,7 +324,7 @@ export const Excalidraw = ({ id }: { id: string }) => {
     </div>
   );
 
-  return transform(context, {
+  return excalidraw.transform({
     LOADING: () => <div className="center-wrapper">Loading...</div>,
     ERROR: ({ error }) => (
       <div className="center-wrapper">OMG, error, {error}</div>

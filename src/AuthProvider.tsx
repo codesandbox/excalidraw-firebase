@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import firebase from "firebase/app";
-import { exec, PickState, transition } from "react-states";
+import { States, useStates } from "react-states";
 
 type Context =
   | {
@@ -37,46 +37,44 @@ function signInGoogle() {
   return firebase.auth().signInWithPopup(provider);
 }
 
-const authContext = createContext({} as [Context, React.Dispatch<Action>]);
+const authContext = createContext({} as States<Context, Action>);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const auth = useReducer(
-    (context: Context, action: Action) =>
-      transition(context, action, {
-        AUTHENTICATING: {
-          SIGN_IN_SUCCESS: ({ user }) => ({
-            state: "AUTHENTICATED",
-            user,
-          }),
-          SIGN_IN_ERROR: ({ error }) => ({
-            state: "UNAUTHENTICATED",
-            error,
-          }),
-        },
-        UNAUTHENTICATED: {
-          SIGN_IN: () => ({ state: "SIGNING_IN" }),
-        },
-        SIGNING_IN: {
-          SIGN_IN_SUCCESS: ({ user }) => ({
-            state: "AUTHENTICATED",
-            user,
-          }),
-          SIGN_IN_ERROR: ({ error }) => ({
-            state: "UNAUTHENTICATED",
-            error,
-          }),
-        },
-        AUTHENTICATED: {},
-      }),
+  const auth = useStates<Context, Action>(
+    {
+      AUTHENTICATING: {
+        SIGN_IN_SUCCESS: ({ user }) => ({
+          state: "AUTHENTICATED",
+          user,
+        }),
+        SIGN_IN_ERROR: ({ error }) => ({
+          state: "UNAUTHENTICATED",
+          error,
+        }),
+      },
+      UNAUTHENTICATED: {
+        SIGN_IN: () => ({ state: "SIGNING_IN" }),
+      },
+      SIGNING_IN: {
+        SIGN_IN_SUCCESS: ({ user }) => ({
+          state: "AUTHENTICATED",
+          user,
+        }),
+        SIGN_IN_ERROR: ({ error }) => ({
+          state: "UNAUTHENTICATED",
+          error,
+        }),
+      },
+      AUTHENTICATED: {},
+    },
     {
       state: "AUTHENTICATING",
     }
   );
-  const [context, dispatch] = auth;
 
   useEffect(
     () =>
-      exec(context, {
+      auth.exec({
         SIGNING_IN: () => {
           signInGoogle()
             .then((result) => {
@@ -84,14 +82,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               if (user) {
               } else {
-                dispatch({
+                auth.dispatch({
                   type: "SIGN_IN_ERROR",
                   error: "Authenticated, but no user",
                 });
               }
             })
             .catch((error) => {
-              dispatch({
+              auth.dispatch({
                 type: "SIGN_IN_ERROR",
                 error: error.message,
               });
@@ -100,14 +98,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         AUTHENTICATING: () => {
           firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-              dispatch({ type: "SIGN_IN_SUCCESS", user });
+              auth.dispatch({ type: "SIGN_IN_SUCCESS", user });
             } else {
-              dispatch({ type: "SIGN_IN_ERROR", error: "Not authenticated" });
+              auth.dispatch({
+                type: "SIGN_IN_ERROR",
+                error: "Not authenticated",
+              });
             }
           });
         },
       }),
-    [context]
+    [auth]
   );
 
   return <authContext.Provider value={auth}>{children}</authContext.Provider>;
@@ -116,10 +117,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => useContext(authContext);
 
 export const useAuthenticatedAuth = () => {
-  const [context, dispatch] = useAuth();
+  const auth = useAuth();
 
-  if (context.state === "AUTHENTICATED") {
-    return [context, dispatch] as const;
+  if (auth.is("AUTHENTICATED")) {
+    return auth;
   }
 
   throw new Error(

@@ -4,14 +4,14 @@ import { Router } from "./Router";
 import { useAuth } from "./AuthProvider";
 
 export const Auth = () => {
-  const [context, dispatch] = useAuth();
+  const auth = useAuth();
 
   return (
     <div className="App">
-      {transform(context, {
+      {auth.transform({
         UNAUTHENTICATED: () => (
           <div className="center-wrapper">
-            <button onClick={() => dispatch({ type: "SIGN_IN" })}>
+            <button onClick={() => auth.dispatch({ type: "SIGN_IN" })}>
               Sign In
             </button>
           </div>
