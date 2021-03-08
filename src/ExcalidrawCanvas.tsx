@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ExcalidrawComponent from "@excalidraw/excalidraw";
+import { resolvablePromise } from "./excalidraw-src/utils";
 
 export const ExcalidrawCanvas = React.memo(
   ({
     data,
     onChange,
-    readOnly,
+    onInitialized,
   }: {
     data: any;
-    readOnly: boolean;
     onChange: (elements: any[], appState: any) => void;
+    onInitialized: () => void;
   }) => {
-    const excalidrawRef = useRef<any>(null);
+    const excalidrawRef = useRef<any>({
+      readyPromise: resolvablePromise(),
+    });
     const excalidrawWrapperRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState<{
       width: number | undefined;
@@ -39,16 +42,8 @@ export const ExcalidrawCanvas = React.memo(
     }, [excalidrawWrapperRef]);
 
     useEffect(() => {
-      if (readOnly) {
-        excalidrawRef.current?.updateScene(data);
-      }
-    }, [data, readOnly]);
-
-    useEffect(() => {
-      if (readOnly) {
-        excalidrawRef.current?.setScrollToCenter(data.elements);
-      }
-    }, [readOnly]);
+      excalidrawRef.current.readyPromise.then(onInitialized);
+    }, []);
 
     return (
       <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>
@@ -58,8 +53,6 @@ export const ExcalidrawCanvas = React.memo(
           height={dimensions.height}
           initialData={data}
           onChange={onChange}
-          zenModeEnabled={readOnly}
-          viewModeEnabled={readOnly}
         />
       </div>
     );

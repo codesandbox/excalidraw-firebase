@@ -13,9 +13,12 @@
     "firebase": "^8.2.9",
     "lodash.debounce": "^4.0.8",
     "navigo": "^8.8.12",
+    "open-color": "^1.8.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-states": "^1.3.2"
+    "react-states": "^1.3.2",
+    "roughjs": "^4.3.1",
+    "sass": "^1.32.8"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",

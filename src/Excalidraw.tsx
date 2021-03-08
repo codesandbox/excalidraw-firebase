@@ -4,12 +4,14 @@ import firebase from "firebase/app";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickState, useStates } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
-import { EXCALIDRAWS_COLLECTION } from "./constants";
+import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
+import { createExcalidrawImage } from "./utils";
 
 type ExcalidrawData = {
   author: string;
   elements: any[];
   appState: any;
+  version: number;
 };
 
 type Context =
@@ -17,32 +19,34 @@ type Context =
       state: "LOADING";
     }
   | {
-      state: "READONLY";
-      data: ExcalidrawData;
-    }
-  | {
       state: "ERROR";
       error: string;
     }
   | {
+      state: "LOADED";
+      data: ExcalidrawData;
+    }
+  | {
       state: "EDIT";
       data: ExcalidrawData;
-      version: number;
+      image: Blob;
+    }
+  | {
+      state: "EDIT_CLIPBOARD";
+      data: ExcalidrawData;
+      image: Blob;
     }
   | {
       state: "DIRTY";
       data: ExcalidrawData;
-      version: number;
     }
   | {
       state: "SYNCING";
       data: ExcalidrawData;
-      version: number;
     }
   | {
       state: "SYNCING_DIRTY";
       data: ExcalidrawData;
-      version: number;
     };
 
 type Action =
@@ -66,128 +70,143 @@ type Action =
       error: string;
     }
   | {
-      type: "TOGGLE_READONLY_MODE";
-    }
-  | {
       type: "CHANGE_DETECTED";
       elements: any[];
       appState: any;
+      version: number;
     }
   | {
       type: "SYNC_SUCCESS";
+      image: Blob;
     }
   | {
       type: "SYNC_ERROR";
+    }
+  | {
+      type: "INITIALIZED";
+      image: Blob;
+    }
+  | {
+      type: "COPY_TO_CLIPBOARD";
     };
 
-const createChangeDetectedHandler = <
-  C extends Context,
-  S extends Context["state"]
->(
-  changeContext: (data: ExcalidrawData, version: number) => C
-) => (
-  { elements, appState }: { elements: any[]; appState: any },
-  currentContext: {
-    state: S;
+const hasChangedExcalidraw = (
+  oldData: {
+    elements: any[];
+    appState: any;
     version: number;
-    data: ExcalidrawData;
+  },
+  newData: {
+    elements: any[];
+    appState: any;
+    version: number;
   }
 ) => {
-  const newVersion = getSceneVersion(elements);
-
-  if (
-    currentContext.version !== newVersion ||
-    currentContext.data.appState.viewBackgroundColor !==
-      appState.viewBackgroundColor
-  ) {
-    return changeContext(
-      { ...currentContext.data, elements, appState },
-      newVersion
-    );
-  }
-
-  return currentContext;
+  return (
+    oldData.version !== newData.version ||
+    oldData.appState.viewBackgroundColor !==
+      newData.appState.viewBackgroundColor
+  );
 };
 
-export const Excalidraw = ({ id }: { id: string }) => {
+export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
   const excalidraw = useStates<Context, Action>(
     {
       LOADING: {
-        LOADING_SUCCESS: ({ data }) =>
-          window.parent === window
-            ? {
-                state: "EDIT",
-                data,
-                version: getSceneVersion(data.elements),
-              }
-            : {
-                state: "READONLY",
-                data,
-              },
+        LOADING_SUCCESS: ({ data }) => ({
+          state: "LOADED",
+          data,
+        }),
         LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
       },
-      READONLY: {
-        TOGGLE_READONLY_MODE: (_, currentContext) => ({
-          ...currentContext,
+      LOADED: {
+        INITIALIZED: ({ image }, { data }) => ({
           state: "EDIT",
-          version: getSceneVersion(currentContext.data.elements),
-        }),
-        SNAPSHOT: ({ data }) => ({
-          state: "READONLY",
           data,
+          image,
         }),
       },
       EDIT: {
-        TOGGLE_READONLY_MODE: (_, currentContext) => ({
-          ...currentContext,
-          state: "READONLY",
-        }),
-        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
-          state: "DIRTY",
+        CHANGE_DETECTED: (newData, currentContext) =>
+          hasChangedExcalidraw(currentContext.data, newData)
+            ? {
+                state: "DIRTY",
+                data: {
+                  ...newData,
+                  author: currentContext.data.author,
+                },
+              }
+            : currentContext,
+        COPY_TO_CLIPBOARD: (_, { data, image }) => ({
+          state: "EDIT_CLIPBOARD",
           data,
-          version,
-        })),
+          image,
+        }),
+      },
+      EDIT_CLIPBOARD: {
+        CHANGE_DETECTED: (newData, currentContext) =>
+          hasChangedExcalidraw(currentContext.data, newData)
+            ? {
+                state: "DIRTY",
+                data: {
+                  ...newData,
+                  author: currentContext.data.author,
+                },
+              }
+            : currentContext,
       },
       DIRTY: {
-        SYNC: (_, { data, version }) => ({
+        SYNC: (_, { data }) => ({
           state: "SYNCING",
           data: data,
-          version,
         }),
-        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
-          state: "DIRTY",
-          data,
-          version,
-        })),
+        CHANGE_DETECTED: (newData, currentContext) =>
+          hasChangedExcalidraw(currentContext.data, newData)
+            ? {
+                state: "DIRTY",
+                data: {
+                  ...newData,
+                  author: currentContext.data.author,
+                },
+              }
+            : currentContext,
       },
       SYNCING: {
-        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
-          state: "SYNCING_DIRTY",
-          data,
-          version,
-        })),
-        SYNC_SUCCESS: (_, { data, version }) => ({
+        CHANGE_DETECTED: (newData, currentContext) =>
+          hasChangedExcalidraw(currentContext.data, newData)
+            ? {
+                state: "SYNCING_DIRTY",
+                data: {
+                  ...newData,
+                  author: currentContext.data.author,
+                },
+              }
+            : currentContext,
+        SYNC_SUCCESS: ({ image }, { data }) => ({
           state: "EDIT",
           data,
-          version,
+          image,
         }),
         SYNC_ERROR: (_) => ({ state: "ERROR", error: "Unable to sync" }),
       },
       SYNCING_DIRTY: {
-        CHANGE_DETECTED: createChangeDetectedHandler((data, version) => ({
-          state: "SYNCING_DIRTY",
-          data,
-          version,
-        })),
-        SYNC_SUCCESS: (_, { data, version }) => ({
+        CHANGE_DETECTED: (newData, currentContext) =>
+          hasChangedExcalidraw(currentContext.data, newData)
+            ? {
+                state: "SYNCING_DIRTY",
+                data: {
+                  ...newData,
+                  author: currentContext.data.author,
+                },
+              }
+            : currentContext,
+        SYNC_SUCCESS: (_, { data }) => ({
           state: "DIRTY",
           data,
-          version,
         }),
-        SYNC_ERROR: (_, { data, version }) => ({
+        SYNC_ERROR: (_, { data }) => ({
           state: "DIRTY",
           data,
-          version,
         }),
       },
       ERROR: {},
@@ -203,6 +222,8 @@ export const Excalidraw = ({ id }: { id: string }) => {
         LOADING: () => {
           firebase
             .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(userId)
             .collection(EXCALIDRAWS_COLLECTION)
             .doc(id)
             .get()
@@ -235,39 +256,29 @@ export const Excalidraw = ({ id }: { id: string }) => {
         SYNCING: ({ data }) => {
           firebase
             .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(userId)
             .collection(EXCALIDRAWS_COLLECTION)
             .doc(id)
             .set(
               {
                 elements: JSON.stringify(data.elements),
-                appState: JSON.stringify(data.appState),
+                appState: JSON.stringify({
+                  viewBackgroundColor: data.appState.viewBackgroundColor,
+                }),
               },
               {
                 merge: true,
               }
             )
             .then(() => {
-              excalidraw.dispatch({ type: "SYNC_SUCCESS" });
+              return createExcalidrawImage(data.elements, data.appState);
+            })
+            .then((image) => {
+              excalidraw.dispatch({ type: "SYNC_SUCCESS", image });
             })
             .catch(() => {
               excalidraw.dispatch({ type: "SYNC_ERROR" });
-            });
-        },
-        READONLY: () => {
-          let ignoredInitial = false;
-          return firebase
-            .firestore()
-            .collection(EXCALIDRAWS_COLLECTION)
-            .doc(id)
-            .onSnapshot((snapshot) => {
-              if (!ignoredInitial) {
-                ignoredInitial = true;
-                return;
-              }
-              excalidraw.dispatch({
-                type: "SNAPSHOT",
-                data: snapshot.data() as ExcalidrawData,
-              });
             });
         },
         DIRTY: () => {
@@ -281,6 +292,13 @@ export const Excalidraw = ({ id }: { id: string }) => {
             clearTimeout(id);
           };
         },
+        EDIT_CLIPBOARD: ({ image }) => {
+          // @ts-ignore
+          navigator.clipboard.write([
+            // @ts-ignore
+            new window.ClipboardItem({ "image/png": image }),
+          ]);
+        },
       }),
     [excalidraw]
   );
@@ -291,36 +309,62 @@ export const Excalidraw = ({ id }: { id: string }) => {
         excalidraw.dispatch({
           type: "CHANGE_DETECTED",
           elements,
-          appState: { viewBackgroundColor: appState.viewBackgroundColor },
+          appState,
+          version: getSceneVersion(elements),
         });
       }, 100),
     []
   );
 
-  const renderExcalidraw = ({
-    data,
-    state,
-  }: PickState<
-    Context,
-    "READONLY" | "EDIT" | "SYNCING" | "DIRTY" | "SYNCING_DIRTY"
-  >) => (
+  const renderExcalidraw = (
+    context: PickState<
+      Context,
+      | "LOADED"
+      | "EDIT"
+      | "EDIT_CLIPBOARD"
+      | "SYNCING"
+      | "DIRTY"
+      | "SYNCING_DIRTY"
+    >
+  ) => (
     <div>
       <ExcalidrawCanvas
         key={id}
-        data={data}
+        data={context.data}
         onChange={onChange}
-        readOnly={state === "READONLY"}
+        onInitialized={() => {
+          createExcalidrawImage(
+            context.data.elements,
+            context.data.appState
+          ).then((image) => {
+            excalidraw.dispatch({ type: "INITIALIZED", image });
+          });
+        }}
       />
-      {state === "DIRTY" || state === "SYNCING" || state === "SYNCING_DIRTY" ? (
-        <div className="lds-dual-ring"></div>
-      ) : (
-        <button
-          className="edit"
-          onClick={() => excalidraw.dispatch({ type: "TOGGLE_READONLY_MODE" })}
-        >
-          {state === "READONLY" ? "edit" : "view"}
-        </button>
-      )}
+      <div
+        className="edit"
+        style={excalidraw.transform({
+          EDIT_CLIPBOARD: () => ({
+            backgroundColor: "yellowgreen",
+            color: "darkgreen",
+          }),
+          EDIT: () => ({
+            backgroundColor: "khaki",
+            color: "#333",
+          }),
+        })}
+        onClick={() => {
+          excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
+        }}
+      >
+        {excalidraw.transform({
+          SYNCING: () => <div className="lds-dual-ring"></div>,
+          SYNCING_DIRTY: () => <div className="lds-dual-ring"></div>,
+          DIRTY: () => <div className="lds-dual-ring"></div>,
+          EDIT: () => "Copy to clipboard",
+          EDIT_CLIPBOARD: () => "Copied!",
+        })}
+      </div>
     </div>
   );
 
@@ -329,8 +373,9 @@ export const Excalidraw = ({ id }: { id: string }) => {
     ERROR: ({ error }) => (
       <div className="center-wrapper">OMG, error, {error}</div>
     ),
+    LOADED: renderExcalidraw,
     EDIT: renderExcalidraw,
-    READONLY: renderExcalidraw,
+    EDIT_CLIPBOARD: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,

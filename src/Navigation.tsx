@@ -14,6 +14,7 @@ export type Context =
   | {
       state: "EXCALIDRAW";
       id: string;
+      userId: string;
     };
 
 export type Action =
@@ -22,6 +23,7 @@ export type Action =
     }
   | {
       type: "OPEN_EXCALIDRAW";
+      userId: string;
       id: string;
     }
   | {
@@ -32,16 +34,20 @@ export type Action =
       id: string;
     };
 
-export type RouterDispatch = React.Dispatch<Action>;
+export type NavigationDispatch = React.Dispatch<Action>;
 
-const OPEN_EXCALIDRAW = ({ id }: PickAction<Action, "OPEN_EXCALIDRAW">) => ({
+const OPEN_EXCALIDRAW = ({
+  id,
+  userId,
+}: PickAction<Action, "OPEN_EXCALIDRAW">) => ({
   state: "EXCALIDRAW" as const,
   id,
+  userId,
 });
 
 const OPEN_DASBHOARD = () => ({ state: "DASHBOARD" as const });
 
-export const Router = () => {
+export const Navigation = () => {
   const navigation = useNavigation();
   const [context, dispatch] = useReducer(
     (context: Context, action: Action) =>
@@ -68,8 +74,8 @@ export const Router = () => {
       dispatch({ type: "OPEN_DASBHOARD" });
     });
 
-    navigation.on("/:id", function ({ data }) {
-      dispatch({ type: "OPEN_EXCALIDRAW", id: data!.id });
+    navigation.on("/:userId/:id", function ({ data }) {
+      dispatch({ type: "OPEN_EXCALIDRAW", id: data!.id, userId: data!.userId });
     });
 
     navigation.resolve();
@@ -78,6 +84,6 @@ export const Router = () => {
   return transform(context, {
     INITIALIZING: () => null,
     DASHBOARD: () => <Dashboard />,
-    EXCALIDRAW: ({ id }) => <Excalidraw id={id} />,
+    EXCALIDRAW: ({ id, userId }) => <Excalidraw id={id} userId={userId} />,
   });
 };

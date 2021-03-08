@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import firebase from "firebase/app";
 import { useStates } from "react-states";
-import { EXCALIDRAWS_COLLECTION } from "./constants";
+import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
 
@@ -65,6 +65,8 @@ export const Dashboard = () => {
         CREATING_EXCALIDRAW: () => {
           firebase
             .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(auth.context.user.uid)
             .collection(EXCALIDRAWS_COLLECTION)
             .add({
               elements: JSON.stringify([]),
@@ -88,7 +90,7 @@ export const Dashboard = () => {
             });
         },
         EXCALIDRAW_CREATED: ({ id }) => {
-          navigation.navigate(`/${id}`);
+          navigation.navigate(`/${auth.context.user.uid}/${id}`);
         },
       }),
     [dashboard]
@@ -104,6 +106,11 @@ export const Dashboard = () => {
       >
         Create new Excalidraw
       </button>
+      {dashboard.transform({
+        ERROR: ({ error }) => (
+          <p style={{ color: "tomato" }}>There was an error: {error}</p>
+        ),
+      })}
     </div>
   );
 };

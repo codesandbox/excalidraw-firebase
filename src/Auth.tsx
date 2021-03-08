@@ -1,6 +1,5 @@
 import React from "react";
-import { transform } from "react-states";
-import { Router } from "./Router";
+import { Navigation } from "./Navigation";
 import { useAuth } from "./AuthProvider";
 
 export const Auth = () => {
@@ -19,7 +18,7 @@ export const Auth = () => {
         AUTHENTICATING: () => (
           <div className="center-wrapper">Authenticating...</div>
         ),
-        AUTHENTICATED: () => <Router />,
+        AUTHENTICATED: () => <Navigation />,
       })}
     </div>
   );

@@ -13,10 +13,19 @@ body {
 
 .edit {
   position: fixed;
-  top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eaeaea;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 2px;
+  height: 20px;
+  top: 2px;
   right: 40px;
   z-index: 999999;
   margin: 8px;
+  width: 150px;
 }
 
 .Island {
@@ -50,12 +59,7 @@ body {
 }
 
 .lds-dual-ring {
-  position: fixed;
-  top: 5px;
-  right: 5px;
   display: inline-block;
-  width: 80px;
-  height: 80px;
 }
 
 .lds-dual-ring:after {
@@ -63,7 +67,6 @@ body {
   display: block;
   width: 12px;
   height: 12px;
-  margin: 8px;
   border-radius: 50%;
   border: 4px solid #333;
   border-color: #333 transparent #333 transparent;
