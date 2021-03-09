@@ -4,8 +4,12 @@ import firebase from "firebase/app";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickState, useStates } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
-import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
-import { createExcalidrawImage } from "./utils";
+import {
+  EXCALIDRAWS_COLLECTION,
+  EXCALIDRAW_PREVIEWS_COLLECTION,
+  USERS_COLLECTION,
+} from "./constants";
+import { blobToBase64, createExcalidrawImage } from "./utils";
 
 type ExcalidrawData = {
   author: string;
@@ -266,6 +270,7 @@ export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
                 appState: JSON.stringify({
                   viewBackgroundColor: data.appState.viewBackgroundColor,
                 }),
+                last_updated: firebase.firestore.FieldValue.serverTimestamp(),
               },
               {
                 merge: true,
@@ -276,9 +281,25 @@ export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
             })
             .then((image) => {
               excalidraw.dispatch({ type: "SYNC_SUCCESS", image });
+              return image;
             })
             .catch(() => {
               excalidraw.dispatch({ type: "SYNC_ERROR" });
+            })
+            .then((image) => {
+              if (image) {
+                blobToBase64(image).then((src) => {
+                  firebase
+                    .firestore()
+                    .collection(USERS_COLLECTION)
+                    .doc(userId)
+                    .collection(EXCALIDRAW_PREVIEWS_COLLECTION)
+                    .doc(id)
+                    .set({
+                      src,
+                    });
+                });
+              }
             });
         },
         DIRTY: () => {
@@ -348,10 +369,19 @@ export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
             backgroundColor: "yellowgreen",
             color: "darkgreen",
           }),
-          EDIT: () => ({
-            backgroundColor: "khaki",
-            color: "#333",
+          DIRTY: () => ({
+            opacity: 0.5,
           }),
+          SYNCING: () => ({
+            opacity: 0.5,
+          }),
+          SYNCING_DIRTY: () => ({
+            opacity: 0.5,
+          }),
+          EDIT: () => undefined,
+          ERROR: () => undefined,
+          LOADED: () => undefined,
+          LOADING: () => undefined,
         })}
         onClick={() => {
           excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
@@ -363,6 +393,9 @@ export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
           DIRTY: () => <div className="lds-dual-ring"></div>,
           EDIT: () => "Copy to clipboard",
           EDIT_CLIPBOARD: () => "Copied!",
+          ERROR: () => null,
+          LOADED: () => null,
+          LOADING: () => null,
         })}
       </div>
     </div>

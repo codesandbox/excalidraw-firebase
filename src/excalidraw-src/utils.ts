@@ -37,12 +37,12 @@ export const capitalizeString = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1);
 
 export const isToolIcon = (
-  target: Element | EventTarget | null,
+  target: Element | EventTarget | null
 ): target is HTMLElement =>
   target instanceof HTMLElement && target.className.includes("ToolIcon");
 
 export const isInputLike = (
-  target: Element | EventTarget | null,
+  target: Element | EventTarget | null
 ): target is
   | HTMLInputElement
   | HTMLTextAreaElement
@@ -56,7 +56,7 @@ export const isInputLike = (
   target instanceof HTMLSelectElement;
 
 export const isWritableElement = (
-  target: Element | EventTarget | null,
+  target: Element | EventTarget | null
 ): target is
   | HTMLInputElement
   | HTMLTextAreaElement
@@ -120,7 +120,7 @@ export const measureText = (text: string, font: FontString) => {
 
 export const debounce = <T extends any[]>(
   fn: (...args: T) => void,
-  timeout: number,
+  timeout: number
 ) => {
   let handle = 0;
   let lastArgs: T;
@@ -174,7 +174,7 @@ export const setCursor = (canvas: HTMLCanvasElement | null, cursor: string) => {
 
 export const setCursorForShape = (
   canvas: HTMLCanvasElement | null,
-  shape: string,
+  shape: string
 ) => {
   if (!canvas) {
     return;
@@ -223,7 +223,7 @@ export const viewportCoordsToSceneCoords = (
     offsetTop: number;
     scrollX: number;
     scrollY: number;
-  },
+  }
 ) => {
   const invScale = 1 / zoom.value;
   const x = (clientX - zoom.translation.x - offsetLeft) * invScale - scrollX;
@@ -245,7 +245,7 @@ export const sceneCoordsToViewportCoords = (
     offsetTop: number;
     scrollX: number;
     scrollY: number;
-  },
+  }
 ) => {
   const x = (sceneX + scrollX + offsetLeft) * zoom.value + zoom.translation.x;
   const y = (sceneY + scrollY + offsetTop) * zoom.value + zoom.translation.y;
@@ -269,7 +269,7 @@ const RE_RTL_CHECK = new RegExp(`^[^${RS_LTR_CHARS}]*[${RS_RTL_CHARS}]`);
 export const isRTL = (text: string) => RE_RTL_CHECK.test(text);
 
 export const tupleToCoors = (
-  xyTuple: readonly [number, number],
+  xyTuple: readonly [number, number]
 ): { x: number; y: number } => {
   const [x, y] = xyTuple;
   return { x, y };
@@ -286,7 +286,7 @@ export const muteFSAbortError = (error?: Error) => {
 export const findIndex = <T>(
   array: readonly T[],
   cb: (element: T, index: number, array: readonly T[]) => boolean,
-  fromIndex: number = 0,
+  fromIndex: number = 0
 ) => {
   if (fromIndex < 0) {
     fromIndex = array.length + fromIndex;
@@ -304,7 +304,7 @@ export const findIndex = <T>(
 export const findLastIndex = <T>(
   array: readonly T[],
   cb: (element: T, index: number, array: readonly T[]) => boolean,
-  fromIndex: number = array.length - 1,
+  fromIndex: number = array.length - 1
 ) => {
   if (fromIndex < 0) {
     fromIndex = array.length + fromIndex;
@@ -351,7 +351,7 @@ export const resolvablePromise = <T>() => {
 export const withBatchedUpdates = <
   TFunction extends ((event: any) => void) | (() => void)
 >(
-  func: Parameters<TFunction>["length"] extends 0 | 1 ? TFunction : never,
+  func: Parameters<TFunction>["length"] extends 0 | 1 ? TFunction : never
 ) =>
   ((event) => {
     unstable_batchedUpdates(func as TFunction, event);

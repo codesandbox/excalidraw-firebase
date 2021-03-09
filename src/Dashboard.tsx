@@ -4,20 +4,34 @@ import { useStates } from "react-states";
 import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
+import { ExcalidrawPreview } from "./ExcalidrawPreview";
 
 type Context =
   | {
-      state: "IDLE";
+      state: "LOADING_PREVIEWS";
+    }
+  | {
+      state: "PREVIEWS_LOADED";
+      excalidrawIds: string[];
+      showCount: number;
     }
   | {
       state: "CREATING_EXCALIDRAW";
+      excalidrawIds: string[];
+      showCount: number;
     }
   | {
       state: "EXCALIDRAW_CREATED";
       id: string;
     }
   | {
-      state: "ERROR";
+      state: "PREVIEWS_ERROR";
+      error: string;
+    }
+  | {
+      state: "CREATE_EXCALIDRAW_ERROR";
+      excalidrawIds: string[];
+      showCount: number;
       error: string;
     };
 
@@ -32,6 +46,14 @@ type Action =
   | {
       type: "CREATE_EXCALIDRAW_ERROR";
       error: string;
+    }
+  | {
+      type: "LOADING_PREVIEWS_SUCCESS";
+      excalidrawIds: string[];
+    }
+  | {
+      type: "LOADING_PREVIEWS_ERROR";
+      error: string;
     };
 
 export const Dashboard = () => {
@@ -39,29 +61,81 @@ export const Dashboard = () => {
   const navigation = useNavigation();
   const dashboard = useStates<Context, Action>(
     {
-      IDLE: {
-        CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
+      LOADING_PREVIEWS: {
+        LOADING_PREVIEWS_SUCCESS: ({ excalidrawIds }) => ({
+          state: "PREVIEWS_LOADED",
+          excalidrawIds,
+          showCount: 10,
+        }),
+        LOADING_PREVIEWS_ERROR: ({ error }) => ({
+          state: "PREVIEWS_ERROR",
+          error,
+        }),
+      },
+      PREVIEWS_LOADED: {
+        CREATE_EXCALIDRAW: (_, { excalidrawIds, showCount }) => ({
+          state: "CREATING_EXCALIDRAW",
+          excalidrawIds,
+          showCount,
+        }),
       },
       CREATING_EXCALIDRAW: {
         CREATE_EXCALIDRAW_SUCCESS: ({ id }) => ({
           state: "EXCALIDRAW_CREATED",
           id,
         }),
-        CREATE_EXCALIDRAW_ERROR: ({ error }) => ({ state: "ERROR", error }),
+        CREATE_EXCALIDRAW_ERROR: ({ error }, { excalidrawIds, showCount }) => ({
+          state: "CREATE_EXCALIDRAW_ERROR",
+          error,
+          excalidrawIds,
+          showCount,
+        }),
+      },
+      PREVIEWS_ERROR: {
+        CREATE_EXCALIDRAW: () => ({
+          state: "CREATING_EXCALIDRAW",
+          excalidrawIds: [],
+          showCount: 0,
+        }),
+      },
+      CREATE_EXCALIDRAW_ERROR: {
+        CREATE_EXCALIDRAW: (_, { excalidrawIds, showCount }) => ({
+          state: "CREATING_EXCALIDRAW",
+          excalidrawIds,
+          showCount,
+        }),
       },
       EXCALIDRAW_CREATED: {},
-      ERROR: {
-        CREATE_EXCALIDRAW: () => ({ state: "CREATING_EXCALIDRAW" }),
-      },
     },
     {
-      state: "IDLE",
+      state: "LOADING_PREVIEWS",
     }
   );
 
   useEffect(
     () =>
       dashboard.exec({
+        LOADING_PREVIEWS: () => {
+          firebase
+            .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(auth.context.user.uid)
+            .collection(EXCALIDRAWS_COLLECTION)
+            .orderBy("last_updated", "desc")
+            .get()
+            .then((collection) => {
+              dashboard.dispatch({
+                type: "LOADING_PREVIEWS_SUCCESS",
+                excalidrawIds: collection.docs.map((doc) => doc.id),
+              });
+            })
+            .catch((error) => {
+              dashboard.dispatch({
+                type: "LOADING_PREVIEWS_ERROR",
+                error: error.message,
+              });
+            });
+        },
         CREATING_EXCALIDRAW: () => {
           firebase
             .firestore()
@@ -75,6 +149,7 @@ export const Dashboard = () => {
                 currentItemFontFamily: 1,
               }),
               author: auth.context.user.email,
+              last_updated: firebase.firestore.FieldValue.serverTimestamp(),
             })
             .then((ref) => {
               dashboard.dispatch({
@@ -96,19 +171,51 @@ export const Dashboard = () => {
     [dashboard]
   );
 
+  const createExcalidraw = (
+    <button
+      onClick={() => {
+        dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
+      }}
+    >
+      Create new Excalidraw
+    </button>
+  );
+
+  const previews =
+    dashboard.context.state === "PREVIEWS_LOADED" ||
+    dashboard.context.state === "CREATE_EXCALIDRAW_ERROR" ? (
+      <ul>
+        {dashboard.context.excalidrawIds.map((id) => (
+          <ExcalidrawPreview key={id} id={id} />
+        ))}
+      </ul>
+    ) : null;
+
   return (
     <div className="center-wrapper">
       <h1>Dashboard</h1>
-      <button
-        onClick={() => {
-          dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
-        }}
-      >
-        Create new Excalidraw
-      </button>
       {dashboard.transform({
-        ERROR: ({ error }) => (
-          <p style={{ color: "tomato" }}>There was an error: {error}</p>
+        CREATING_EXCALIDRAW: () => "..creating Excalidraw...",
+        PREVIEWS_ERROR: ({ error }) => (
+          <>
+            {createExcalidraw}
+            <p style={{ color: "tomato" }}>There was an error: {error}</p>
+          </>
+        ),
+        CREATE_EXCALIDRAW_ERROR: ({ error }) => (
+          <>
+            {createExcalidraw}
+            <p style={{ color: "tomato" }}>There was an error: {error}</p>
+            {previews}
+          </>
+        ),
+        EXCALIDRAW_CREATED: () => "...redirecting...",
+        LOADING_PREVIEWS: () => "...loading previews...",
+        PREVIEWS_LOADED: () => (
+          <>
+            {createExcalidraw}
+            {previews}
+          </>
         ),
       })}
     </div>

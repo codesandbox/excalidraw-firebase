@@ -35,25 +35,25 @@ export const exportToCanvas = (
   },
   createCanvas: (
     width: number,
-    height: number,
+    height: number
   ) => { canvas: HTMLCanvasElement; scale: number } = (width, height) => {
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = width * scale;
     tempCanvas.height = height * scale;
     return { canvas: tempCanvas, scale };
-  },
+  }
 ) => {
   const sceneElements = getElementsAndWatermark(elements, shouldAddWatermark);
 
   const [minX, minY, width, height] = getCanvasSize(
     sceneElements,
     exportPadding,
-    shouldAddWatermark,
+    shouldAddWatermark
   );
 
   const { canvas: tempCanvas, scale: newScale = scale } = createCanvas(
     width,
-    height,
+    height
   );
 
   renderScene(
@@ -80,7 +80,7 @@ export const exportToCanvas = (
       renderSelection: false,
       renderOptimizations: false,
       renderGrid: false,
-    },
+    }
   );
 
   return tempCanvas;
@@ -104,14 +104,14 @@ export const exportToSvg = (
     exportWithDarkMode?: boolean;
     shouldAddWatermark: boolean;
     metadata?: string;
-  },
+  }
 ): SVGSVGElement => {
   const sceneElements = getElementsAndWatermark(elements, shouldAddWatermark);
 
   const [minX, minY, width, height] = getCanvasSize(
     sceneElements,
     exportPadding,
-    shouldAddWatermark,
+    shouldAddWatermark
   );
 
   // initialze SVG root
@@ -164,7 +164,7 @@ export const exportToSvg = (
 
 const getElementsAndWatermark = (
   elements: readonly NonDeletedExcalidrawElement[],
-  shouldAddWatermark: boolean,
+  shouldAddWatermark: boolean
 ): readonly NonDeletedExcalidrawElement[] => {
   let _elements = [...elements];
 
@@ -200,7 +200,7 @@ const getWatermarkElement = (maxX: number, maxY: number) => {
 const getCanvasSize = (
   elements: readonly NonDeletedExcalidrawElement[],
   exportPadding: number,
-  shouldAddWatermark: boolean,
+  shouldAddWatermark: boolean
 ): [number, number, number, number] => {
   const [minX, minY, maxX, maxY] = getCommonBounds(elements);
   const width = distance(minX, maxX) + exportPadding * 2;
@@ -216,14 +216,14 @@ export const getExportSize = (
   elements: readonly NonDeletedExcalidrawElement[],
   exportPadding: number,
   shouldAddWatermark: boolean,
-  scale: number,
+  scale: number
 ): [number, number] => {
   const sceneElements = getElementsAndWatermark(elements, shouldAddWatermark);
 
   const [, , width, height] = getCanvasSize(
     sceneElements,
     exportPadding,
-    shouldAddWatermark,
+    shouldAddWatermark
   ).map((dimension) => Math.trunc(dimension * scale));
 
   return [width, height];

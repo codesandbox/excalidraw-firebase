@@ -51,6 +51,27 @@ body {
   position: relative;
 }
 
+ul {
+  list-style-type: none;
+  display: flex;
+}
+
+ul > li {
+  border-radius: 3px;
+  border: 1px solid #eaeaea;
+  display: flex;
+  margin: 1rem;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  font-size: 11px;
+  height: 100px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 :root[dir="ltr"]
   .excalidraw
   .layer-ui__wrapper

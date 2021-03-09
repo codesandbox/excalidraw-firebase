@@ -19,6 +19,9 @@ export const Auth = () => {
           <div className="center-wrapper">Authenticating...</div>
         ),
         AUTHENTICATED: () => <Navigation />,
+        SIGNING_IN: () => (
+          <div className="center-wrapper">Authenticating...</div>
+        ),
       })}
     </div>
   );
