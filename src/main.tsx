@@ -4,6 +4,7 @@ import config from "./firebase.config.json";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 import "./index.css";
 import { Auth } from "./Auth";
 import { AuthProvider } from "./AuthProvider";

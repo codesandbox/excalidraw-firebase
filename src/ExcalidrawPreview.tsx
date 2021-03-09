@@ -1,11 +1,7 @@
 import * as React from "react";
 import { useStates } from "react-states";
 import firebase from "firebase/app";
-import {
-  EXCALIDRAWS_COLLECTION,
-  EXCALIDRAW_PREVIEWS_COLLECTION,
-  USERS_COLLECTION,
-} from "./constants";
+import { USERS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
 
@@ -60,24 +56,15 @@ export const ExcalidrawPreview = ({ id }: { id: string }) => {
       preview.exec({
         LOADING_PREVIEW: () => {
           firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(auth.context.user.uid)
-            .collection(EXCALIDRAW_PREVIEWS_COLLECTION)
-            .doc(id)
-            .get()
-            .then((doc) => {
-              if (doc.exists) {
-                preview.dispatch({
-                  type: "LOADING_PREVIEW_SUCCESS",
-                  src: doc.data()!.src,
-                });
-              } else {
-                preview.dispatch({
-                  type: "LOADING_PREVIEW_ERROR",
-                  error: "Preview does not exist",
-                });
-              }
+            .storage()
+            .ref()
+            .child(`previews/${auth.context.user.uid}/${id}`)
+            .getDownloadURL()
+            .then((src) => {
+              preview.dispatch({
+                type: "LOADING_PREVIEW_SUCCESS",
+                src,
+              });
             })
             .catch((error) => {
               preview.dispatch({
@@ -100,6 +87,15 @@ export const ExcalidrawPreview = ({ id }: { id: string }) => {
         }}
       />
     ),
-    LOADING_ERROR: ({ error }) => <li style={{ color: "tomato" }}>{error}</li>,
+    LOADING_ERROR: ({ error }) => (
+      <li
+        style={{ color: "tomato" }}
+        onClick={() => {
+          navigation.navigate(`/${auth.context.user.uid}/${id}`);
+        }}
+      >
+        {error}
+      </li>
+    ),
   });
 };
