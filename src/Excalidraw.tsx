@@ -392,9 +392,15 @@ export const Excalidraw = ({ id, userId }: { id: string; userId: string }) => {
   );
 
   return excalidraw.transform({
-    LOADING: () => <div className="center-wrapper">Loading...</div>,
+    LOADING: () => (
+      <div className="center-wrapper">
+        <h1>Loading...</h1>
+      </div>
+    ),
     ERROR: ({ error }) => (
-      <div className="center-wrapper">OMG, error, {error}</div>
+      <div className="center-wrapper">
+        <h1>OMG, error, {error}</h1>
+      </div>
     ),
     LOADED: renderExcalidraw,
     EDIT: renderExcalidraw,

@@ -64,12 +64,26 @@ ul > li {
   padding: 1rem;
   align-items: center;
   justify-content: center;
-  width: 100px;
+  width: 200px;
   font-size: 11px;
-  height: 100px;
+  height: 200px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+ul > li:hover {
+  background-color: #fafafa;
+}
+
+.create-new-excalidraw {
+  font-size: 18px;
+  font-weight: bold;
+  border: 1px dashed #eaeaea;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 :root[dir="ltr"]

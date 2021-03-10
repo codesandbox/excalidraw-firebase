@@ -89,7 +89,7 @@ export const ExcalidrawPreview = ({ id }: { id: string }) => {
     ),
     LOADING_ERROR: ({ error }) => (
       <li
-        style={{ color: "tomato" }}
+        style={{ color: "tomato", overflow: "hidden" }}
         onClick={() => {
           navigation.navigate(`/${auth.context.user.uid}/${id}`);
         }}

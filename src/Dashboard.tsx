@@ -172,51 +172,49 @@ export const Dashboard = () => {
   );
 
   const createExcalidraw = (
-    <button
+    <li
+      className="create-new-excalidraw"
       onClick={() => {
         dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
       }}
     >
       Create new Excalidraw
-    </button>
+    </li>
   );
 
   const previews =
     dashboard.context.state === "PREVIEWS_LOADED" ||
     dashboard.context.state === "CREATE_EXCALIDRAW_ERROR" ? (
       <ul>
-        {dashboard.context.excalidrawIds.map((id) => (
-          <ExcalidrawPreview key={id} id={id} />
-        ))}
+        {createExcalidraw}
+        {dashboard.context.excalidrawIds
+          .slice(0, dashboard.context.showCount)
+          .map((id) => (
+            <ExcalidrawPreview key={id} id={id} />
+          ))}
       </ul>
-    ) : null;
+    ) : (
+      <ul>{createExcalidraw}</ul>
+    );
 
   return (
     <div className="center-wrapper">
-      <h1>Dashboard</h1>
       {dashboard.transform({
-        CREATING_EXCALIDRAW: () => "..creating Excalidraw...",
+        CREATING_EXCALIDRAW: () => <h1>..creating Excalidraw...</h1>,
         PREVIEWS_ERROR: ({ error }) => (
           <>
-            {createExcalidraw}
             <p style={{ color: "tomato" }}>There was an error: {error}</p>
           </>
         ),
         CREATE_EXCALIDRAW_ERROR: ({ error }) => (
           <>
-            {createExcalidraw}
             <p style={{ color: "tomato" }}>There was an error: {error}</p>
             {previews}
           </>
         ),
-        EXCALIDRAW_CREATED: () => "...redirecting...",
-        LOADING_PREVIEWS: () => "...loading previews...",
-        PREVIEWS_LOADED: () => (
-          <>
-            {createExcalidraw}
-            {previews}
-          </>
-        ),
+        EXCALIDRAW_CREATED: () => <h1>...redirecting...</h1>,
+        LOADING_PREVIEWS: () => <h1>...loading previews...</h1>,
+        PREVIEWS_LOADED: () => previews,
       })}
     </div>
   );

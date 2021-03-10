@@ -16,11 +16,15 @@ export const Auth = () => {
           </div>
         ),
         AUTHENTICATING: () => (
-          <div className="center-wrapper">Authenticating...</div>
+          <div className="center-wrapper">
+            <h1>...authenticating...</h1>
+          </div>
         ),
         AUTHENTICATED: () => <Navigation />,
         SIGNING_IN: () => (
-          <div className="center-wrapper">Authenticating...</div>
+          <div className="center-wrapper">
+            <h1>...signing in...</h1>
+          </div>
         ),
       })}
     </div>
