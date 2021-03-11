@@ -2,6 +2,7 @@ import React, { useEffect, useReducer } from "react";
 import { PickAction, transform, transition } from "react-states";
 import { Dashboard } from "./Dashboard";
 import { Excalidraw } from "./Excalidraw";
+import { ExcalidrawProvider } from "./ExcalidrawProvider";
 import { useNavigation } from "./NavigationProvider";
 
 export type Context =
@@ -84,6 +85,10 @@ export const Navigation = () => {
   return transform(context, {
     INITIALIZING: () => null,
     DASHBOARD: () => <Dashboard />,
-    EXCALIDRAW: ({ id, userId }) => <Excalidraw id={id} userId={userId} />,
+    EXCALIDRAW: ({ id, userId }) => (
+      <ExcalidrawProvider id={id} userId={userId}>
+        <Excalidraw />
+      </ExcalidrawProvider>
+    ),
   });
 };

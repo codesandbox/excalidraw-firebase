@@ -17,7 +17,7 @@ body {
   align-items: center;
   justify-content: center;
   background-color: #eaeaea;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   cursor: pointer;
   border-radius: 2px;
   height: 20px;
@@ -25,7 +25,7 @@ body {
   right: 40px;
   z-index: 999999;
   margin: 8px;
-  width: 150px;
+  width: 30px;
 }
 
 .Island {
@@ -49,41 +49,6 @@ body {
   height: 100vh;
   margin: 0;
   position: relative;
-}
-
-ul {
-  list-style-type: none;
-  display: flex;
-}
-
-ul > li {
-  border-radius: 3px;
-  border: 1px solid #eaeaea;
-  display: flex;
-  margin: 1rem;
-  padding: 1rem;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  font-size: 11px;
-  height: 200px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-ul > li:hover {
-  background-color: #fafafa;
-}
-
-.create-new-excalidraw {
-  font-size: 18px;
-  font-weight: bold;
-  border: 1px dashed #eaeaea;
-  padding: 2rem;
-  box-sizing: border-box;
 }
 
 :root[dir="ltr"]

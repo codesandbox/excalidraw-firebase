@@ -9,7 +9,13 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.4.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/react-fontawesome": "^0.1.14",
+    "@radix-ui/react-popover": "^0.0.8",
+    "@stitches/react": "0.1.0-canary.16",
     "@types/lodash.debounce": "^4.0.6",
+    "date-fns": "^2.19.0",
     "firebase": "^8.2.9",
     "lodash.debounce": "^4.0.8",
     "navigo": "^8.8.12",

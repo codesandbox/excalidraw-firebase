@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useStates } from "react-states";
 import firebase from "firebase/app";
-import { USERS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
+import { ExcalidrawMetaData } from "./types";
+import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 type Context =
   | {
@@ -28,7 +29,11 @@ type Action =
       error: string;
     };
 
-export const ExcalidrawPreview = ({ id }: { id: string }) => {
+export const ExcalidrawPreview = ({
+  metadata,
+}: {
+  metadata: ExcalidrawMetaData;
+}) => {
   const auth = useAuthenticatedAuth();
   const navigation = useNavigation();
   const preview = useStates<Context, Action>(
@@ -58,7 +63,7 @@ export const ExcalidrawPreview = ({ id }: { id: string }) => {
           firebase
             .storage()
             .ref()
-            .child(`previews/${auth.context.user.uid}/${id}`)
+            .child(`previews/${auth.context.user.uid}/${metadata.id}`)
             .getDownloadURL()
             .then((src) => {
               preview.dispatch({
@@ -83,15 +88,26 @@ export const ExcalidrawPreview = ({ id }: { id: string }) => {
       <li
         style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}
         onClick={() => {
-          navigation.navigate(`/${auth.context.user.uid}/${id}`);
+          navigation.navigate(`/${auth.context.user.uid}/${metadata.id}`);
         }}
-      />
+      >
+        <span
+          style={{
+            backgroundColor: "#333",
+            color: "#EAEAEA",
+            padding: "0.25rem 0.5rem",
+            borderRadius: "3px",
+          }}
+        >
+          {formatDistanceToNow(metadata.last_updated.toDate())} ago
+        </span>
+      </li>
     ),
     LOADING_ERROR: ({ error }) => (
       <li
         style={{ color: "tomato", overflow: "hidden" }}
         onClick={() => {
-          navigation.navigate(`/${auth.context.user.uid}/${id}`);
+          navigation.navigate(`/${auth.context.user.uid}/${metadata.id}`);
         }}
       >
         {error}

@@ -5,196 +5,94 @@ import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
 import { useNavigation } from "./NavigationProvider";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
+import { ExcalidrawMetaData } from "./types";
+import { useDashboard } from "./DashboardProvider";
+import { styled } from "./stitches.config";
+/*
 
-type Context =
-  | {
-      state: "LOADING_PREVIEWS";
-    }
-  | {
-      state: "PREVIEWS_LOADED";
-      excalidrawIds: string[];
-      showCount: number;
-    }
-  | {
-      state: "CREATING_EXCALIDRAW";
-      excalidrawIds: string[];
-      showCount: number;
-    }
-  | {
-      state: "EXCALIDRAW_CREATED";
-      id: string;
-    }
-  | {
-      state: "PREVIEWS_ERROR";
-      error: string;
-    }
-  | {
-      state: "CREATE_EXCALIDRAW_ERROR";
-      excalidrawIds: string[];
-      showCount: number;
-      error: string;
-    };
+ul {
 
-type Action =
-  | {
-      type: "CREATE_EXCALIDRAW";
-    }
-  | {
-      type: "CREATE_EXCALIDRAW_SUCCESS";
-      id: string;
-    }
-  | {
-      type: "CREATE_EXCALIDRAW_ERROR";
-      error: string;
-    }
-  | {
-      type: "LOADING_PREVIEWS_SUCCESS";
-      excalidrawIds: string[];
-    }
-  | {
-      type: "LOADING_PREVIEWS_ERROR";
-      error: string;
-    };
+}
+
+ul > li {
+  border-radius: 3px;
+  border: 1px solid #eaeaea;
+  display: flex;
+  margin: 1rem;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  font-size: 11px;
+  height: 200px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+ul > li:hover {
+  background-color: #fafafa;
+}
+*/
+
+const List = styled("ul", {
+  listStyleType: "none",
+  display: "flex",
+  li: {
+    borderRadius: "3px",
+    border: "1px solid #eaeaea",
+    display: "flex",
+    margin: "1rem",
+    padding: "1rem",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "200px",
+    fontSize: "11px",
+    height: "200px",
+    backgroundSize: "contain",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center",
+    boxSizing: "border-box",
+    cursor: "pointer",
+  },
+});
+
+const CreateNewExcalidraw = styled("li", {
+  fontSize: "18px",
+  fontWeight: "bold",
+  border: "1px dashed #eaeaea",
+  padding: "2rem",
+  boxSizing: "border-box",
+});
 
 export const Dashboard = () => {
-  const auth = useAuthenticatedAuth();
-  const navigation = useNavigation();
-  const dashboard = useStates<Context, Action>(
-    {
-      LOADING_PREVIEWS: {
-        LOADING_PREVIEWS_SUCCESS: ({ excalidrawIds }) => ({
-          state: "PREVIEWS_LOADED",
-          excalidrawIds,
-          showCount: 10,
-        }),
-        LOADING_PREVIEWS_ERROR: ({ error }) => ({
-          state: "PREVIEWS_ERROR",
-          error,
-        }),
-      },
-      PREVIEWS_LOADED: {
-        CREATE_EXCALIDRAW: (_, { excalidrawIds, showCount }) => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidrawIds,
-          showCount,
-        }),
-      },
-      CREATING_EXCALIDRAW: {
-        CREATE_EXCALIDRAW_SUCCESS: ({ id }) => ({
-          state: "EXCALIDRAW_CREATED",
-          id,
-        }),
-        CREATE_EXCALIDRAW_ERROR: ({ error }, { excalidrawIds, showCount }) => ({
-          state: "CREATE_EXCALIDRAW_ERROR",
-          error,
-          excalidrawIds,
-          showCount,
-        }),
-      },
-      PREVIEWS_ERROR: {
-        CREATE_EXCALIDRAW: () => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidrawIds: [],
-          showCount: 0,
-        }),
-      },
-      CREATE_EXCALIDRAW_ERROR: {
-        CREATE_EXCALIDRAW: (_, { excalidrawIds, showCount }) => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidrawIds,
-          showCount,
-        }),
-      },
-      EXCALIDRAW_CREATED: {},
-    },
-    {
-      state: "LOADING_PREVIEWS",
-    }
-  );
-
-  useEffect(
-    () =>
-      dashboard.exec({
-        LOADING_PREVIEWS: () => {
-          firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(auth.context.user.uid)
-            .collection(EXCALIDRAWS_COLLECTION)
-            .orderBy("last_updated", "desc")
-            .get()
-            .then((collection) => {
-              dashboard.dispatch({
-                type: "LOADING_PREVIEWS_SUCCESS",
-                excalidrawIds: collection.docs.map((doc) => doc.id),
-              });
-            })
-            .catch((error) => {
-              dashboard.dispatch({
-                type: "LOADING_PREVIEWS_ERROR",
-                error: error.message,
-              });
-            });
-        },
-        CREATING_EXCALIDRAW: () => {
-          firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(auth.context.user.uid)
-            .collection(EXCALIDRAWS_COLLECTION)
-            .add({
-              elements: JSON.stringify([]),
-              appState: JSON.stringify({
-                viewBackgroundColor: "#FFF",
-                currentItemFontFamily: 1,
-              }),
-              author: auth.context.user.email,
-              last_updated: firebase.firestore.FieldValue.serverTimestamp(),
-            })
-            .then((ref) => {
-              dashboard.dispatch({
-                type: "CREATE_EXCALIDRAW_SUCCESS",
-                id: ref.id,
-              });
-            })
-            .catch((error) => {
-              dashboard.dispatch({
-                type: "CREATE_EXCALIDRAW_ERROR",
-                error: error.message,
-              });
-            });
-        },
-        EXCALIDRAW_CREATED: ({ id }) => {
-          navigation.navigate(`/${auth.context.user.uid}/${id}`);
-        },
-      }),
-    [dashboard]
-  );
+  const dashboard = useDashboard();
 
   const createExcalidraw = (
-    <li
-      className="create-new-excalidraw"
+    <CreateNewExcalidraw
       onClick={() => {
         dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
       }}
     >
       Create new Excalidraw
-    </li>
+    </CreateNewExcalidraw>
   );
 
   const previews =
     dashboard.context.state === "PREVIEWS_LOADED" ||
     dashboard.context.state === "CREATE_EXCALIDRAW_ERROR" ? (
-      <ul>
+      <List>
         {createExcalidraw}
-        {dashboard.context.excalidrawIds
+        {dashboard.context.excalidraws
           .slice(0, dashboard.context.showCount)
-          .map((id) => (
-            <ExcalidrawPreview key={id} id={id} />
+          .map((excalidraw) => (
+            <ExcalidrawPreview key={excalidraw.id} metadata={excalidraw} />
           ))}
-      </ul>
+      </List>
     ) : (
-      <ul>{createExcalidraw}</ul>
+      <List>{createExcalidraw}</List>
     );
 
   return (
