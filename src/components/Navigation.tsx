@@ -1,10 +1,10 @@
-import React, { useEffect, useReducer } from "react";
-import { PickAction, transform, transition } from "react-states";
+import React, { useEffect } from "react";
+import { PickAction, useStates } from "react-states";
 import { Dashboard } from "./Dashboard";
-import { DashboardProvider } from "./DashboardProvider";
+import { DashboardProvider } from "../providers/DashboardProvider";
 import { Excalidraw } from "./Excalidraw";
-import { ExcalidrawProvider } from "./ExcalidrawProvider";
-import { useNavigation } from "./NavigationProvider";
+import { ExcalidrawProvider } from "../providers/ExcalidrawProvider";
+import { useRouter } from "../providers/RouterProvider";
 
 export type Context =
   | {
@@ -50,40 +50,43 @@ const OPEN_EXCALIDRAW = ({
 const OPEN_DASBHOARD = () => ({ state: "DASHBOARD" as const });
 
 export const Navigation = () => {
-  const navigation = useNavigation();
-  const [context, dispatch] = useReducer(
-    (context: Context, action: Action) =>
-      transition(context, action, {
-        INITIALIZING: {
-          OPEN_DASBHOARD,
-          OPEN_EXCALIDRAW,
-        },
-        DASHBOARD: {
-          OPEN_EXCALIDRAW,
-        },
-        EXCALIDRAW: {
-          OPEN_DASBHOARD,
-          OPEN_EXCALIDRAW,
-        },
-      }),
+  const router = useRouter();
+  const navigation = useStates<Context, Action>(
+    {
+      INITIALIZING: {
+        OPEN_DASBHOARD,
+        OPEN_EXCALIDRAW,
+      },
+      DASHBOARD: {
+        OPEN_EXCALIDRAW,
+      },
+      EXCALIDRAW: {
+        OPEN_DASBHOARD,
+        OPEN_EXCALIDRAW,
+      },
+    },
     {
       state: "INITIALIZING",
     }
   );
 
   useEffect(() => {
-    navigation.on("/", function () {
-      dispatch({ type: "OPEN_DASBHOARD" });
+    router.on("/", function () {
+      navigation.dispatch({ type: "OPEN_DASBHOARD" });
     });
 
-    navigation.on("/:userId/:id", function ({ data }) {
-      dispatch({ type: "OPEN_EXCALIDRAW", id: data!.id, userId: data!.userId });
+    router.on<{ userId: string; id: string }>("/:userId/:id", (params) => {
+      navigation.dispatch({
+        type: "OPEN_EXCALIDRAW",
+        id: params.id,
+        userId: params.userId,
+      });
     });
 
-    navigation.resolve();
+    router.resolve();
   }, []);
 
-  return transform(context, {
+  return navigation.transform({
     INITIALIZING: () => null,
     DASHBOARD: () => (
       <DashboardProvider>

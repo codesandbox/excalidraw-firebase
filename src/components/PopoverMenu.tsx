@@ -1,5 +1,5 @@
 import * as React from "react";
-import { styled } from "./stitches.config";
+import { styled } from "../stitches.config";
 import * as Popover from "@radix-ui/react-popover";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV, faTimes } from "@fortawesome/free-solid-svg-icons";

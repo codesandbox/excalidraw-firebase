@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useStates } from "react-states";
 import firebase from "firebase/app";
-import { useAuthenticatedAuth } from "./AuthProvider";
-import { useNavigation } from "./NavigationProvider";
-import { ExcalidrawMetaData } from "./types";
+import { useAuthenticatedAuth } from "../providers/AuthProvider";
+import { useRouter } from "../providers/RouterProvider";
+import { ExcalidrawMetaData } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 type Context =
@@ -35,7 +35,7 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetaData;
 }) => {
   const auth = useAuthenticatedAuth();
-  const navigation = useNavigation();
+  const router = useRouter();
   const preview = useStates<Context, Action>(
     {
       LOADING_PREVIEW: {
@@ -88,7 +88,7 @@ export const ExcalidrawPreview = ({
       <li
         style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}
         onClick={() => {
-          navigation.navigate(`/${auth.context.user.uid}/${metadata.id}`);
+          router.navigate(`/${auth.context.user.uid}/${metadata.id}`);
         }}
       >
         <span
@@ -107,7 +107,7 @@ export const ExcalidrawPreview = ({
       <li
         style={{ color: "tomato", overflow: "hidden" }}
         onClick={() => {
-          navigation.navigate(`/${auth.context.user.uid}/${metadata.id}`);
+          router.navigate(`/${auth.context.user.uid}/${metadata.id}`);
         }}
       >
         {error}

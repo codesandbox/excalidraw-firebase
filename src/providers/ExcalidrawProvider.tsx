@@ -1,18 +1,13 @@
-import React, { useEffect, useMemo } from "react";
-import debounce from "lodash.debounce";
+import React, { useEffect } from "react";
 import firebase from "firebase/app";
-import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickState, States, useStates } from "react-states";
-import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
+import { States, useStates } from "react-states";
 import {
   EXCALIDRAWS_COLLECTION,
   EXCALIDRAWS_DATA_COLLECTION,
   USERS_COLLECTION,
-} from "./constants";
-import { createExcalidrawImage } from "./utils";
-import { ExcalidrawData, ExcalidrawMetaData } from "./types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboard } from "@fortawesome/free-solid-svg-icons";
+} from "../constants";
+import { createExcalidrawImage } from "../utils";
+import { ExcalidrawData, ExcalidrawMetaData } from "../types";
 
 export type Context =
   | {

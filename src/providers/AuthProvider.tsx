@@ -31,13 +31,21 @@ type Action =
       error: string;
     };
 
-function signInGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-
-  return firebase.auth().signInWithPopup(provider);
-}
-
 const authContext = createContext({} as States<Context, Action>);
+
+export const useAuth = () => useContext(authContext);
+
+export const useAuthenticatedAuth = () => {
+  const auth = useAuth();
+
+  if (auth.is("AUTHENTICATED")) {
+    return auth;
+  }
+
+  throw new Error(
+    "You are not using the Auth provider in an Authenticated component"
+  );
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useStates<Context, Action>(
@@ -114,16 +122,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return <authContext.Provider value={auth}>{children}</authContext.Provider>;
 };
 
-export const useAuth = () => useContext(authContext);
+function signInGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
 
-export const useAuthenticatedAuth = () => {
-  const auth = useAuth();
-
-  if (auth.is("AUTHENTICATED")) {
-    return auth;
-  }
-
-  throw new Error(
-    "You are not using the Auth provider in an Authenticated component"
-  );
-};
+  return firebase.auth().signInWithPopup(provider);
+}

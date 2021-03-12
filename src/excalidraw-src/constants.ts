@@ -1,5 +1,4 @@
 import { FontFamily } from "./element/types";
-import cssVariables from "./css/variables.module.scss";
 
 export const APP_NAME = "Excalidraw";
 
@@ -68,11 +67,11 @@ export const FONT_FAMILY = {
 } as const;
 
 export const WINDOWS_EMOJI_FALLBACK_FONT = "Segoe UI Emoji";
-
-export const DEFAULT_FONT_SIZE = 20;
 export const DEFAULT_FONT_FAMILY: FontFamily = 1;
-export const DEFAULT_TEXT_ALIGN = "left";
 export const DEFAULT_VERTICAL_ALIGN = "top";
+export const DEFAULT_FONT_SIZE = 20;
+
+export const DEFAULT_TEXT_ALIGN = "left";
 export const DEFAULT_VERSION = "{version}";
 
 export const CANVAS_ONLY_ACTIONS = ["selectAll"];
@@ -109,4 +108,4 @@ export const MODES = {
   GRID: "gridMode",
 };
 
-export const APPEARANCE_FILTER = cssVariables.appearanceFilter;
+export const APPEARANCE_FILTER = "";

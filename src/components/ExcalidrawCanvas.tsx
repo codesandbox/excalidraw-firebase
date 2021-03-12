@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ExcalidrawComponent from "@excalidraw/excalidraw";
-import { resolvablePromise } from "./excalidraw-src/utils";
+import { resolvablePromise } from "../excalidrawApi";
 
 export const ExcalidrawCanvas = React.memo(
   ({

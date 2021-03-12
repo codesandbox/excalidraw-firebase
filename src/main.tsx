@@ -6,18 +6,29 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 import "./index.css";
-import { Auth } from "./Auth";
-import { AuthProvider } from "./AuthProvider";
-import { NavigationProvider } from "./NavigationProvider";
+import { Auth } from "./components/Auth";
+import { AuthProvider } from "./providers/AuthProvider";
+import { RouterProvider } from "./providers/RouterProvider";
+import Navigo from "navigo";
 
 firebase.initializeApp(config);
+
+const router = new Navigo("/");
 
 ReactDOM.render(
   <React.StrictMode>
     <AuthProvider>
-      <NavigationProvider>
+      <RouterProvider
+        router={{
+          on: (url, cb) => {
+            router.on(url, ({ data }) => cb(data || ({} as any)));
+          },
+          resolve: () => router.resolve(),
+          navigate: (url) => router.navigate(url),
+        }}
+      >
         <Auth />
-      </NavigationProvider>
+      </RouterProvider>
     </AuthProvider>
   </React.StrictMode>,
   document.getElementById("root")

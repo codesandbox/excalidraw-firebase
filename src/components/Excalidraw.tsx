@@ -3,10 +3,10 @@ import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickState } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
-import { createExcalidrawImage } from "./utils";
+import { createExcalidrawImage } from "../utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { Context, useExcalidraw } from "./ExcalidrawProvider";
+import { Context, useExcalidraw } from "../providers/ExcalidrawProvider";
 import { PopoverMenu } from "./PopoverMenu";
 
 export const Excalidraw = () => {

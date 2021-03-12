@@ -1,41 +1,7 @@
-import React, { useEffect } from "react";
-import firebase from "firebase/app";
-import { useStates } from "react-states";
-import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
-import { useAuthenticatedAuth } from "./AuthProvider";
-import { useNavigation } from "./NavigationProvider";
+import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
-import { ExcalidrawMetaData } from "./types";
-import { useDashboard } from "./DashboardProvider";
-import { styled } from "./stitches.config";
-/*
-
-ul {
-
-}
-
-ul > li {
-  border-radius: 3px;
-  border: 1px solid #eaeaea;
-  display: flex;
-  margin: 1rem;
-  padding: 1rem;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  font-size: 11px;
-  height: 200px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-ul > li:hover {
-  background-color: #fafafa;
-}
-*/
+import { useDashboard } from "../providers/DashboardProvider";
+import { styled } from "../stitches.config";
 
 const List = styled("ul", {
   listStyleType: "none",
@@ -56,6 +22,9 @@ const List = styled("ul", {
     backgroundPosition: "center",
     boxSizing: "border-box",
     cursor: "pointer",
+    ":hover": {
+      backgroundColor: "#fafafa ",
+    },
   },
 });
 

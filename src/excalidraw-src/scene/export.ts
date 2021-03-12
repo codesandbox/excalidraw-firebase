@@ -1,21 +1,13 @@
 import rough from "roughjs/bin/rough";
-import oc from "open-color";
-import { newTextElement } from "../element";
-import { NonDeletedExcalidrawElement } from "../element/types";
+import { FontFamily, NonDeletedExcalidrawElement } from "../element/types";
 import { getCommonBounds } from "../element/bounds";
-import { renderScene, renderSceneToSvg } from "../renderer/renderScene";
-import { distance, SVG_NS } from "../utils";
+import { renderScene } from "../renderer/renderScene";
+import { distance } from "../utils";
 import { AppState } from "../types";
-import { t } from "../i18n";
-import {
-  DEFAULT_FONT_FAMILY,
-  DEFAULT_VERTICAL_ALIGN,
-  APPEARANCE_FILTER,
-} from "../constants";
+
 import { getDefaultAppState } from "../appState";
 
 export const SVG_EXPORT_TAG = `<!-- svg-source:excalidraw -->`;
-const WATERMARK_HEIGHT = 16;
 
 export const exportToCanvas = (
   elements: readonly NonDeletedExcalidrawElement[],
@@ -43,7 +35,7 @@ export const exportToCanvas = (
     return { canvas: tempCanvas, scale };
   }
 ) => {
-  const sceneElements = getElementsAndWatermark(elements, shouldAddWatermark);
+  const sceneElements = elements;
 
   const [minX, minY, width, height] = getCanvasSize(
     sceneElements,
@@ -86,6 +78,7 @@ export const exportToCanvas = (
   return tempCanvas;
 };
 
+/*
 export const exportToSvg = (
   elements: readonly NonDeletedExcalidrawElement[],
   {
@@ -161,40 +154,7 @@ export const exportToSvg = (
 
   return svgRoot;
 };
-
-const getElementsAndWatermark = (
-  elements: readonly NonDeletedExcalidrawElement[],
-  shouldAddWatermark: boolean
-): readonly NonDeletedExcalidrawElement[] => {
-  let _elements = [...elements];
-
-  if (shouldAddWatermark) {
-    const [, , maxX, maxY] = getCommonBounds(elements);
-    _elements = [..._elements, getWatermarkElement(maxX, maxY)];
-  }
-
-  return _elements;
-};
-
-const getWatermarkElement = (maxX: number, maxY: number) => {
-  return newTextElement({
-    text: t("labels.madeWithExcalidraw"),
-    fontSize: WATERMARK_HEIGHT,
-    fontFamily: DEFAULT_FONT_FAMILY,
-    textAlign: "right",
-    verticalAlign: DEFAULT_VERTICAL_ALIGN,
-    x: maxX,
-    y: maxY + WATERMARK_HEIGHT,
-    strokeColor: oc.gray[5],
-    backgroundColor: "transparent",
-    fillStyle: "hachure",
-    strokeWidth: 1,
-    strokeStyle: "solid",
-    roughness: 1,
-    opacity: 100,
-    strokeSharpness: "sharp",
-  });
-};
+*/
 
 // calculate smallest area to fit the contents in
 const getCanvasSize = (
@@ -211,7 +171,7 @@ const getCanvasSize = (
 
   return [minX, minY, width, height];
 };
-
+/*
 export const getExportSize = (
   elements: readonly NonDeletedExcalidrawElement[],
   exportPadding: number,
@@ -228,3 +188,4 @@ export const getExportSize = (
 
   return [width, height];
 };
+*/

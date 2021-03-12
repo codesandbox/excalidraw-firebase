@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigation } from "./Navigation";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../providers/AuthProvider";
 
 export const Auth = () => {
   const auth = useAuth();

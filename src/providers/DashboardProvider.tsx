@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import firebase from "firebase/app";
 import { States, useStates } from "react-states";
-import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "./constants";
+import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "../constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
-import { useNavigation } from "./NavigationProvider";
-import { ExcalidrawPreview } from "./ExcalidrawPreview";
-import { ExcalidrawMetaData } from "./types";
+import { useRouter } from "./RouterProvider";
+import { ExcalidrawMetaData } from "../types";
 
 export type Context =
   | {
@@ -67,7 +66,7 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const auth = useAuthenticatedAuth();
-  const navigation = useNavigation();
+  const router = useRouter();
   const dashboard = useStates<Context, Action>(
     {
       LOADING_PREVIEWS: {
@@ -171,7 +170,7 @@ export const DashboardProvider = ({
             });
         },
         EXCALIDRAW_CREATED: ({ id }) => {
-          navigation.navigate(`/${auth.context.user.uid}/${id}`);
+          router.navigate(`/${auth.context.user.uid}/${id}`);
         },
       }),
     [dashboard]
