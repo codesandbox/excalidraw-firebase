@@ -1,4 +1,5 @@
-import { exportToCanvas } from "./excalidrawApi";
+import { exportToCanvas } from "./excalidraw-src/scene/export";
+import { CreateExcalidrawImage } from "../interfaces";
 
 export const canvasToBlob = async (
   canvas: HTMLCanvasElement
@@ -17,7 +18,10 @@ export const canvasToBlob = async (
   });
 };
 
-export const createExcalidrawImage = (elements: any[], appState: any) => {
+export const createExcalidrawImage: CreateExcalidrawImage = (
+  elements,
+  appState
+) => {
   const canvas = exportToCanvas(elements, appState, {
     exportBackground: true,
     shouldAddWatermark: false,

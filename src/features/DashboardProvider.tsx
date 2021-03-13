@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import firebase from "firebase/app";
 import { States, useStates } from "react-states";
-import { EXCALIDRAWS_COLLECTION, USERS_COLLECTION } from "../constants";
 import { useAuthenticatedAuth } from "./AuthProvider";
-import { useRouter } from "./RouterProvider";
-import { ExcalidrawMetaData } from "../types";
+import { ExcalidrawMetadata } from "../types";
+import { useExternals } from "../externals";
+import { useDevtools } from "react-states/devtools";
+import { storage } from "../externals/firebase";
 
 export type Context =
   | {
@@ -12,12 +12,12 @@ export type Context =
     }
   | {
       state: "PREVIEWS_LOADED";
-      excalidraws: ExcalidrawMetaData[];
+      excalidraws: ExcalidrawMetadata[];
       showCount: number;
     }
   | {
       state: "CREATING_EXCALIDRAW";
-      excalidraws: ExcalidrawMetaData[];
+      excalidraws: ExcalidrawMetadata[];
       showCount: number;
     }
   | {
@@ -30,7 +30,7 @@ export type Context =
     }
   | {
       state: "CREATE_EXCALIDRAW_ERROR";
-      excalidraws: ExcalidrawMetaData[];
+      excalidraws: ExcalidrawMetadata[];
       showCount: number;
       error: string;
     };
@@ -49,7 +49,7 @@ export type Action =
     }
   | {
       type: "LOADING_PREVIEWS_SUCCESS";
-      excalidraws: ExcalidrawMetaData[];
+      excalidraws: ExcalidrawMetadata[];
     }
   | {
       type: "LOADING_PREVIEWS_ERROR";
@@ -66,7 +66,7 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const auth = useAuthenticatedAuth();
-  const router = useRouter();
+  const { router } = useExternals();
   const dashboard = useStates<Context, Action>(
     {
       LOADING_PREVIEWS: {
@@ -120,23 +120,18 @@ export const DashboardProvider = ({
     }
   );
 
+  useDevtools("dashboard", dashboard);
+
   useEffect(
     () =>
       dashboard.exec({
-        LOADING_PREVIEWS: () => {
-          firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(auth.context.user.uid)
-            .collection(EXCALIDRAWS_COLLECTION)
-            .orderBy("last_updated", "desc")
-            .get()
-            .then((collection) => {
+        LOADING_PREVIEWS: function getPreviews() {
+          storage
+            .getPreviews(auth.context.user.uid)
+            .then((excalidraws) => {
               dashboard.dispatch({
                 type: "LOADING_PREVIEWS_SUCCESS",
-                excalidraws: collection.docs.map(
-                  (doc) => ({ ...doc.data(), id: doc.id } as ExcalidrawMetaData)
-                ),
+                excalidraws,
               });
             })
             .catch((error) => {
@@ -147,19 +142,12 @@ export const DashboardProvider = ({
             });
         },
         CREATING_EXCALIDRAW: () => {
-          firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(auth.context.user.uid)
-            .collection(EXCALIDRAWS_COLLECTION)
-            .add({
-              author: auth.context.user.email,
-              last_updated: firebase.firestore.FieldValue.serverTimestamp(),
-            })
-            .then((ref) => {
+          storage
+            .createExcalidraw(auth.context.user.uid)
+            .then((id) => {
               dashboard.dispatch({
                 type: "CREATE_EXCALIDRAW_SUCCESS",
-                id: ref.id,
+                id,
               });
             })
             .catch((error) => {

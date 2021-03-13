@@ -23,7 +23,7 @@
     "open-color": "^1.8.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-states": "^2.0.1",
+    "react-states": "^2.1.0-next",
     "roughjs": "^4.3.1",
     "sass": "^1.32.8"
   },
@@ -38,7 +38,6 @@
     "@types/react-test-renderer": "^17.0.1",
     "@vitejs/plugin-react-refresh": "^1.1.0",
     "babel-jest": "^26.6.3",
-    "canvas": "^2.7.0",
     "jest": "^26.6.3",
     "react-test-renderer": "^17.0.1",
     "typescript": "^4.1.2",

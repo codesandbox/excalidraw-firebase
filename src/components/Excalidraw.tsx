@@ -3,13 +3,14 @@ import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickState } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
-import { createExcalidrawImage } from "../utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { Context, useExcalidraw } from "../providers/ExcalidrawProvider";
+import { Context, useExcalidraw } from "../features/ExcalidrawProvider";
 import { PopoverMenu } from "./PopoverMenu";
+import { useExternals } from "../externals";
 
 export const Excalidraw = () => {
+  const { createExcalidrawImage } = useExternals();
   const excalidraw = useExcalidraw();
 
   const onChange = useMemo(
@@ -45,14 +46,14 @@ export const Excalidraw = () => {
             context.data.elements,
             context.data.appState
           ).then((image) => {
-            excalidraw.dispatch({ type: "INITIALIZED", image });
+            excalidraw.dispatch({ type: "INITIALIZE_CANVAS_SUCCESS", image });
           });
         }}
       />
       <PopoverMenu onDelete={() => {}} />
       <div
         className="edit"
-        style={excalidraw.transform({
+        style={excalidraw.map({
           EDIT_CLIPBOARD: () => ({
             backgroundColor: "yellowgreen",
             color: "darkgreen",
@@ -75,7 +76,7 @@ export const Excalidraw = () => {
           excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
         }}
       >
-        {excalidraw.transform({
+        {excalidraw.map({
           SYNCING: () => <div className="lds-dual-ring"></div>,
           SYNCING_DIRTY: () => <div className="lds-dual-ring"></div>,
           DIRTY: () => <div className="lds-dual-ring"></div>,
@@ -89,7 +90,7 @@ export const Excalidraw = () => {
     </div>
   );
 
-  return excalidraw.transform({
+  return excalidraw.map({
     LOADING: () => (
       <div className="center-wrapper">
         <h1>Loading...</h1>

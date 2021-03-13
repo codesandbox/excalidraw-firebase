@@ -1,13 +1,8 @@
 import React, { useEffect } from "react";
-import firebase from "firebase/app";
 import { States, useStates } from "react-states";
-import {
-  EXCALIDRAWS_COLLECTION,
-  EXCALIDRAWS_DATA_COLLECTION,
-  USERS_COLLECTION,
-} from "../constants";
-import { createExcalidrawImage } from "../utils";
-import { ExcalidrawData, ExcalidrawMetaData } from "../types";
+import { ExcalidrawData, ExcalidrawMetadata } from "../types";
+import { useExternals } from "../externals";
+import { useDevtools } from "react-states/devtools";
 
 export type Context =
   | {
@@ -20,41 +15,41 @@ export type Context =
   | {
       state: "LOADED";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
     }
   | {
       state: "EDIT";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
       image: Blob;
     }
   | {
       state: "EDIT_CLIPBOARD";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
       image: Blob;
     }
   | {
       state: "DIRTY";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
     }
   | {
       state: "SYNCING";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
     }
   | {
       state: "SYNCING_DIRTY";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
     };
 
 export type Action =
   | {
       type: "LOADING_SUCCESS";
       data: ExcalidrawData;
-      metadata: ExcalidrawMetaData;
+      metadata: ExcalidrawMetadata;
     }
   | {
       type: "LOADING_ERROR";
@@ -85,7 +80,7 @@ export type Action =
       type: "SYNC_ERROR";
     }
   | {
-      type: "INITIALIZED";
+      type: "INITIALIZE_CANVAS_SUCCESS";
       image: Blob;
     }
   | {
@@ -124,6 +119,7 @@ export const ExcalidrawProvider = ({
   userId: string;
   children: React.ReactNode;
 }) => {
+  const { createExcalidrawImage, storage } = useExternals();
   const excalidraw = useStates<Context, Action>(
     {
       LOADING: {
@@ -135,7 +131,7 @@ export const ExcalidrawProvider = ({
         LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
       },
       LOADED: {
-        INITIALIZED: ({ image }, { data, metadata }) => ({
+        INITIALIZE_CANVAS_SUCCESS: ({ image }, { data, metadata }) => ({
           state: "EDIT",
           data,
           metadata,
@@ -227,48 +223,19 @@ export const ExcalidrawProvider = ({
     }
   );
 
+  useDevtools("excalidraw", excalidraw);
+
   useEffect(
     () =>
       excalidraw.exec({
         LOADING: () => {
-          Promise.all([
-            firebase
-              .firestore()
-              .collection(USERS_COLLECTION)
-              .doc(userId)
-              .collection(EXCALIDRAWS_COLLECTION)
-              .doc(id)
-              .get(),
-            firebase
-              .firestore()
-              .collection(USERS_COLLECTION)
-              .doc(userId)
-              .collection(EXCALIDRAWS_DATA_COLLECTION)
-              .doc(id)
-              .get(),
-          ])
-            .then(([metadataDoc, dataDoc]) => {
-              const metadata = metadataDoc.data() as ExcalidrawMetaData;
-              const data = (dataDoc.exists
-                ? dataDoc.data()
-                : {
-                    elements: JSON.stringify([]),
-                    appState: JSON.stringify({
-                      viewBackgroundColor: "#FFF",
-                      currentItemFontFamily: 1,
-                    }),
-                  }) as {
-                elements: string;
-                appState: string;
-              };
-
+          storage
+            .getExcalidraw(userId, id)
+            .then((response) => {
               excalidraw.dispatch({
                 type: "LOADING_SUCCESS",
-                metadata,
-                data: {
-                  appState: JSON.parse(data.appState),
-                  elements: JSON.parse(data.elements),
-                } as ExcalidrawData,
+                metadata: response.metadata,
+                data: response.data,
               });
             })
             .catch((error) => {
@@ -279,34 +246,8 @@ export const ExcalidrawProvider = ({
             });
         },
         SYNCING: ({ data }) => {
-          Promise.all([
-            firebase
-              .firestore()
-              .collection(USERS_COLLECTION)
-              .doc(userId)
-              .collection(EXCALIDRAWS_DATA_COLLECTION)
-              .doc(id)
-              .set({
-                elements: JSON.stringify(data.elements),
-                appState: JSON.stringify({
-                  viewBackgroundColor: data.appState.viewBackgroundColor,
-                }),
-              }),
-            firebase
-              .firestore()
-              .collection(USERS_COLLECTION)
-              .doc(userId)
-              .collection(EXCALIDRAWS_COLLECTION)
-              .doc(id)
-              .set(
-                {
-                  last_updated: firebase.firestore.FieldValue.serverTimestamp(),
-                },
-                {
-                  merge: true,
-                }
-              ),
-          ])
+          storage
+            .saveExcalidraw(userId, id, data.elements, data.appState)
             .then(() => {
               return createExcalidrawImage(data.elements, data.appState);
             })
@@ -319,11 +260,7 @@ export const ExcalidrawProvider = ({
             })
             .then((image) => {
               if (image) {
-                firebase
-                  .storage()
-                  .ref()
-                  .child(`previews/${userId}/${id}`)
-                  .put(image);
+                storage.saveImage(userId, id, image);
               }
             });
         },

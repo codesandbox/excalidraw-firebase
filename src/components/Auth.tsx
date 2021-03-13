@@ -1,13 +1,13 @@
 import React from "react";
 import { Navigation } from "./Navigation";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../features/AuthProvider";
 
 export const Auth = () => {
   const auth = useAuth();
 
   return (
     <div className="App">
-      {auth.transform({
+      {auth.map({
         UNAUTHENTICATED: () => (
           <div className="center-wrapper">
             <button onClick={() => auth.dispatch({ type: "SIGN_IN" })}>

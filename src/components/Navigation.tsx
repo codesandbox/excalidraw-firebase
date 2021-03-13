@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { PickAction, useStates } from "react-states";
 import { Dashboard } from "./Dashboard";
-import { DashboardProvider } from "../providers/DashboardProvider";
+import { DashboardProvider } from "../features/DashboardProvider";
 import { Excalidraw } from "./Excalidraw";
-import { ExcalidrawProvider } from "../providers/ExcalidrawProvider";
-import { useRouter } from "../providers/RouterProvider";
+import { ExcalidrawProvider } from "../features/ExcalidrawProvider";
+import { useExternals } from "../externals";
 
 export type Context =
   | {
@@ -50,7 +50,7 @@ const OPEN_EXCALIDRAW = ({
 const OPEN_DASBHOARD = () => ({ state: "DASHBOARD" as const });
 
 export const Navigation = () => {
-  const router = useRouter();
+  const { router } = useExternals();
   const navigation = useStates<Context, Action>(
     {
       INITIALIZING: {
@@ -86,7 +86,7 @@ export const Navigation = () => {
     router.resolve();
   }, []);
 
-  return navigation.transform({
+  return navigation.map({
     INITIALIZING: () => null,
     DASHBOARD: () => (
       <DashboardProvider>

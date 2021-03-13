@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect } from "react";
-import firebase from "firebase/app";
 import { States, useStates } from "react-states";
+import { useDevtools } from "react-states/devtools";
+import { useExternals } from "../externals";
+import { User } from "../types";
 
 type Context =
   | {
@@ -15,7 +17,7 @@ type Context =
     }
   | {
       state: "AUTHENTICATED";
-      user: firebase.User;
+      user: User;
     };
 
 type Action =
@@ -24,7 +26,7 @@ type Action =
     }
   | {
       type: "SIGN_IN_SUCCESS";
-      user: firebase.User;
+      user: User;
     }
   | {
       type: "SIGN_IN_ERROR";
@@ -48,6 +50,7 @@ export const useAuthenticatedAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const externals = useExternals();
   const auth = useStates<Context, Action>(
     {
       AUTHENTICATING: {
@@ -80,16 +83,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   );
 
+  useDevtools("auth", auth as any);
+
   useEffect(
     () =>
       auth.exec({
         SIGNING_IN: () => {
-          signInGoogle()
-            .then((result) => {
-              const user = result.user;
-
-              if (user) {
-              } else {
+          externals.auth
+            .signIn()
+            .then((user) => {
+              if (!user) {
                 auth.dispatch({
                   type: "SIGN_IN_ERROR",
                   error: "Authenticated, but no user",
@@ -104,7 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             });
         },
         AUTHENTICATING: () => {
-          firebase.auth().onAuthStateChanged((user) => {
+          externals.auth.onAuthChange((user) => {
             if (user) {
               auth.dispatch({ type: "SIGN_IN_SUCCESS", user });
             } else {
@@ -121,9 +124,3 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <authContext.Provider value={auth}>{children}</authContext.Provider>;
 };
-
-function signInGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-
-  return firebase.auth().signInWithPopup(provider);
-}

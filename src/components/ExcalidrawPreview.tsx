@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useStates } from "react-states";
 import firebase from "firebase/app";
-import { useAuthenticatedAuth } from "../providers/AuthProvider";
-import { useRouter } from "../providers/RouterProvider";
-import { ExcalidrawMetaData } from "../types";
+import { useAuthenticatedAuth } from "../features/AuthProvider";
+import { ExcalidrawMetadata } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
+import { useExternals } from "../externals";
 
 type Context =
   | {
@@ -32,10 +32,10 @@ type Action =
 export const ExcalidrawPreview = ({
   metadata,
 }: {
-  metadata: ExcalidrawMetaData;
+  metadata: ExcalidrawMetadata;
 }) => {
   const auth = useAuthenticatedAuth();
-  const router = useRouter();
+  const { router } = useExternals();
   const preview = useStates<Context, Action>(
     {
       LOADING_PREVIEW: {
@@ -82,7 +82,7 @@ export const ExcalidrawPreview = ({
     [preview]
   );
 
-  return preview.transform({
+  return preview.map({
     LOADING_PREVIEW: () => <li>"...loading..."</li>,
     PREVIEW_LOADED: ({ src }) => (
       <li
@@ -99,7 +99,7 @@ export const ExcalidrawPreview = ({
             borderRadius: "3px",
           }}
         >
-          {formatDistanceToNow(metadata.last_updated.toDate())} ago
+          {formatDistanceToNow(metadata.last_updated)} ago
         </span>
       </li>
     ),

@@ -1,25 +1,29 @@
 import React from "react";
 import renderer from "react-test-renderer";
 import { Navigation } from "./Navigation";
-import { RouterProvider } from "../providers/RouterProvider";
+import { ExternalsProvider } from "../externals";
+import { Router } from "../externals/interfaces";
 
 describe("Navigation", () => {
   test("Should register routes", () => {
     const routes: string[] = [];
+    const RouterMock: Router = {
+      on(url) {
+        routes.push(url);
+      },
+      resolve() {},
+      navigate() {},
+    };
 
     renderer.act(() => {
       renderer.create(
-        <RouterProvider
-          router={{
-            on(url) {
-              routes.push(url);
-            },
-            resolve() {},
-            navigate() {},
+        <ExternalsProvider
+          externals={{
+            router: RouterMock,
           }}
         >
           <Navigation />
-        </RouterProvider>
+        </ExternalsProvider>
       );
     });
 

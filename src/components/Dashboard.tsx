@@ -1,6 +1,6 @@
 import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
-import { useDashboard } from "../providers/DashboardProvider";
+import { useDashboard } from "../features/DashboardProvider";
 import { styled } from "../stitches.config";
 
 const List = styled("ul", {
@@ -66,7 +66,7 @@ export const Dashboard = () => {
 
   return (
     <div className="center-wrapper">
-      {dashboard.transform({
+      {dashboard.map({
         CREATING_EXCALIDRAW: () => <h1>..creating Excalidraw...</h1>,
         PREVIEWS_ERROR: ({ error }) => (
           <>
