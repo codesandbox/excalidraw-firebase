@@ -16,7 +16,7 @@ export const Navigation = () => {
       </DashboardProvider>
     ),
     EXCALIDRAW: ({ id, userId }) => (
-      <ExcalidrawProvider id={id} userId={userId}>
+      <ExcalidrawProvider key={id} id={id} userId={userId}>
         <Excalidraw />
       </ExcalidrawProvider>
     ),

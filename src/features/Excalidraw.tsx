@@ -87,29 +87,6 @@ export type Action =
       type: "COPY_TO_CLIPBOARD";
     };
 
-const hasChangedExcalidraw = (
-  oldData: {
-    elements: any[];
-    appState: any;
-    version: number;
-  },
-  newData: {
-    elements: any[];
-    appState: any;
-    version: number;
-  }
-) => {
-  return (
-    oldData.version !== newData.version ||
-    oldData.appState.viewBackgroundColor !==
-      newData.appState.viewBackgroundColor
-  );
-};
-
-const context = React.createContext({} as States<Context, Action>);
-
-export const useExcalidraw = () => React.useContext(context);
-
 export const ExcalidrawProvider = ({
   id,
   userId,
@@ -223,7 +200,7 @@ export const ExcalidrawProvider = ({
     }
   );
 
-  if (!import.meta.env.PROD) {
+  if (process.env.NODE_ENV === "development") {
     useDevtools("excalidraw", excalidraw);
   }
 
@@ -290,3 +267,26 @@ export const ExcalidrawProvider = ({
 
   return <context.Provider value={excalidraw}>{children}</context.Provider>;
 };
+
+const context = React.createContext({} as States<Context, Action>);
+
+export const useExcalidraw = () => React.useContext(context);
+
+function hasChangedExcalidraw(
+  oldData: {
+    elements: any[];
+    appState: any;
+    version: number;
+  },
+  newData: {
+    elements: any[];
+    appState: any;
+    version: number;
+  }
+) {
+  return (
+    oldData.version !== newData.version ||
+    oldData.appState.viewBackgroundColor !==
+      newData.appState.viewBackgroundColor
+  );
+}

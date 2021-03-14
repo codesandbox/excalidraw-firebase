@@ -1,6 +1,6 @@
 import React from "react";
 import renderer from "react-test-renderer";
-import { NavigationProvider } from "./Navigation";
+import { NavigationProvider, useNavigation } from "./Navigation";
 import { EnvironmentProvider } from "../environment";
 import { Router } from "../environment/interfaces";
 
@@ -14,7 +14,33 @@ describe("Navigation", () => {
       resolve() {},
       navigate() {},
     };
-    const Assert = () => {
+
+    renderer.act(() => {
+      renderer.create(
+        <EnvironmentProvider
+          environment={{
+            router: RouterMock,
+          }}
+        >
+          <NavigationProvider>{null}</NavigationProvider>
+        </EnvironmentProvider>
+      );
+    });
+
+    expect(routes).toEqual(["/", "/:userId/:id"]);
+  });
+  test("Should change to dashboard when url triggers ", () => {
+    const routes: { [url: string]: Function } = {};
+    const RouterMock: Router = {
+      on(url, cb) {
+        routes[url] = cb;
+      },
+      resolve() {},
+      navigate() {},
+    };
+    let navigation!: ReturnType<typeof useNavigation>;
+    const Asserter = () => {
+      navigation = useNavigation();
       return null;
     };
 
@@ -26,12 +52,16 @@ describe("Navigation", () => {
           }}
         >
           <NavigationProvider>
-            <Assert />
+            <Asserter />
           </NavigationProvider>
         </EnvironmentProvider>
       );
     });
 
-    expect(routes).toEqual(["/", "/:userId/:id"]);
+    renderer.act(() => {
+      routes["/"]();
+    });
+
+    expect(navigation.context.state).toBe("DASHBOARD");
   });
 });

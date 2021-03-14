@@ -33,22 +33,6 @@ type Action =
       error: string;
     };
 
-const authContext = createContext({} as States<Context, Action>);
-
-export const useAuth = () => useContext(authContext);
-
-export const useAuthenticatedAuth = () => {
-  const auth = useAuth();
-
-  if (auth.is("AUTHENTICATED")) {
-    return auth;
-  }
-
-  throw new Error(
-    "You are not using the Auth provider in an Authenticated component"
-  );
-};
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const environment = useEnvironment();
   const auth = useStates<Context, Action>(
@@ -83,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   );
 
-  if (!import.meta.env.PROD) {
+  if (process.env.NODE_ENV === "development") {
     useDevtools("auth", auth as any);
   }
 
@@ -124,5 +108,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [auth]
   );
 
-  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
+  return <context.Provider value={auth}>{children}</context.Provider>;
+};
+
+const context = createContext({} as States<Context, Action>);
+
+export const useAuth = () => useContext(context);
+
+export const useAuthenticatedAuth = () => {
+  const auth = useAuth();
+
+  if (auth.is("AUTHENTICATED")) {
+    return auth;
+  }
+
+  throw new Error(
+    "You are not using the Auth provider in an Authenticated component"
+  );
 };

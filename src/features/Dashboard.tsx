@@ -55,10 +55,6 @@ export type Action =
       error: string;
     };
 
-const context = React.createContext({} as States<Context, Action>);
-
-export const useDashboard = () => React.useContext(context);
-
 export const DashboardProvider = ({
   children,
 }: {
@@ -119,7 +115,7 @@ export const DashboardProvider = ({
     }
   );
 
-  if (!import.meta.env.PROD) {
+  if (process.env.NODE_ENV === "development") {
     useDevtools("dashboard", dashboard);
   }
 
@@ -167,3 +163,7 @@ export const DashboardProvider = ({
 
   return <context.Provider value={dashboard}>{children}</context.Provider>;
 };
+
+const context = React.createContext({} as States<Context, Action>);
+
+export const useDashboard = () => React.useContext(context);

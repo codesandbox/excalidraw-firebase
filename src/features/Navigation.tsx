@@ -30,10 +30,6 @@ export type Action =
       id: string;
     };
 
-const navigationContext = React.createContext({} as States<Context, Action>);
-
-export const useNavigation = () => React.useContext(navigationContext);
-
 export const NavigationProvider = ({
   children,
 }: {
@@ -59,7 +55,7 @@ export const NavigationProvider = ({
     }
   );
 
-  if (!import.meta.env.PROD) {
+  if (process.env.NODE_ENV === "development") {
     useDevtools("navigation", navigation);
   }
 
@@ -93,12 +89,12 @@ export const NavigationProvider = ({
     [navigation]
   );
 
-  return (
-    <navigationContext.Provider value={navigation}>
-      {children}
-    </navigationContext.Provider>
-  );
+  return <context.Provider value={navigation}>{children}</context.Provider>;
 };
+
+const context = React.createContext({} as States<Context, Action>);
+
+export const useNavigation = () => React.useContext(context);
 
 function OPEN_EXCALIDRAW({
   id,
