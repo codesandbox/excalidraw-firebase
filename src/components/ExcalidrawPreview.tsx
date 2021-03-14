@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useStates } from "react-states";
 import firebase from "firebase/app";
-import { useAuthenticatedAuth } from "../features/AuthProvider";
+import { useAuthenticatedAuth } from "../features/Auth";
 import { ExcalidrawMetadata } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { useExternals } from "../externals";

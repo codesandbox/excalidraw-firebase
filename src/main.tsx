@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 import "./index.css";
 import { Auth } from "./components/Auth";
-import { AuthProvider } from "./features/AuthProvider";
+import { AuthProvider } from "./features/Auth";
 import { createExcalidrawImage } from "./externals/createExcalidrawImage";
 import { router } from "./externals/router";
 import { auth, storage } from "./externals/firebase";

@@ -1,90 +1,12 @@
-import React, { useEffect } from "react";
-import { PickAction, useStates } from "react-states";
+import React from "react";
 import { Dashboard } from "./Dashboard";
-import { DashboardProvider } from "../features/DashboardProvider";
+import { DashboardProvider } from "../features/Dashboard";
 import { Excalidraw } from "./Excalidraw";
-import { ExcalidrawProvider } from "../features/ExcalidrawProvider";
-import { useExternals } from "../externals";
-
-export type Context =
-  | {
-      state: "INITIALIZING";
-    }
-  | {
-      state: "DASHBOARD";
-    }
-  | {
-      state: "EXCALIDRAW";
-      id: string;
-      userId: string;
-    };
-
-export type Action =
-  | {
-      type: "OPEN_DASBHOARD";
-    }
-  | {
-      type: "OPEN_EXCALIDRAW";
-      userId: string;
-      id: string;
-    }
-  | {
-      type: "DASHBOARD_NAVIGATED";
-    }
-  | {
-      type: "EXCALIDRAW_NAVIGATED";
-      id: string;
-    };
-
-export type NavigationDispatch = React.Dispatch<Action>;
-
-const OPEN_EXCALIDRAW = ({
-  id,
-  userId,
-}: PickAction<Action, "OPEN_EXCALIDRAW">) => ({
-  state: "EXCALIDRAW" as const,
-  id,
-  userId,
-});
-
-const OPEN_DASBHOARD = () => ({ state: "DASHBOARD" as const });
+import { ExcalidrawProvider } from "../features/Excalidraw";
+import { useNavigation } from "../features/Navigation";
 
 export const Navigation = () => {
-  const { router } = useExternals();
-  const navigation = useStates<Context, Action>(
-    {
-      INITIALIZING: {
-        OPEN_DASBHOARD,
-        OPEN_EXCALIDRAW,
-      },
-      DASHBOARD: {
-        OPEN_EXCALIDRAW,
-      },
-      EXCALIDRAW: {
-        OPEN_DASBHOARD,
-        OPEN_EXCALIDRAW,
-      },
-    },
-    {
-      state: "INITIALIZING",
-    }
-  );
-
-  useEffect(() => {
-    router.on("/", function () {
-      navigation.dispatch({ type: "OPEN_DASBHOARD" });
-    });
-
-    router.on<{ userId: string; id: string }>("/:userId/:id", (params) => {
-      navigation.dispatch({
-        type: "OPEN_EXCALIDRAW",
-        id: params.id,
-        userId: params.userId,
-      });
-    });
-
-    router.resolve();
-  }, []);
+  const navigation = useNavigation();
 
   return navigation.map({
     INITIALIZING: () => null,

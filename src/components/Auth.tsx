@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigation } from "./Navigation";
-import { useAuth } from "../features/AuthProvider";
+import { useAuth } from "../features/Auth";
+import { NavigationProvider } from "../features/Navigation";
 
 export const Auth = () => {
   const auth = useAuth();
@@ -20,7 +21,11 @@ export const Auth = () => {
             <h1>...authenticating...</h1>
           </div>
         ),
-        AUTHENTICATED: () => <Navigation />,
+        AUTHENTICATED: () => (
+          <NavigationProvider>
+            <Navigation />
+          </NavigationProvider>
+        ),
         SIGNING_IN: () => (
           <div className="center-wrapper">
             <h1>...signing in...</h1>

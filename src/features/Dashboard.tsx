@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
-import { useAuthenticatedAuth } from "./AuthProvider";
+import { useAuthenticatedAuth } from "./Auth";
 import { ExcalidrawMetadata } from "../types";
 import { useExternals } from "../externals";
 import { useDevtools } from "react-states/devtools";

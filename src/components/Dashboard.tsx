@@ -1,6 +1,6 @@
 import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
-import { useDashboard } from "../features/DashboardProvider";
+import { useDashboard } from "../features/Dashboard";
 import { styled } from "../stitches.config";
 
 const List = styled("ul", {

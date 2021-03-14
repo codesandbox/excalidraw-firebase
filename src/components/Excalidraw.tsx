@@ -5,7 +5,7 @@ import { PickState } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { Context, useExcalidraw } from "../features/ExcalidrawProvider";
+import { Context, useExcalidraw } from "../features/Excalidraw";
 import { PopoverMenu } from "./PopoverMenu";
 import { useExternals } from "../externals";
 
