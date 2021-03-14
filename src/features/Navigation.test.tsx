@@ -62,6 +62,6 @@ describe("Navigation", () => {
       routes["/"]();
     });
 
-    expect(navigation.context.state).toBe("DASHBOARD");
+    expect(navigation.is("DASHBOARD"));
   });
 });
