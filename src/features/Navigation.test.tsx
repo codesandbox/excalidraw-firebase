@@ -39,7 +39,7 @@ describe("Navigation", () => {
       navigate() {},
     };
     let navigation!: ReturnType<typeof useNavigation>;
-    const Asserter = () => {
+    const HookExposer = () => {
       navigation = useNavigation();
       return null;
     };
@@ -52,7 +52,7 @@ describe("Navigation", () => {
           }}
         >
           <NavigationProvider>
-            <Asserter />
+            <HookExposer />
           </NavigationProvider>
         </EnvironmentProvider>
       );
