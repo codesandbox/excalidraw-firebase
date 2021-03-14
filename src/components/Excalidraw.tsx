@@ -7,10 +7,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { Context, useExcalidraw } from "../features/Excalidraw";
 import { PopoverMenu } from "./PopoverMenu";
-import { useExternals } from "../externals";
+import { useEnvironment } from "../environment";
 
 export const Excalidraw = () => {
-  const { createExcalidrawImage } = useExternals();
+  const { createExcalidrawImage } = useEnvironment();
   const excalidraw = useExcalidraw();
 
   const onChange = useMemo(
@@ -93,7 +93,7 @@ export const Excalidraw = () => {
   return excalidraw.map({
     LOADING: () => (
       <div className="center-wrapper">
-        <h1>Loading...</h1>
+        <div className="lds-dual-ring"></div>
       </div>
     ),
     ERROR: ({ error }) => (

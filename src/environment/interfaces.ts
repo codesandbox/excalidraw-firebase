@@ -37,7 +37,7 @@ export interface ExcalidrawStorage {
   saveImage(userId: string, id: string, image: Blob): Promise<void>;
 }
 
-export interface Externals {
+export interface Environment {
   createExcalidrawImage: CreateExcalidrawImage;
   router: Router;
   storage: ExcalidrawStorage;

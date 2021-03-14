@@ -4,7 +4,6 @@ import firebase from "firebase/app";
 import { useAuthenticatedAuth } from "../features/Auth";
 import { ExcalidrawMetadata } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { useExternals } from "../externals";
 import { useNavigation } from "../features/Navigation";
 
 type Context =
@@ -84,7 +83,11 @@ export const ExcalidrawPreview = ({
   );
 
   return preview.map({
-    LOADING_PREVIEW: () => <li>"...loading..."</li>,
+    LOADING_PREVIEW: () => (
+      <li>
+        <div className="lds-dual-ring"></div>
+      </li>
+    ),
     PREVIEW_LOADED: ({ src }) => (
       <li
         style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}

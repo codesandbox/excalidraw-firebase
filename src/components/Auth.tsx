@@ -18,7 +18,7 @@ export const Auth = () => {
         ),
         AUTHENTICATING: () => (
           <div className="center-wrapper">
-            <h1>...authenticating...</h1>
+            <div className="lds-dual-ring"></div>
           </div>
         ),
         AUTHENTICATED: () => (
@@ -28,7 +28,7 @@ export const Auth = () => {
         ),
         SIGNING_IN: () => (
           <div className="center-wrapper">
-            <h1>...signing in...</h1>
+            <div className="lds-dual-ring"></div>
           </div>
         ),
       })}

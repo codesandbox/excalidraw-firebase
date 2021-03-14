@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
 import { ExcalidrawData, ExcalidrawMetadata } from "../types";
-import { useExternals } from "../externals";
+import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
 
 export type Context =
@@ -119,7 +119,7 @@ export const ExcalidrawProvider = ({
   userId: string;
   children: React.ReactNode;
 }) => {
-  const { createExcalidrawImage, storage } = useExternals();
+  const { createExcalidrawImage, storage } = useEnvironment();
   const excalidraw = useStates<Context, Action>(
     {
       LOADING: {
@@ -223,7 +223,9 @@ export const ExcalidrawProvider = ({
     }
   );
 
-  useDevtools("excalidraw", excalidraw);
+  if (!import.meta.env.PROD) {
+    useDevtools("excalidraw", excalidraw);
+  }
 
   useEffect(
     () =>

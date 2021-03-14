@@ -4,29 +4,37 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import { Auth } from "./components/Auth";
 import { AuthProvider } from "./features/Auth";
-import { createExcalidrawImage } from "./externals/createExcalidrawImage";
-import { router } from "./externals/router";
-import { auth, storage } from "./externals/firebase";
-import { ExternalsProvider } from "./externals";
+import { createExcalidrawImage } from "./environment/createExcalidrawImage";
+import { router } from "./environment/router";
+import { auth, storage } from "./environment/firebase";
+import { EnvironmentProvider } from "./environment";
 import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
+
+const app = (
+  <EnvironmentProvider
+    environment={{
+      createExcalidrawImage,
+      router,
+      auth,
+      storage,
+    }}
+  >
+    <AuthProvider>
+      <Auth />
+    </AuthProvider>
+  </EnvironmentProvider>
+);
 
 ReactDOM.render(
   <React.StrictMode>
-    <DevtoolsProvider>
-      <DevtoolsManager />
-      <ExternalsProvider
-        externals={{
-          createExcalidrawImage,
-          router,
-          auth,
-          storage,
-        }}
-      >
-        <AuthProvider>
-          <Auth />
-        </AuthProvider>
-      </ExternalsProvider>
-    </DevtoolsProvider>
+    {import.meta.env.PROD ? (
+      app
+    ) : (
+      <DevtoolsProvider>
+        <DevtoolsManager />
+        {app}
+      </DevtoolsProvider>
+    )}
   </React.StrictMode>,
   document.getElementById("root")
 );

@@ -67,7 +67,7 @@ export const Dashboard = () => {
   return (
     <div className="center-wrapper">
       {dashboard.map({
-        CREATING_EXCALIDRAW: () => <h1>..creating Excalidraw...</h1>,
+        CREATING_EXCALIDRAW: () => <div className="lds-dual-ring"></div>,
         PREVIEWS_ERROR: ({ error }) => (
           <>
             <p style={{ color: "tomato" }}>There was an error: {error}</p>
@@ -79,8 +79,8 @@ export const Dashboard = () => {
             {previews}
           </>
         ),
-        EXCALIDRAW_CREATED: () => <h1>...redirecting...</h1>,
-        LOADING_PREVIEWS: () => <h1>...loading previews...</h1>,
+        EXCALIDRAW_CREATED: () => <div className="lds-dual-ring"></div>,
+        LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
         PREVIEWS_LOADED: () => previews,
       })}
     </div>

@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
 import { useAuthenticatedAuth } from "./Auth";
 import { ExcalidrawMetadata } from "../types";
-import { useExternals } from "../externals";
+import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
-import { storage } from "../externals/firebase";
 
 export type Context =
   | {
@@ -66,7 +65,7 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const auth = useAuthenticatedAuth();
-  const { router } = useExternals();
+  const { router, storage } = useEnvironment();
   const dashboard = useStates<Context, Action>(
     {
       LOADING_PREVIEWS: {
@@ -120,7 +119,9 @@ export const DashboardProvider = ({
     }
   );
 
-  useDevtools("dashboard", dashboard);
+  if (!import.meta.env.PROD) {
+    useDevtools("dashboard", dashboard);
+  }
 
   useEffect(
     () =>

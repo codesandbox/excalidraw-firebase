@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { States, useStates } from "react-states";
 import { useDevtools } from "react-states/devtools";
-import { useExternals } from "../externals";
+import { useEnvironment } from "../environment";
 import { User } from "../types";
 
 type Context =
@@ -50,7 +50,7 @@ export const useAuthenticatedAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const externals = useExternals();
+  const environment = useEnvironment();
   const auth = useStates<Context, Action>(
     {
       AUTHENTICATING: {
@@ -83,13 +83,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   );
 
-  useDevtools("auth", auth as any);
+  if (!import.meta.env.PROD) {
+    useDevtools("auth", auth as any);
+  }
 
   useEffect(
     () =>
       auth.exec({
         SIGNING_IN: () => {
-          externals.auth
+          environment.auth
             .signIn()
             .then((user) => {
               if (!user) {
@@ -107,7 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             });
         },
         AUTHENTICATING: () => {
-          externals.auth.onAuthChange((user) => {
+          environment.auth.onAuthChange((user) => {
             if (user) {
               auth.dispatch({ type: "SIGN_IN_SUCCESS", user });
             } else {

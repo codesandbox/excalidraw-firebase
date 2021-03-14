@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { PickAction, States, useStates } from "react-states";
-import { useExternals } from "../externals";
+import { useDevtools } from "react-states/devtools";
+import { useEnvironment } from "../environment";
 
 export type Context =
   | {
@@ -38,7 +39,7 @@ export const NavigationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { router } = useExternals();
+  const { router } = useEnvironment();
   const navigation = useStates<Context, Action>(
     {
       INITIALIZING: {
@@ -57,6 +58,10 @@ export const NavigationProvider = ({
       state: "INITIALIZING",
     }
   );
+
+  if (!import.meta.env.PROD) {
+    useDevtools("navigation", navigation);
+  }
 
   useEffect(() => {
     router.on("/", function () {

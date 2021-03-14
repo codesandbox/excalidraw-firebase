@@ -1,8 +1,8 @@
 import React from "react";
 import renderer from "react-test-renderer";
 import { NavigationProvider } from "./Navigation";
-import { ExternalsProvider } from "../externals";
-import { Router } from "../externals/interfaces";
+import { EnvironmentProvider } from "../environment";
+import { Router } from "../environment/interfaces";
 
 describe("Navigation", () => {
   test("Should register routes", () => {
@@ -20,15 +20,15 @@ describe("Navigation", () => {
 
     renderer.act(() => {
       renderer.create(
-        <ExternalsProvider
-          externals={{
+        <EnvironmentProvider
+          environment={{
             router: RouterMock,
           }}
         >
           <NavigationProvider>
             <Assert />
           </NavigationProvider>
-        </ExternalsProvider>
+        </EnvironmentProvider>
       );
     });
 
