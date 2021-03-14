@@ -39,7 +39,7 @@ describe("Navigation", () => {
       navigate() {},
     };
     let navigation!: ReturnType<typeof useNavigation>;
-    const HookExposer = () => {
+    const NavigationExposer = () => {
       navigation = useNavigation();
       return null;
     };
@@ -52,7 +52,7 @@ describe("Navigation", () => {
           }}
         >
           <NavigationProvider>
-            <HookExposer />
+            <NavigationExposer />
           </NavigationProvider>
         </EnvironmentProvider>
       );
