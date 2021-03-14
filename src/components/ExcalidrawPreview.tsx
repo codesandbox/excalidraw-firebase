@@ -5,6 +5,7 @@ import { useAuthenticatedAuth } from "../features/Auth";
 import { ExcalidrawMetadata } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { useExternals } from "../externals";
+import { useNavigation } from "../features/Navigation";
 
 type Context =
   | {
@@ -35,7 +36,7 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const auth = useAuthenticatedAuth();
-  const { router } = useExternals();
+  const navigation = useNavigation();
   const preview = useStates<Context, Action>(
     {
       LOADING_PREVIEW: {
@@ -88,7 +89,11 @@ export const ExcalidrawPreview = ({
       <li
         style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}
         onClick={() => {
-          router.navigate(`/${auth.context.user.uid}/${metadata.id}`);
+          navigation.dispatch({
+            type: "OPEN_EXCALIDRAW",
+            userId: auth.context.user.uid,
+            id: metadata.id,
+          });
         }}
       >
         <span
@@ -107,7 +112,11 @@ export const ExcalidrawPreview = ({
       <li
         style={{ color: "tomato", overflow: "hidden" }}
         onClick={() => {
-          router.navigate(`/${auth.context.user.uid}/${metadata.id}`);
+          navigation.dispatch({
+            type: "OPEN_EXCALIDRAW",
+            userId: auth.context.user.uid,
+            id: metadata.id,
+          });
         }}
       >
         {error}

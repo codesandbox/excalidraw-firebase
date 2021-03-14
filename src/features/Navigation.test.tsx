@@ -1,6 +1,6 @@
 import React from "react";
 import renderer from "react-test-renderer";
-import { Navigation } from "./Navigation";
+import { NavigationProvider } from "./Navigation";
 import { ExternalsProvider } from "../externals";
 import { Router } from "../externals/interfaces";
 
@@ -14,6 +14,9 @@ describe("Navigation", () => {
       resolve() {},
       navigate() {},
     };
+    const Assert = () => {
+      return null;
+    };
 
     renderer.act(() => {
       renderer.create(
@@ -22,7 +25,9 @@ describe("Navigation", () => {
             router: RouterMock,
           }}
         >
-          <Navigation />
+          <NavigationProvider>
+            <Assert />
+          </NavigationProvider>
         </ExternalsProvider>
       );
     });

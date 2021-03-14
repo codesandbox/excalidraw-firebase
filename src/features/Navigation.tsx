@@ -8,9 +8,11 @@ export type Context =
     }
   | {
       state: "DASHBOARD";
+      isUrlDispatch: boolean;
     }
   | {
       state: "EXCALIDRAW";
+      isUrlDispatch: boolean;
       id: string;
       userId: string;
     };
@@ -18,21 +20,14 @@ export type Context =
 export type Action =
   | {
       type: "OPEN_DASBHOARD";
+      isUrlDispatch?: boolean;
     }
   | {
       type: "OPEN_EXCALIDRAW";
+      isUrlDispatch?: boolean;
       userId: string;
       id: string;
-    }
-  | {
-      type: "DASHBOARD_NAVIGATED";
-    }
-  | {
-      type: "EXCALIDRAW_NAVIGATED";
-      id: string;
     };
-
-export type NavigationDispatch = React.Dispatch<Action>;
 
 const navigationContext = React.createContext({} as States<Context, Action>);
 
@@ -65,12 +60,13 @@ export const NavigationProvider = ({
 
   useEffect(() => {
     router.on("/", function () {
-      navigation.dispatch({ type: "OPEN_DASBHOARD" });
+      navigation.dispatch({ type: "OPEN_DASBHOARD", isUrlDispatch: true });
     });
 
     router.on<{ userId: string; id: string }>("/:userId/:id", (params) => {
       navigation.dispatch({
         type: "OPEN_EXCALIDRAW",
+        isUrlDispatch: true,
         id: params.id,
         userId: params.userId,
       });
@@ -78,6 +74,19 @@ export const NavigationProvider = ({
 
     router.resolve();
   }, []);
+
+  useEffect(
+    () =>
+      navigation.exec({
+        DASHBOARD: ({ isUrlDispatch }) => {
+          !isUrlDispatch && router.navigate(`/`);
+        },
+        EXCALIDRAW: ({ isUrlDispatch, userId, id }) => {
+          !isUrlDispatch && router.navigate(`/${userId}/${id}`);
+        },
+      }),
+    [navigation]
+  );
 
   return (
     <navigationContext.Provider value={navigation}>
@@ -89,14 +98,18 @@ export const NavigationProvider = ({
 function OPEN_EXCALIDRAW({
   id,
   userId,
-}: PickAction<Action, "OPEN_EXCALIDRAW">) {
+  isUrlDispatch,
+}: PickAction<Action, "OPEN_EXCALIDRAW">): Context {
   return {
-    state: "EXCALIDRAW" as const,
+    state: "EXCALIDRAW",
     id,
     userId,
+    isUrlDispatch: Boolean(isUrlDispatch),
   };
 }
 
-function OPEN_DASBHOARD() {
-  return { state: "DASHBOARD" as const };
+function OPEN_DASBHOARD({
+  isUrlDispatch,
+}: PickAction<Action, "OPEN_DASBHOARD">): Context {
+  return { state: "DASHBOARD", isUrlDispatch: Boolean(isUrlDispatch) };
 }
