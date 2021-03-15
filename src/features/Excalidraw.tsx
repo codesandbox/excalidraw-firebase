@@ -18,6 +18,9 @@ export type Context =
       metadata: ExcalidrawMetadata;
     }
   | {
+      state: "REOPENED";
+    }
+  | {
       state: "EDIT";
       data: ExcalidrawData;
       metadata: ExcalidrawMetadata;
@@ -46,6 +49,9 @@ export type Context =
     };
 
 export type Action =
+  | {
+      type: "REOPEN";
+    }
   | {
       type: "LOADING_SUCCESS";
       data: ExcalidrawData;
@@ -115,6 +121,14 @@ export const ExcalidrawProvider = ({
           image,
         }),
       },
+      REOPENED: {
+        LOADING_SUCCESS: ({ data, metadata }) => ({
+          state: "LOADED",
+          data,
+          metadata,
+        }),
+        LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
+      },
       EDIT: {
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
@@ -130,6 +144,7 @@ export const ExcalidrawProvider = ({
           metadata,
           image,
         }),
+        REOPEN: () => ({ state: "REOPENED" }),
       },
       EDIT_CLIPBOARD: {
         CHANGE_DETECTED: (newData, currentContext) =>
@@ -140,6 +155,7 @@ export const ExcalidrawProvider = ({
                 metadata: currentContext.metadata,
               }
             : currentContext,
+        REOPEN: () => ({ state: "REOPENED" }),
       },
       DIRTY: {
         SYNC: (_, { data, metadata }) => ({

@@ -1,4 +1,4 @@
-import { getImportedKey } from "../data";
+import { getImportedKey } from ".";
 import { createIV } from "./index";
 import { ExcalidrawElement } from "../../element/types";
 import { getSceneVersion } from "../../element";
@@ -38,7 +38,7 @@ interface FirebaseStoredScene {
 
 const encryptElements = async (
   key: string,
-  elements: readonly ExcalidrawElement[],
+  elements: readonly ExcalidrawElement[]
 ): Promise<{ ciphertext: ArrayBuffer; iv: Uint8Array }> => {
   const importedKey = await getImportedKey(key, "encrypt");
   const iv = createIV();
@@ -50,7 +50,7 @@ const encryptElements = async (
       iv,
     },
     importedKey,
-    encoded,
+    encoded
   );
 
   return { ciphertext, iv };
@@ -59,7 +59,7 @@ const encryptElements = async (
 const decryptElements = async (
   key: string,
   iv: Uint8Array,
-  ciphertext: ArrayBuffer,
+  ciphertext: ArrayBuffer
 ): Promise<readonly ExcalidrawElement[]> => {
   const importedKey = await getImportedKey(key, "decrypt");
   const decrypted = await window.crypto.subtle.decrypt(
@@ -68,11 +68,11 @@ const decryptElements = async (
       iv,
     },
     importedKey,
-    ciphertext,
+    ciphertext
   );
 
   const decodedData = new TextDecoder("utf-8").decode(
-    new Uint8Array(decrypted) as any,
+    new Uint8Array(decrypted) as any
   );
   return JSON.parse(decodedData);
 };
@@ -81,7 +81,7 @@ const firebaseSceneVersionCache = new WeakMap<SocketIOClient.Socket, number>();
 
 export const isSavedToFirebase = (
   portal: Portal,
-  elements: readonly ExcalidrawElement[],
+  elements: readonly ExcalidrawElement[]
 ): boolean => {
   if (portal.socket && portal.roomId && portal.roomKey) {
     const sceneVersion = getSceneVersion(elements);
@@ -94,7 +94,7 @@ export const isSavedToFirebase = (
 
 export const saveToFirebase = async (
   portal: Portal,
-  elements: readonly ExcalidrawElement[],
+  elements: readonly ExcalidrawElement[]
 ) => {
   const { roomId, roomKey, socket } = portal;
   if (
@@ -115,7 +115,7 @@ export const saveToFirebase = async (
   const nextDocData = {
     sceneVersion,
     ciphertext: firebase.firestore.Blob.fromUint8Array(
-      new Uint8Array(ciphertext),
+      new Uint8Array(ciphertext)
     ),
     iv: firebase.firestore.Blob.fromUint8Array(iv),
   } as FirebaseStoredScene;
@@ -148,7 +148,7 @@ export const saveToFirebase = async (
 export const loadFromFirebase = async (
   roomId: string,
   roomKey: string,
-  socket: SocketIOClient.Socket | null,
+  socket: SocketIOClient.Socket | null
 ): Promise<readonly ExcalidrawElement[] | null> => {
   const firebase = await getFirebase();
   const db = firebase.firestore();

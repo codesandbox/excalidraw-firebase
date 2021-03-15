@@ -4,21 +4,12 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import { Auth } from "./components/Auth";
 import { AuthProvider } from "./features/Auth";
-import { createExcalidrawImage } from "./environment/createExcalidrawImage";
-import { router } from "./environment/router";
-import { auth, storage } from "./environment/firebase";
+import * as browserEnvironment from "./environment/browser";
 import { EnvironmentProvider } from "./environment";
 import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
 
 const app = (
-  <EnvironmentProvider
-    environment={{
-      createExcalidrawImage,
-      router,
-      auth,
-      storage,
-    }}
-  >
+  <EnvironmentProvider environment={browserEnvironment}>
     <AuthProvider>
       <Auth />
     </AuthProvider>

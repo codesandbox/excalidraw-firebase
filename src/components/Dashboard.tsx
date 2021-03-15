@@ -6,34 +6,24 @@ import { styled } from "../stitches.config";
 const List = styled("ul", {
   listStyleType: "none",
   display: "flex",
-  li: {
-    borderRadius: "3px",
-    border: "1px solid #eaeaea",
-    display: "flex",
-    margin: "1rem",
-    padding: "1rem",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "200px",
-    fontSize: "11px",
-    height: "200px",
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-    boxSizing: "border-box",
-    cursor: "pointer",
-    ":hover": {
-      backgroundColor: "#fafafa ",
-    },
-  },
 });
 
 const CreateNewExcalidraw = styled("li", {
-  fontSize: "18px",
+  fontSize: "24px",
   fontWeight: "bold",
   border: "1px dashed #eaeaea",
   padding: "2rem",
+  margin: "1rem",
+  cursor: "pointer",
   boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "200px",
+  height: "200px",
+  "&:hover": {
+    backgroundColor: "#fafafa",
+  },
 });
 
 export const Dashboard = () => {

@@ -2,9 +2,9 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
-import { ExcalidrawMetadata, User } from "../types";
-import config from "../firebase.config.json";
-import { Auth, ExcalidrawStorage } from "./interfaces";
+import { ExcalidrawMetadata, User } from "../../types";
+import config from "../../firebase.config.json";
+import { Auth, ExcalidrawStorage } from "../interfaces";
 
 firebase.initializeApp(config);
 

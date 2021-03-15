@@ -1,5 +1,5 @@
 import Navigo from "navigo";
-import { Router } from "./types";
+import { Router } from "../interfaces";
 
 const navigo = new Navigo("/");
 

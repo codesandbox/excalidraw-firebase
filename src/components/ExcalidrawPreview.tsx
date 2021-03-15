@@ -5,6 +5,28 @@ import { useAuthenticatedAuth } from "../features/Auth";
 import { ExcalidrawMetadata } from "../types";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { useNavigation } from "../features/Navigation";
+import { styled } from "../stitches.config";
+
+const Wrapper = styled("li", {
+  borderRadius: "3px",
+  border: "1px solid #eaeaea",
+  display: "flex",
+  margin: "1rem",
+  padding: "1rem",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "200px",
+  fontSize: "11px",
+  height: "200px",
+  backgroundSize: "contain",
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "center",
+  boxSizing: "border-box",
+  cursor: "pointer",
+  "&:hover": {
+    backgroundColor: "#fafafa ",
+  },
+});
 
 type Context =
   | {
@@ -84,12 +106,12 @@ export const ExcalidrawPreview = ({
 
   return preview.map({
     LOADING_PREVIEW: () => (
-      <li>
+      <Wrapper>
         <div className="lds-dual-ring"></div>
-      </li>
+      </Wrapper>
     ),
     PREVIEW_LOADED: ({ src }) => (
-      <li
+      <Wrapper
         style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}
         onClick={() => {
           navigation.dispatch({
@@ -109,10 +131,10 @@ export const ExcalidrawPreview = ({
         >
           {formatDistanceToNow(metadata.last_updated)} ago
         </span>
-      </li>
+      </Wrapper>
     ),
     LOADING_ERROR: ({ error }) => (
-      <li
+      <Wrapper
         style={{ color: "tomato", overflow: "hidden" }}
         onClick={() => {
           navigation.dispatch({
@@ -123,7 +145,7 @@ export const ExcalidrawPreview = ({
         }}
       >
         {error}
-      </li>
+      </Wrapper>
     ),
   });
 };

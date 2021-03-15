@@ -4563,14 +4563,15 @@ react-shallow-renderer@^16.13.1:
     object-assign "^4.1.1"
     react-is "^16.12.0 || ^17.0.0"
 
-react-states@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/react-states/-/react-states-2.1.0.tgz#7a1799340f9597f1c2c3810d1887e8ce6ab2cd16"
-  integrity sha512-XjZHZOT3EnUnjojymF7YlGl143tiWYxsPn15V00wvQxHTNOTCbZe+c+PM+vHy/Z4WdK9Gb81qA7BPDLULe7GUg==
+react-states@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-states/-/react-states-2.1.1.tgz#9d5d696682f9fee71018d5a141a5ca398e095342"
+  integrity sha512-2tAIqf4erkhSWpwgSIB8n9IWCo54UgFJ4oIoTrilfOH31e+64w36pZJaJRvq/HBnRZ2GUwffuam7TTCcsXW5gg==
   dependencies:
     "@types/node" "^8.0.0"
     "@types/react" "^17.0.2"
     "@types/react-dom" "^17.0.2"
+    react "^17.0.0"
     tslib "^2.1.0"
 
 react-style-singleton@^2.1.0:

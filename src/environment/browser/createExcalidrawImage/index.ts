@@ -1,5 +1,5 @@
 import { exportToCanvas } from "./excalidraw-src/scene/export";
-import { CreateExcalidrawImage } from "../interfaces";
+import { CreateExcalidrawImage } from "../../interfaces";
 
 export const canvasToBlob = async (
   canvas: HTMLCanvasElement

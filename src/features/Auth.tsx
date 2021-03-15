@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(
     () =>
       auth.exec({
-        SIGNING_IN: () => {
+        SIGNING_IN: function signIn() {
           environment.auth
             .signIn()
             .then((user) => {
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               });
             });
         },
-        AUTHENTICATING: () => {
+        AUTHENTICATING: function listenToAuthChanges() {
           environment.auth.onAuthChange((user) => {
             if (user) {
               auth.dispatch({ type: "SIGN_IN_SUCCESS", user });

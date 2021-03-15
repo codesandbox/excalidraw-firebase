@@ -37,6 +37,10 @@ export interface ExcalidrawStorage {
   saveImage(userId: string, id: string, image: Blob): Promise<void>;
 }
 
+export interface OnReOpen {
+  (cb: () => void): () => void;
+}
+
 export interface Environment {
   createExcalidrawImage: CreateExcalidrawImage;
   router: Router;
