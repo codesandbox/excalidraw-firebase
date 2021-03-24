@@ -6,6 +6,7 @@ import { styled } from "../stitches.config";
 const List = styled("ul", {
   listStyleType: "none",
   display: "flex",
+  flexWrap: "wrap",
 });
 
 const CreateNewExcalidraw = styled("li", {

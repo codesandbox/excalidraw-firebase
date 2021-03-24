@@ -5,6 +5,7 @@ declare module "@excalidraw/excalidraw" {
     height: number | undefined;
     initialData?: any;
     onChange: (elements: any[], state: any) => void;
+    viewModeEnabled: boolean;
   }) => any;
 
   export default Excalidraw;

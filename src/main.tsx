@@ -4,12 +4,12 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import { Auth } from "./components/Auth";
 import { AuthProvider } from "./features/Auth";
-import * as browserEnvironment from "./environment/browser";
+import * as productionEnvironment from "./environment/production";
 import { EnvironmentProvider } from "./environment";
 import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
 
 const app = (
-  <EnvironmentProvider environment={browserEnvironment}>
+  <EnvironmentProvider environment={productionEnvironment}>
     <AuthProvider>
       <Auth />
     </AuthProvider>

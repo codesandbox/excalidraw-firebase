@@ -1,16 +1,53 @@
 import React, { useMemo } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickState } from "react-states";
+import { PickState, TMap, map } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { Context, useExcalidraw } from "../features/Excalidraw";
 import { PopoverMenu } from "./PopoverMenu";
-import { useEnvironment } from "../environment";
+import { styled } from "../stitches.config";
+// import * as Dialog from "@radix-ui/react-dialog";
+
+const WarningOverlay = styled("div", {
+  width: "100vw",
+  height: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const WarningText = styled("div", {
+  padding: "1rem",
+  fontSize: "20px",
+  fontWeight: "bold",
+});
+
+const WarningButton = styled("button", {
+  borderRadius: "3px",
+  padding: "0.5rem 1rem",
+  margin: "1rem",
+  fontSize: "18px",
+});
+
+const WarningMessageContainer = styled("div", {
+  zIndex: 1,
+});
+
+type RenderExcalidrawContext = PickState<
+  Context,
+  | "LOADED"
+  | "EDIT"
+  | "EDIT_CLIPBOARD"
+  | "SYNCING"
+  | "DIRTY"
+  | "SYNCING_DIRTY"
+  | "UNFOCUSED"
+  | "UNFOCUSED_DIRTY"
+>;
 
 export const Excalidraw = () => {
-  const { createExcalidrawImage } = useEnvironment();
   const excalidraw = useExcalidraw();
 
   const onChange = useMemo(
@@ -26,69 +63,76 @@ export const Excalidraw = () => {
     []
   );
 
-  const renderExcalidraw = (
-    context: PickState<
-      Context,
-      | "LOADED"
-      | "EDIT"
-      | "EDIT_CLIPBOARD"
-      | "SYNCING"
-      | "DIRTY"
-      | "SYNCING_DIRTY"
-    >
-  ) => (
-    <div>
-      <ExcalidrawCanvas
-        data={context.data}
-        onChange={onChange}
-        onInitialized={() => {
-          createExcalidrawImage(
-            context.data.elements,
-            context.data.appState
-          ).then((image) => {
-            excalidraw.dispatch({ type: "INITIALIZE_CANVAS_SUCCESS", image });
-          });
-        }}
-      />
-      <PopoverMenu onDelete={() => {}} />
-      <div
-        className="edit"
-        style={excalidraw.map({
-          EDIT_CLIPBOARD: () => ({
-            backgroundColor: "yellowgreen",
-            color: "darkgreen",
-          }),
-          DIRTY: () => ({
-            opacity: 0.5,
-          }),
-          SYNCING: () => ({
-            opacity: 0.5,
-          }),
-          SYNCING_DIRTY: () => ({
-            opacity: 0.5,
-          }),
-          EDIT: () => undefined,
-          ERROR: () => undefined,
-          LOADED: () => undefined,
-          LOADING: () => undefined,
-        })}
-        onClick={() => {
-          excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
-        }}
-      >
-        {excalidraw.map({
-          SYNCING: () => <div className="lds-dual-ring"></div>,
-          SYNCING_DIRTY: () => <div className="lds-dual-ring"></div>,
-          DIRTY: () => <div className="lds-dual-ring"></div>,
-          EDIT: () => <FontAwesomeIcon icon={faClipboard} />,
-          EDIT_CLIPBOARD: () => <FontAwesomeIcon icon={faClipboard} />,
-          ERROR: () => null,
-          LOADED: () => null,
-          LOADING: () => null,
-        })}
+  const renderExcalidraw = (context: RenderExcalidrawContext) => {
+    const copyToClipboard = () => {
+      excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
+    };
+    const variants = {
+      default: () => ({
+        style: undefined,
+        content: <FontAwesomeIcon icon={faClipboard} />,
+        onClick: copyToClipboard,
+      }),
+      active: () => ({
+        style: {
+          backgroundColor: "yellowgreen",
+          color: "darkgreen",
+        },
+        content: <FontAwesomeIcon icon={faClipboard} />,
+        onClick: undefined,
+      }),
+      loading: () => ({
+        style: {
+          opacity: 0.5,
+        },
+        content: <div className="lds-dual-ring"></div>,
+        onClick: undefined,
+      }),
+    };
+
+    const variant = map(context, {
+      EDIT_CLIPBOARD: variants.active,
+      DIRTY: variants.loading,
+      EDIT: variants.default,
+      LOADED: variants.loading,
+      SYNCING: variants.loading,
+      SYNCING_DIRTY: variants.loading,
+      FOCUSED: variants.loading,
+      FOCUSED_DIRTY: variants.loading,
+      UNFOCUSED: variants.loading,
+      UNFOCUSED_DIRTY: variants.loading,
+    });
+
+    const readOnly = map(context, {
+      FOCUSED: () => true,
+      FOCUSED_DIRTY: () => true,
+      UNFOCUSED: () => true,
+      UNFOCUSED_DIRTY: () => true,
+      LOADED: () => false,
+      SYNCING: () => false,
+      SYNCING_DIRTY: () => false,
+      DIRTY: () => false,
+      EDIT: () => false,
+      EDIT_CLIPBOARD: () => false,
+    });
+
+    return (
+      <div>
+        <ExcalidrawCanvas
+          data={context.data}
+          onChange={onChange}
+          onInitialized={() => {
+            excalidraw.dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
+          }}
+          readOnly={readOnly}
+        />
+        <PopoverMenu onDelete={() => {}} />
+        <div className="edit" style={variant.style} onClick={variant.onClick}>
+          {variant.content}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return excalidraw.map({
     LOADING: () => (
@@ -101,11 +145,39 @@ export const Excalidraw = () => {
         <h1>OMG, error, {error}</h1>
       </div>
     ),
+    FOCUSED: () => (
+      <div className="center-wrapper">
+        <div className="lds-dual-ring"></div>
+      </div>
+    ),
+    FOCUSED_DIRTY: () => (
+      <WarningOverlay>
+        <WarningMessageContainer>
+          <WarningText>
+            You left the window in a DIRTY state, not sure what you want to do?
+          </WarningText>
+          <div>
+            <WarningButton
+              onClick={() => excalidraw.dispatch({ type: "CONTINUE" })}
+            >
+              Keep my local version
+            </WarningButton>
+            <WarningButton
+              onClick={() => excalidraw.dispatch({ type: "REFRESH" })}
+            >
+              Update from server
+            </WarningButton>
+          </div>
+        </WarningMessageContainer>
+      </WarningOverlay>
+    ),
     LOADED: renderExcalidraw,
     EDIT: renderExcalidraw,
     EDIT_CLIPBOARD: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,
+    UNFOCUSED: renderExcalidraw,
+    UNFOCUSED_DIRTY: renderExcalidraw,
   });
 };

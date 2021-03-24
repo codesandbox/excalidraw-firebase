@@ -4,6 +4,12 @@ import { ExcalidrawData, ExcalidrawMetadata } from "../types";
 import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
 
+export type BaseContext = {
+  data: ExcalidrawData;
+  metadata: ExcalidrawMetadata;
+  image: Blob;
+};
+
 export type Context =
   | {
       state: "LOADING";
@@ -12,50 +18,43 @@ export type Context =
       state: "ERROR";
       error: string;
     }
-  | {
+  | ({
       state: "LOADED";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-    }
-  | {
-      state: "REOPENED";
-    }
-  | {
+    } & BaseContext)
+  | ({
       state: "EDIT";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-      image: Blob;
-    }
-  | {
+    } & BaseContext)
+  | ({
       state: "EDIT_CLIPBOARD";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-      image: Blob;
-    }
-  | {
+    } & BaseContext)
+  | ({
       state: "DIRTY";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-    }
-  | {
+    } & BaseContext)
+  | ({
       state: "SYNCING";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-    }
-  | {
+    } & BaseContext)
+  | ({
       state: "SYNCING_DIRTY";
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-    };
+    } & BaseContext)
+  | ({
+      state: "UNFOCUSED";
+    } & BaseContext)
+  | ({
+      state: "UNFOCUSED_DIRTY";
+    } & BaseContext)
+  | ({
+      state: "FOCUSED";
+    } & BaseContext)
+  | ({
+      state: "FOCUSED_DIRTY";
+    } & BaseContext);
 
 export type Action =
-  | {
-      type: "REOPEN";
-    }
   | {
       type: "LOADING_SUCCESS";
       data: ExcalidrawData;
       metadata: ExcalidrawMetadata;
+      image: Blob;
     }
   | {
       type: "LOADING_ERROR";
@@ -87,133 +86,190 @@ export type Action =
     }
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
-      image: Blob;
     }
   | {
       type: "COPY_TO_CLIPBOARD";
+    }
+  | {
+      type: "FOCUS";
+    }
+  | {
+      type: "BLUR";
+    }
+  /**
+   *  When user focuses tab with a dirty change, go grab latest
+   * from storage
+   */
+  | {
+      type: "REFRESH";
+    }
+  /**
+   * When user focuses tab with a dirty change, continue
+   * with client version
+   */
+  | {
+      type: "CONTINUE";
     };
 
 export const ExcalidrawProvider = ({
   id,
   userId,
   children,
+  initialContext = {
+    state: "LOADING",
+  },
 }: {
   id: string;
   userId: string;
   children: React.ReactNode;
+  initialContext?: Context;
 }) => {
-  const { createExcalidrawImage, storage } = useEnvironment();
+  const {
+    createExcalidrawImage,
+    storage,
+    onVisibilityChange,
+  } = useEnvironment();
   const excalidraw = useStates<Context, Action>(
     {
       LOADING: {
-        LOADING_SUCCESS: ({ data, metadata }) => ({
+        LOADING_SUCCESS: ({ data, metadata, image }) => ({
           state: "LOADED",
-          data,
-          metadata,
-        }),
-        LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
-      },
-      LOADED: {
-        INITIALIZE_CANVAS_SUCCESS: ({ image }, { data, metadata }) => ({
-          state: "EDIT",
           data,
           metadata,
           image,
         }),
-      },
-      REOPENED: {
-        LOADING_SUCCESS: ({ data, metadata }) => ({
-          state: "LOADED",
-          data,
-          metadata,
-        }),
         LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
+      },
+      LOADED: {
+        INITIALIZE_CANVAS_SUCCESS: (_, currentContext) => ({
+          ...currentContext,
+          state: "EDIT",
+        }),
       },
       EDIT: {
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
+                ...currentContext,
                 state: "DIRTY",
                 data: newData,
-                metadata: currentContext.metadata,
               }
             : currentContext,
-        COPY_TO_CLIPBOARD: (_, { data, image, metadata }) => ({
+        COPY_TO_CLIPBOARD: (_, currentContext) => ({
+          ...currentContext,
           state: "EDIT_CLIPBOARD",
-          data,
-          metadata,
-          image,
         }),
-        REOPEN: () => ({ state: "REOPENED" }),
+        BLUR: (_, currentContext) => ({
+          ...currentContext,
+          state: "UNFOCUSED",
+        }),
       },
       EDIT_CLIPBOARD: {
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
+                ...currentContext,
                 state: "DIRTY",
-                data: newData,
-                metadata: currentContext.metadata,
               }
             : currentContext,
-        REOPEN: () => ({ state: "REOPENED" }),
       },
       DIRTY: {
-        SYNC: (_, { data, metadata }) => ({
+        SYNC: (_, currentContext) => ({
+          ...currentContext,
           state: "SYNCING",
-          data: data,
-          metadata,
         }),
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
+                ...currentContext,
                 state: "DIRTY",
                 data: newData,
-                metadata: currentContext.metadata,
               }
             : currentContext,
+        BLUR: (_, currentContext) => ({
+          ...currentContext,
+          state: "UNFOCUSED_DIRTY",
+        }),
       },
       SYNCING: {
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
+                ...currentContext,
                 state: "SYNCING_DIRTY",
                 data: newData,
-                metadata: currentContext.metadata,
               }
             : currentContext,
-        SYNC_SUCCESS: ({ image }, { data, metadata }) => ({
+        SYNC_SUCCESS: ({ image }, currentContext) => ({
+          ...currentContext,
           state: "EDIT",
-          data,
-          metadata,
           image,
         }),
         SYNC_ERROR: (_) => ({ state: "ERROR", error: "Unable to sync" }),
+        BLUR: (_, currentContext) => ({
+          ...currentContext,
+          state: "UNFOCUSED",
+        }),
       },
       SYNCING_DIRTY: {
         CHANGE_DETECTED: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
+                ...currentContext,
                 state: "SYNCING_DIRTY",
                 data: newData,
-                metadata: currentContext.metadata,
               }
             : currentContext,
-        SYNC_SUCCESS: (_, { data, metadata }) => ({
+        SYNC_SUCCESS: (_, currentContext) => ({
+          ...currentContext,
           state: "DIRTY",
-          data,
-          metadata,
         }),
-        SYNC_ERROR: (_, { data, metadata }) => ({
+        SYNC_ERROR: (_, currentContext) => ({
+          ...currentContext,
           state: "DIRTY",
-          data,
-          metadata,
+        }),
+        BLUR: (_, currentContext) => ({
+          ...currentContext,
+          state: "UNFOCUSED_DIRTY",
         }),
       },
       ERROR: {},
+      UNFOCUSED: {
+        FOCUS: (_, currentContext) => ({
+          ...currentContext,
+          state: "FOCUSED",
+        }),
+      },
+      UNFOCUSED_DIRTY: {
+        FOCUS: (_, currentContext) => ({
+          ...currentContext,
+          state: "FOCUSED_DIRTY",
+        }),
+      },
+      FOCUSED: {
+        LOADING_SUCCESS: ({ data, metadata, image }) => ({
+          state: "EDIT",
+          data,
+          metadata,
+          image,
+        }),
+        LOADING_ERROR: ({ error }) => ({
+          state: "ERROR",
+          error,
+        }),
+      },
+      FOCUSED_DIRTY: {
+        REFRESH: (_, currentContext) => ({
+          ...currentContext,
+          state: "FOCUSED",
+        }),
+        CONTINUE: (_, currentContext) => ({
+          ...currentContext,
+          state: "EDIT",
+        }),
+      },
     },
-    {
-      state: "LOADING",
-    }
+    initialContext
   );
 
   if (process.env.NODE_ENV === "development") {
@@ -222,24 +278,45 @@ export const ExcalidrawProvider = ({
 
   useEffect(
     () =>
+      onVisibilityChange((visible) => {
+        if (visible) {
+          excalidraw.dispatch({ type: "FOCUS" });
+        } else {
+          excalidraw.dispatch({ type: "BLUR" });
+        }
+      }),
+    []
+  );
+
+  const loadExcalidraw = () => {
+    storage
+      .getExcalidraw(userId, id)
+      .then((response) =>
+        createExcalidrawImage(
+          response.data.elements,
+          response.data.appState
+        ).then((image) => ({ image, response }))
+      )
+      .then(({ image, response }) => {
+        excalidraw.dispatch({
+          type: "LOADING_SUCCESS",
+          metadata: response.metadata,
+          data: response.data,
+          image,
+        });
+      })
+      .catch((error) => {
+        excalidraw.dispatch({
+          type: "LOADING_ERROR",
+          error: error.message,
+        });
+      });
+  };
+
+  useEffect(
+    () =>
       excalidraw.exec({
-        LOADING: () => {
-          storage
-            .getExcalidraw(userId, id)
-            .then((response) => {
-              excalidraw.dispatch({
-                type: "LOADING_SUCCESS",
-                metadata: response.metadata,
-                data: response.data,
-              });
-            })
-            .catch((error) => {
-              excalidraw.dispatch({
-                type: "LOADING_ERROR",
-                error: error.message,
-              });
-            });
-        },
+        LOADING: loadExcalidraw,
         SYNCING: ({ data }) => {
           storage
             .saveExcalidraw(userId, id, data.elements, data.appState)
@@ -277,6 +354,7 @@ export const ExcalidrawProvider = ({
             new window.ClipboardItem({ "image/png": image }),
           ]);
         },
+        FOCUSED: loadExcalidraw,
       }),
     [excalidraw]
   );

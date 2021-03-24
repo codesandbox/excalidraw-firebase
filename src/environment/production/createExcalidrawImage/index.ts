@@ -22,13 +22,17 @@ export const createExcalidrawImage: CreateExcalidrawImage = (
   elements,
   appState
 ) => {
-  const canvas = exportToCanvas(elements, appState, {
-    exportBackground: true,
-    shouldAddWatermark: false,
-    viewBackgroundColor: "#FFF",
-    exportPadding: 10,
-    scale: 1,
-  });
+  const canvas = exportToCanvas(
+    elements.filter((element) => !element.isDeleted),
+    appState,
+    {
+      exportBackground: true,
+      shouldAddWatermark: false,
+      viewBackgroundColor: "#FFF",
+      exportPadding: 10,
+      scale: 1,
+    }
+  );
 
   return canvasToBlob(canvas);
 };

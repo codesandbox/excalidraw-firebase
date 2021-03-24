@@ -37,8 +37,8 @@ export interface ExcalidrawStorage {
   saveImage(userId: string, id: string, image: Blob): Promise<void>;
 }
 
-export interface OnReOpen {
-  (cb: () => void): () => void;
+export interface OnVisibilityChange {
+  (cb: (visible: boolean) => void): () => void;
 }
 
 export interface Environment {
@@ -46,4 +46,5 @@ export interface Environment {
   router: Router;
   storage: ExcalidrawStorage;
   auth: Auth;
+  onVisibilityChange: OnVisibilityChange;
 }

@@ -23,10 +23,12 @@ export const ExcalidrawCanvas = React.memo(
     data,
     onChange,
     onInitialized,
+    readOnly,
   }: {
     data: any;
     onChange: (elements: any[], appState: any) => void;
     onInitialized: () => void;
+    readOnly: boolean;
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
@@ -69,6 +71,7 @@ export const ExcalidrawCanvas = React.memo(
           height={dimensions.height}
           initialData={data}
           onChange={onChange}
+          viewModeEnabled={readOnly}
         />
       </div>
     );
