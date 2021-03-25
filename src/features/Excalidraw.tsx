@@ -18,36 +18,39 @@ export type Context =
       state: "ERROR";
       error: string;
     }
-  | ({
-      state: "LOADED";
-    } & BaseContext)
-  | ({
-      state: "EDIT";
-    } & BaseContext)
-  | ({
-      state: "EDIT_CLIPBOARD";
-    } & BaseContext)
-  | ({
-      state: "DIRTY";
-    } & BaseContext)
-  | ({
-      state: "SYNCING";
-    } & BaseContext)
-  | ({
-      state: "SYNCING_DIRTY";
-    } & BaseContext)
-  | ({
-      state: "UNFOCUSED";
-    } & BaseContext)
-  | ({
-      state: "UNFOCUSED_DIRTY";
-    } & BaseContext)
-  | ({
-      state: "FOCUSED";
-    } & BaseContext)
-  | ({
-      state: "FOCUSED_DIRTY";
-    } & BaseContext);
+  | (BaseContext &
+      (
+        | {
+            state: "LOADED";
+          }
+        | {
+            state: "EDIT";
+          }
+        | {
+            state: "EDIT_CLIPBOARD";
+          }
+        | {
+            state: "DIRTY";
+          }
+        | {
+            state: "SYNCING";
+          }
+        | {
+            state: "SYNCING_DIRTY";
+          }
+        | {
+            state: "UNFOCUSED";
+          }
+        | {
+            state: "UNFOCUSED_DIRTY";
+          }
+        | {
+            state: "FOCUSED";
+          }
+        | {
+            state: "FOCUSED_DIRTY";
+          }
+      ));
 
 export type Action =
   | {
