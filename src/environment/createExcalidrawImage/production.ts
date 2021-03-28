@@ -1,5 +1,6 @@
 import { exportToCanvas } from "./excalidraw-src/scene/export";
-import { CreateExcalidrawImage } from "../../interfaces";
+import { CreateError, CreateExcalidrawImage } from "./";
+import { err, ok, result } from "react-states";
 
 export const canvasToBlob = async (
   canvas: HTMLCanvasElement
@@ -34,5 +35,9 @@ export const createExcalidrawImage: CreateExcalidrawImage = (
     }
   );
 
-  return canvasToBlob(canvas);
+  const promise = canvasToBlob(canvas)
+    .then((blob) => ok(blob))
+    .catch((error: Error) => err("ERROR", error));
+
+  return result<Blob, CreateError>(promise);
 };

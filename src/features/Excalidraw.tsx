@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
-import { ExcalidrawData, ExcalidrawMetadata } from "../types";
+import { ExcalidrawData, ExcalidrawMetadata } from "../environment/storage";
 import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
 
@@ -10,7 +10,7 @@ export type BaseContext = {
   image: Blob;
 };
 
-export type Context =
+export type ExcalidrawContext =
   | {
       state: "LOADING";
     }
@@ -52,7 +52,7 @@ export type Context =
           }
       ));
 
-export type Action =
+export type ExcalidrawAction =
   | {
       type: "LOADING_SUCCESS";
       data: ExcalidrawData;
@@ -125,14 +125,14 @@ export const ExcalidrawProvider = ({
   id: string;
   userId: string;
   children: React.ReactNode;
-  initialContext?: Context;
+  initialContext?: ExcalidrawContext;
 }) => {
   const {
     createExcalidrawImage,
     storage,
     onVisibilityChange,
   } = useEnvironment();
-  const excalidraw = useStates<Context, Action>(
+  const excalidraw = useStates<ExcalidrawContext, ExcalidrawAction>(
     {
       LOADING: {
         LOADING_SUCCESS: ({ data, metadata, image }) => ({
@@ -291,54 +291,71 @@ export const ExcalidrawProvider = ({
     []
   );
 
-  const loadExcalidraw = () => {
-    storage
-      .getExcalidraw(userId, id)
-      .then((response) =>
+  const loadExcalidraw = () =>
+    storage.getExcalidraw(userId, id).resolve(
+      (response) =>
         createExcalidrawImage(
           response.data.elements,
           response.data.appState
-        ).then((image) => ({ image, response }))
-      )
-      .then(({ image, response }) => {
-        excalidraw.dispatch({
-          type: "LOADING_SUCCESS",
-          metadata: response.metadata,
-          data: response.data,
-          image,
-        });
-      })
-      .catch((error) => {
-        excalidraw.dispatch({
-          type: "LOADING_ERROR",
-          error: error.message,
-        });
-      });
-  };
+        ).resolve(
+          (image) => {
+            excalidraw.dispatch({
+              type: "LOADING_SUCCESS",
+              metadata: response.metadata,
+              data: response.data,
+              image,
+            });
+          },
+          {
+            ERROR: (error) => {
+              excalidraw.dispatch({
+                type: "LOADING_ERROR",
+                error: error.message,
+              });
+            },
+          }
+        ),
+      {
+        ERROR: (error) => {
+          excalidraw.dispatch({
+            type: "LOADING_ERROR",
+            error,
+          });
+        },
+      }
+    );
 
   useEffect(
     () =>
       excalidraw.exec({
         LOADING: loadExcalidraw,
-        SYNCING: ({ data }) => {
+        SYNCING: ({ data }) =>
           storage
             .saveExcalidraw(userId, id, data.elements, data.appState)
-            .then(() => {
-              return createExcalidrawImage(data.elements, data.appState);
-            })
-            .then((image) => {
-              excalidraw.dispatch({ type: "SYNC_SUCCESS", image });
-              return image;
-            })
-            .catch(() => {
-              excalidraw.dispatch({ type: "SYNC_ERROR" });
-            })
-            .then((image) => {
-              if (image) {
-                storage.saveImage(userId, id, image);
+            .resolve(
+              () =>
+                createExcalidrawImage(data.elements, data.appState).resolve(
+                  (image) => {
+                    excalidraw.dispatch({ type: "SYNC_SUCCESS", image });
+
+                    return storage
+                      .saveImage(userId, id, image)
+                      .resolve(() => {}, {
+                        ERROR: () => {},
+                      });
+                  },
+                  {
+                    ERROR: () => {
+                      excalidraw.dispatch({ type: "SYNC_ERROR" });
+                    },
+                  }
+                ),
+              {
+                ERROR: () => {
+                  excalidraw.dispatch({ type: "SYNC_ERROR" });
+                },
               }
-            });
-        },
+            ),
         DIRTY: () => {
           const id = setTimeout(() => {
             excalidraw.dispatch({
@@ -365,7 +382,9 @@ export const ExcalidrawProvider = ({
   return <context.Provider value={excalidraw}>{children}</context.Provider>;
 };
 
-const context = React.createContext({} as States<Context, Action>);
+const context = React.createContext(
+  {} as States<ExcalidrawContext, ExcalidrawAction>
+);
 
 export const useExcalidraw = () => React.useContext(context);
 

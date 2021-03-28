@@ -2,9 +2,9 @@ import React, { createContext, useContext, useEffect } from "react";
 import { States, useStates } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../environment";
-import { User } from "../types";
+import { User } from "../environment/auth";
 
-type Context =
+export type AuthContext =
   | {
       state: "AUTHENTICATING";
     }
@@ -20,7 +20,7 @@ type Context =
       user: User;
     };
 
-type Action =
+export type AuthAction =
   | {
       type: "SIGN_IN";
     }
@@ -35,7 +35,7 @@ type Action =
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const environment = useEnvironment();
-  const auth = useStates<Context, Action>(
+  const auth = useStates<AuthContext, AuthAction>(
     {
       AUTHENTICATING: {
         SIGN_IN_SUCCESS: ({ user }) => ({
@@ -74,25 +74,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(
     () =>
       auth.exec({
-        SIGNING_IN: function signIn() {
-          environment.auth
-            .signIn()
-            .then((user) => {
-              if (!user) {
+        SIGNING_IN: () =>
+          environment.auth.signIn().resolve(
+            (user) => {
+              auth.dispatch({ type: "SIGN_IN_SUCCESS", user });
+            },
+            {
+              NOT_SIGNED_IN: () => {
                 auth.dispatch({
                   type: "SIGN_IN_ERROR",
                   error: "Authenticated, but no user",
                 });
-              }
-            })
-            .catch((error) => {
-              auth.dispatch({
-                type: "SIGN_IN_ERROR",
-                error: error.message,
-              });
-            });
-        },
-        AUTHENTICATING: function listenToAuthChanges() {
+              },
+              ERROR: (error) => {
+                auth.dispatch({
+                  type: "SIGN_IN_ERROR",
+                  error: error.message,
+                });
+              },
+            }
+          ),
+        AUTHENTICATING: () =>
           environment.auth.onAuthChange((user) => {
             if (user) {
               auth.dispatch({ type: "SIGN_IN_SUCCESS", user });
@@ -102,8 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 error: "Not authenticated",
               });
             }
-          });
-        },
+          }),
       }),
     [auth]
   );
@@ -111,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return <context.Provider value={auth}>{children}</context.Provider>;
 };
 
-const context = createContext({} as States<Context, Action>);
+const context = createContext({} as States<AuthContext, AuthAction>);
 
 export const useAuth = () => useContext(context);
 

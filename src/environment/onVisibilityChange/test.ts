@@ -1,4 +1,4 @@
-import { OnVisibilityChange } from "../interfaces";
+import { OnVisibilityChange } from "./";
 
 type MockedOnVisibilityChange = OnVisibilityChange & {
   trigger: (visible: boolean) => void;

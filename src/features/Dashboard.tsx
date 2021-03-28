@@ -1,22 +1,23 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
 import { useAuthenticatedAuth } from "./Auth";
-import { ExcalidrawMetadata } from "../types";
+import { ExcalidrawsByUser } from "../environment/storage";
 import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
+import { useHistory } from "react-router";
 
-export type Context =
+export type DashboardContext =
   | {
       state: "LOADING_PREVIEWS";
     }
   | {
       state: "PREVIEWS_LOADED";
-      excalidraws: ExcalidrawMetadata[];
+      excalidraws: ExcalidrawsByUser;
       showCount: number;
     }
   | {
       state: "CREATING_EXCALIDRAW";
-      excalidraws: ExcalidrawMetadata[];
+      excalidraws: ExcalidrawsByUser;
       showCount: number;
     }
   | {
@@ -29,12 +30,12 @@ export type Context =
     }
   | {
       state: "CREATE_EXCALIDRAW_ERROR";
-      excalidraws: ExcalidrawMetadata[];
+      excalidraws: ExcalidrawsByUser;
       showCount: number;
       error: string;
     };
 
-export type Action =
+export type DashboardAction =
   | {
       type: "CREATE_EXCALIDRAW";
     }
@@ -48,7 +49,7 @@ export type Action =
     }
   | {
       type: "LOADING_PREVIEWS_SUCCESS";
-      excalidraws: ExcalidrawMetadata[];
+      excalidraws: ExcalidrawsByUser;
     }
   | {
       type: "LOADING_PREVIEWS_ERROR";
@@ -60,9 +61,10 @@ export const DashboardProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const history = useHistory();
   const auth = useAuthenticatedAuth();
-  const { router, storage } = useEnvironment();
-  const dashboard = useStates<Context, Action>(
+  const { storage } = useEnvironment();
+  const dashboard = useStates<DashboardContext, DashboardAction>(
     {
       LOADING_PREVIEWS: {
         LOADING_PREVIEWS_SUCCESS: ({ excalidraws }) => ({
@@ -97,7 +99,7 @@ export const DashboardProvider = ({
       PREVIEWS_ERROR: {
         CREATE_EXCALIDRAW: () => ({
           state: "CREATING_EXCALIDRAW",
-          excalidraws: [],
+          excalidraws: {},
           showCount: 0,
         }),
       },
@@ -122,40 +124,42 @@ export const DashboardProvider = ({
   useEffect(
     () =>
       dashboard.exec({
-        LOADING_PREVIEWS: function getPreviews() {
-          storage
-            .getPreviews(auth.context.user.uid)
-            .then((excalidraws) => {
+        LOADING_PREVIEWS: () =>
+          storage.getPreviews().resolve(
+            (excalidraws) => {
               dashboard.dispatch({
                 type: "LOADING_PREVIEWS_SUCCESS",
                 excalidraws,
               });
-            })
-            .catch((error) => {
-              dashboard.dispatch({
-                type: "LOADING_PREVIEWS_ERROR",
-                error: error.message,
-              });
-            });
-        },
-        CREATING_EXCALIDRAW: () => {
-          storage
-            .createExcalidraw(auth.context.user.uid)
-            .then((id) => {
+            },
+            {
+              ERROR: (error) => {
+                dashboard.dispatch({
+                  type: "LOADING_PREVIEWS_ERROR",
+                  error,
+                });
+              },
+            }
+          ),
+        CREATING_EXCALIDRAW: () =>
+          storage.createExcalidraw(auth.context.user.uid).resolve(
+            (id) => {
               dashboard.dispatch({
                 type: "CREATE_EXCALIDRAW_SUCCESS",
                 id,
               });
-            })
-            .catch((error) => {
-              dashboard.dispatch({
-                type: "CREATE_EXCALIDRAW_ERROR",
-                error: error.message,
-              });
-            });
-        },
+            },
+            {
+              ERROR: (error) => {
+                dashboard.dispatch({
+                  type: "CREATE_EXCALIDRAW_ERROR",
+                  error,
+                });
+              },
+            }
+          ),
         EXCALIDRAW_CREATED: ({ id }) => {
-          router.navigate(`/${auth.context.user.uid}/${id}`);
+          history.push(`/${auth.context.user.uid}/${id}`);
         },
       }),
     [dashboard]
@@ -164,6 +168,8 @@ export const DashboardProvider = ({
   return <context.Provider value={dashboard}>{children}</context.Provider>;
 };
 
-const context = React.createContext({} as States<Context, Action>);
+const context = React.createContext(
+  {} as States<DashboardContext, DashboardAction>
+);
 
 export const useDashboard = () => React.useContext(context);

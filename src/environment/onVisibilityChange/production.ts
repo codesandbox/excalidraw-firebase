@@ -1,4 +1,4 @@
-import { OnVisibilityChange } from "../interfaces";
+import { OnVisibilityChange } from "./";
 
 const subscriptions: Array<(visibility: boolean) => void> = [];
 

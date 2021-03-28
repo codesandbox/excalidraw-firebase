@@ -1,5 +1,15 @@
 import React, { createContext, useContext } from "react";
-import { Environment } from "./interfaces";
+import { Auth } from "./auth";
+import { CreateExcalidrawImage } from "./createExcalidrawImage";
+import { OnVisibilityChange } from "./onVisibilityChange";
+import { Storage } from "./storage";
+
+export interface Environment {
+  createExcalidrawImage: CreateExcalidrawImage;
+  storage: Storage;
+  auth: Auth;
+  onVisibilityChange: OnVisibilityChange;
+}
 
 const environmentContext = createContext({} as Environment);
 

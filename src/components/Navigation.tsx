@@ -3,22 +3,40 @@ import { Dashboard } from "./Dashboard";
 import { DashboardProvider } from "../features/Dashboard";
 import { Excalidraw } from "./Excalidraw";
 import { ExcalidrawProvider } from "../features/Excalidraw";
-import { useNavigation } from "../features/Navigation";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useParams,
+} from "react-router-dom";
+
+const DashboardPage = () => (
+  <DashboardProvider>
+    <Dashboard />
+  </DashboardProvider>
+);
+
+const ExcalidrawPage = () => {
+  let { id, userId } = useParams<{ id: string; userId: string }>();
+
+  return (
+    <ExcalidrawProvider key={id} id={id} userId={userId}>
+      <Excalidraw />
+    </ExcalidrawProvider>
+  );
+};
 
 export const Navigation = () => {
-  const navigation = useNavigation();
-
-  return navigation.map({
-    INITIALIZING: () => null,
-    DASHBOARD: () => (
-      <DashboardProvider>
-        <Dashboard />
-      </DashboardProvider>
-    ),
-    EXCALIDRAW: ({ id, userId }) => (
-      <ExcalidrawProvider key={id} id={id} userId={userId}>
-        <Excalidraw />
-      </ExcalidrawProvider>
-    ),
-  });
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          <DashboardPage />
+        </Route>
+        <Route path="/:userId/:id">
+          <ExcalidrawPage />
+        </Route>
+      </Switch>
+    </Router>
+  );
 };

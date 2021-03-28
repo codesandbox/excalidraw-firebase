@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickState, TMap, map } from "react-states";
+import { PickState, map } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { Context, useExcalidraw } from "../features/Excalidraw";
+import { ExcalidrawContext, useExcalidraw } from "../features/Excalidraw";
 import { PopoverMenu } from "./PopoverMenu";
 import { styled } from "../stitches.config";
 // import * as Dialog from "@radix-ui/react-dialog";
@@ -36,7 +36,7 @@ const WarningMessageContainer = styled("div", {
 });
 
 type RenderExcalidrawContext = PickState<
-  Context,
+  ExcalidrawContext,
   | "LOADED"
   | "EDIT"
   | "EDIT_CLIPBOARD"

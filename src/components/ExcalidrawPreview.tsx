@@ -1,13 +1,14 @@
 import * as React from "react";
 import { useStates } from "react-states";
-import firebase from "firebase/app";
 import { useAuthenticatedAuth } from "../features/Auth";
-import { ExcalidrawMetadata } from "../types";
+import { ExcalidrawMetadata } from "../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { useNavigation } from "../features/Navigation";
 import { styled } from "../stitches.config";
+import { Link } from "react-router-dom";
+import { useEnvironment } from "../environment";
 
 const Wrapper = styled("li", {
+  position: "relative",
   borderRadius: "3px",
   border: "1px solid #eaeaea",
   display: "flex",
@@ -28,7 +29,15 @@ const Wrapper = styled("li", {
   },
 });
 
-type Context =
+const WrapperLink = styled(Link, {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+});
+
+type ExcalidrawPreviewContext =
   | {
       state: "LOADING_PREVIEW";
     }
@@ -41,7 +50,7 @@ type Context =
       error: string;
     };
 
-type Action =
+type ExcalidrawPreviewAction =
   | {
       type: "LOADING_PREVIEW_SUCCESS";
       src: string;
@@ -52,13 +61,15 @@ type Action =
     };
 
 export const ExcalidrawPreview = ({
+  userId,
   metadata,
 }: {
+  userId: string;
   metadata: ExcalidrawMetadata;
 }) => {
-  const auth = useAuthenticatedAuth();
-  const navigation = useNavigation();
-  const preview = useStates<Context, Action>(
+  const { storage } = useEnvironment();
+
+  const preview = useStates<ExcalidrawPreviewContext, ExcalidrawPreviewAction>(
     {
       LOADING_PREVIEW: {
         LOADING_PREVIEW_SUCCESS: ({ src }) => ({
@@ -82,23 +93,22 @@ export const ExcalidrawPreview = ({
     () =>
       preview.exec({
         LOADING_PREVIEW: () => {
-          firebase
-            .storage()
-            .ref()
-            .child(`previews/${auth.context.user.uid}/${metadata.id}`)
-            .getDownloadURL()
-            .then((src) => {
+          storage.getImageSrc(userId, metadata.id).resolve(
+            (src) => {
               preview.dispatch({
                 type: "LOADING_PREVIEW_SUCCESS",
                 src,
               });
-            })
-            .catch((error) => {
-              preview.dispatch({
-                type: "LOADING_PREVIEW_ERROR",
-                error: error.message,
-              });
-            });
+            },
+            {
+              ERROR: (error) => {
+                preview.dispatch({
+                  type: "LOADING_PREVIEW_ERROR",
+                  error,
+                });
+              },
+            }
+          );
         },
       }),
     [preview]
@@ -111,16 +121,8 @@ export const ExcalidrawPreview = ({
       </Wrapper>
     ),
     PREVIEW_LOADED: ({ src }) => (
-      <Wrapper
-        style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}
-        onClick={() => {
-          navigation.dispatch({
-            type: "OPEN_EXCALIDRAW",
-            userId: auth.context.user.uid,
-            id: metadata.id,
-          });
-        }}
-      >
+      <Wrapper style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}>
+        <WrapperLink to={`/${userId}/${metadata.id}`} />
         <span
           style={{
             backgroundColor: "#333",
@@ -134,18 +136,7 @@ export const ExcalidrawPreview = ({
       </Wrapper>
     ),
     LOADING_ERROR: ({ error }) => (
-      <Wrapper
-        style={{ color: "tomato", overflow: "hidden" }}
-        onClick={() => {
-          navigation.dispatch({
-            type: "OPEN_EXCALIDRAW",
-            userId: auth.context.user.uid,
-            id: metadata.id,
-          });
-        }}
-      >
-        {error}
-      </Wrapper>
+      <Wrapper style={{ color: "tomato", overflow: "hidden" }}>{error}</Wrapper>
     ),
   });
 };

@@ -1,7 +1,6 @@
 import React from "react";
 import { Navigation } from "./Navigation";
 import { useAuth } from "../features/Auth";
-import { NavigationProvider } from "../features/Navigation";
 
 export const Auth = () => {
   const auth = useAuth();
@@ -21,11 +20,7 @@ export const Auth = () => {
             <div className="lds-dual-ring"></div>
           </div>
         ),
-        AUTHENTICATED: () => (
-          <NavigationProvider>
-            <Navigation />
-          </NavigationProvider>
-        ),
+        AUTHENTICATED: () => <Navigation />,
         SIGNING_IN: () => (
           <div className="center-wrapper">
             <div className="lds-dual-ring"></div>
