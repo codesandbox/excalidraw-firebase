@@ -44,7 +44,7 @@ type RenderExcalidrawContext = PickState<
   | "DIRTY"
   | "SYNCING_DIRTY"
   | "UNFOCUSED"
-  | "UNFOCUSED_DIRTY"
+  | "FOCUSED"
 >;
 
 export const Excalidraw = () => {
@@ -98,16 +98,12 @@ export const Excalidraw = () => {
       SYNCING: variants.loading,
       SYNCING_DIRTY: variants.loading,
       FOCUSED: variants.loading,
-      FOCUSED_DIRTY: variants.loading,
       UNFOCUSED: variants.loading,
-      UNFOCUSED_DIRTY: variants.loading,
     });
 
     const readOnly = map(context, {
       FOCUSED: () => true,
-      FOCUSED_DIRTY: () => true,
       UNFOCUSED: () => true,
-      UNFOCUSED_DIRTY: () => true,
       LOADED: () => false,
       SYNCING: () => false,
       SYNCING_DIRTY: () => false,
@@ -145,39 +141,18 @@ export const Excalidraw = () => {
         <h1>OMG, error, {error}</h1>
       </div>
     ),
-    FOCUSED: () => (
+    UPDATING: () => (
       <div className="center-wrapper">
         <div className="lds-dual-ring"></div>
       </div>
     ),
-    FOCUSED_DIRTY: () => (
-      <WarningOverlay>
-        <WarningMessageContainer>
-          <WarningText>
-            You left the window in a DIRTY state, not sure what you want to do?
-          </WarningText>
-          <div>
-            <WarningButton
-              onClick={() => excalidraw.dispatch({ type: "CONTINUE" })}
-            >
-              Keep my local version
-            </WarningButton>
-            <WarningButton
-              onClick={() => excalidraw.dispatch({ type: "REFRESH" })}
-            >
-              Update from server
-            </WarningButton>
-          </div>
-        </WarningMessageContainer>
-      </WarningOverlay>
-    ),
     LOADED: renderExcalidraw,
+    FOCUSED: renderExcalidraw,
     EDIT: renderExcalidraw,
     EDIT_CLIPBOARD: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,
     UNFOCUSED: renderExcalidraw,
-    UNFOCUSED_DIRTY: renderExcalidraw,
   });
 };

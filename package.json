@@ -32,7 +32,7 @@
     "react-dom": "^17.0.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-states": "^2.2.2",
+    "react-states": "^2.4.2",
     "roughjs": "^4.3.1",
     "sass": "^1.32.8"
   },

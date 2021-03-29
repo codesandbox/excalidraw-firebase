@@ -42,13 +42,10 @@ export type ExcalidrawContext =
             state: "UNFOCUSED";
           }
         | {
-            state: "UNFOCUSED_DIRTY";
-          }
-        | {
             state: "FOCUSED";
           }
         | {
-            state: "FOCUSED_DIRTY";
+            state: "UPDATING";
           }
       ));
 
@@ -83,6 +80,7 @@ export type ExcalidrawAction =
   | {
       type: "SYNC_SUCCESS";
       image: Blob;
+      metadata: ExcalidrawMetadata;
     }
   | {
       type: "SYNC_ERROR";
@@ -191,7 +189,7 @@ export const ExcalidrawProvider = ({
             : currentContext,
         BLUR: (_, currentContext) => ({
           ...currentContext,
-          state: "UNFOCUSED_DIRTY",
+          state: "UNFOCUSED",
         }),
       },
       SYNCING: {
@@ -203,9 +201,10 @@ export const ExcalidrawProvider = ({
                 data: newData,
               }
             : currentContext,
-        SYNC_SUCCESS: ({ image }, currentContext) => ({
+        SYNC_SUCCESS: ({ image, metadata }, currentContext) => ({
           ...currentContext,
           state: "EDIT",
+          metadata,
           image,
         }),
         SYNC_ERROR: (_) => ({ state: "ERROR", error: "Unable to sync" }),
@@ -233,7 +232,7 @@ export const ExcalidrawProvider = ({
         }),
         BLUR: (_, currentContext) => ({
           ...currentContext,
-          state: "UNFOCUSED_DIRTY",
+          state: "UNFOCUSED",
         }),
       },
       ERROR: {},
@@ -243,33 +242,24 @@ export const ExcalidrawProvider = ({
           state: "FOCUSED",
         }),
       },
-      UNFOCUSED_DIRTY: {
-        FOCUS: (_, currentContext) => ({
+      FOCUSED: {
+        REFRESH: (_, currentContext) => ({
           ...currentContext,
-          state: "FOCUSED_DIRTY",
+          state: "UPDATING",
+        }),
+        CONTINUE: (_, currentContext) => ({
+          ...currentContext,
+          state: "EDIT",
         }),
       },
-      FOCUSED: {
+      UPDATING: {
         LOADING_SUCCESS: ({ data, metadata, image }) => ({
           state: "EDIT",
           data,
           metadata,
           image,
         }),
-        LOADING_ERROR: ({ error }) => ({
-          state: "ERROR",
-          error,
-        }),
-      },
-      FOCUSED_DIRTY: {
-        REFRESH: (_, currentContext) => ({
-          ...currentContext,
-          state: "FOCUSED",
-        }),
-        CONTINUE: (_, currentContext) => ({
-          ...currentContext,
-          state: "EDIT",
-        }),
+        LOADING_ERROR: ({ error }) => ({ state: "ERROR", error }),
       },
     },
     initialContext
@@ -333,10 +323,14 @@ export const ExcalidrawProvider = ({
           storage
             .saveExcalidraw(userId, id, data.elements, data.appState)
             .resolve(
-              () =>
+              (metadata) =>
                 createExcalidrawImage(data.elements, data.appState).resolve(
                   (image) => {
-                    excalidraw.dispatch({ type: "SYNC_SUCCESS", image });
+                    excalidraw.dispatch({
+                      type: "SYNC_SUCCESS",
+                      image,
+                      metadata,
+                    });
 
                     return storage
                       .saveImage(userId, id, image)
@@ -361,7 +355,7 @@ export const ExcalidrawProvider = ({
             excalidraw.dispatch({
               type: "SYNC",
             });
-          }, 1000);
+          }, 500);
 
           return () => {
             clearTimeout(id);
@@ -374,7 +368,24 @@ export const ExcalidrawProvider = ({
             new window.ClipboardItem({ "image/png": image }),
           ]);
         },
-        FOCUSED: loadExcalidraw,
+        FOCUSED: ({ metadata }) =>
+          storage
+            .hasExcalidrawUpdated(userId, id, metadata.last_updated)
+            .resolve(
+              (hasUpdated) => {
+                if (hasUpdated) {
+                  excalidraw.dispatch({ type: "REFRESH" });
+                } else {
+                  excalidraw.dispatch({ type: "CONTINUE" });
+                }
+              },
+              {
+                ERROR: () => {
+                  excalidraw.dispatch({ type: "CONTINUE" });
+                },
+              }
+            ),
+        UPDATING: loadExcalidraw,
       }),
     [excalidraw]
   );

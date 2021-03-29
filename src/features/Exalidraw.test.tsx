@@ -58,7 +58,7 @@ describe("Excalidraw", () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({});
+    const storage = createStorageMock();
 
     let excalidraw!: ReturnType<typeof useExcalidraw>;
     const ExcalidrawExposer = () => {
@@ -101,114 +101,11 @@ describe("Excalidraw", () => {
     );
   });
 
-  test("Should set UNFOCUSED_DIRTY state when moving away from tab in DIRTY state", async () => {
+  test("Should set FOCUSED state when app becomes visible again, download update when Excalidraw has changed on server and go to EDIT", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <EnvironmentProvider
-        environment={{
-          onVisibilityChange,
-        }}
-      >
-        <ExcalidrawProvider
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "DIRTY",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
-          }}
-        >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
-    );
-
-    act(() => {
-      onVisibilityChange.trigger(false);
-    });
-
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "UNFOCUSED_DIRTY"
-    );
-  });
-
-  test("Should set UNFOCUSED_DIRTY state when moving away from tab in SYNCING_DIRTY state", async () => {
-    const userId = "123";
-    const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({
-      getExcalidraw: () =>
-        ok({
-          data: { elements: [], appState: {}, version: 0 },
-          metadata: {
-            author: userId,
-            id,
-            last_updated: new Date(),
-          },
-        }),
-    });
-
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <EnvironmentProvider
-        environment={{
-          storage,
-          onVisibilityChange,
-          createExcalidrawImage: createExcalidrawImageMock(),
-        }}
-      >
-        <ExcalidrawProvider
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "SYNCING_DIRTY",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
-          }}
-        >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
-    );
-
-    act(() => {
-      onVisibilityChange.trigger(false);
-    });
-
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "UNFOCUSED_DIRTY"
-    );
-  });
-
-  test("Should set FOCUSED state when app becomes visible again, download update Excalidraw and go to EDIT", async () => {
-    const userId = "123";
-    const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({
-      getExcalidraw: () =>
-        ok({
-          data: { version: 1, elements: [], appState: {} },
-          metadata: { last_updated: new Date(), id, author: userId },
-        }),
-    });
+    const storage = createStorageMock();
 
     let excalidraw!: ReturnType<typeof useExcalidraw>;
     const ExcalidrawExposer = () => {
@@ -248,118 +145,37 @@ describe("Excalidraw", () => {
       "FOCUSED"
     );
 
+    storage.hasExcalidrawUpdated.ok(true);
+
+    await waitFor(() => {
+      return expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
+        "UPDATING"
+      );
+    });
+
+    storage.getExcalidraw.ok({
+      data: {
+        appState: {},
+        elements: [],
+        version: 0,
+      },
+      metadata: {
+        author: "123",
+        id: "1",
+        last_updated: new Date(),
+      },
+    });
+
     await waitFor(() =>
       expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>("EDIT")
     );
   });
 
-  test("Should set FOCUSED_DIRTY state when app becomes visible again on UNFOCUSED_DIRTY", async () => {
+  test("Should set FOCUSED state when app becomes visible again and go to EDIT when there is no change on server", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({
-      getExcalidraw: () =>
-        ok({
-          data: { version: 1, elements: [], appState: {} },
-          metadata: { last_updated: new Date(), id, author: userId },
-        }),
-    });
-
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <EnvironmentProvider
-        environment={{
-          onVisibilityChange,
-          storage,
-        }}
-      >
-        <ExcalidrawProvider
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "UNFOCUSED_DIRTY",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
-          }}
-        >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
-    );
-
-    act(() => {
-      onVisibilityChange.trigger(true);
-    });
-
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "FOCUSED_DIRTY"
-    );
-  });
-  test("Should go to EDIT when continuing from FOCUSED_DIRTY", async () => {
-    const userId = "123";
-    const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({
-      getExcalidraw: () =>
-        ok({
-          data: { version: 1, elements: [], appState: {} },
-          metadata: { last_updated: new Date(), id, author: userId },
-        }),
-    });
-
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <EnvironmentProvider
-        environment={{
-          onVisibilityChange,
-          storage,
-        }}
-      >
-        <ExcalidrawProvider
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "FOCUSED_DIRTY",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
-          }}
-        >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
-    );
-
-    act(() => {
-      excalidraw.dispatch({ type: "CONTINUE" });
-    });
-
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>("EDIT");
-  });
-  test("Should go to FOCUSED, fetching data and then EDIT when refreshing from FOCUSED_DIRTY", async () => {
-    const userId = "123";
-    const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock({
-      getExcalidraw: () =>
-        ok({
-          data: { version: 1, elements: [], appState: {} },
-          metadata: { last_updated: new Date(), id, author: userId },
-        }),
-    });
+    const storage = createStorageMock();
 
     let excalidraw!: ReturnType<typeof useExcalidraw>;
     const ExcalidrawExposer = () => {
@@ -380,7 +196,7 @@ describe("Excalidraw", () => {
           userId={userId}
           id={id}
           initialContext={{
-            state: "FOCUSED_DIRTY",
+            state: "UNFOCUSED",
             data: { appState: {}, elements: [], version: 0 },
             metadata: { id, author: userId, last_updated: new Date() },
             image: new Blob(),
@@ -392,12 +208,14 @@ describe("Excalidraw", () => {
     );
 
     act(() => {
-      excalidraw.dispatch({ type: "REFRESH" });
+      onVisibilityChange.trigger(true);
     });
 
     expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
       "FOCUSED"
     );
+
+    storage.hasExcalidrawUpdated.ok(false);
 
     await waitFor(() =>
       expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>("EDIT")

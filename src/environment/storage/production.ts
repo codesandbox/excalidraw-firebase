@@ -20,6 +20,25 @@ export const storage: Storage = {
         .then((ref) => ok(ref.id))
         .catch((error: Error) => err("ERROR", error.message))
     ),
+  hasExcalidrawUpdated: (userId, id, currentLastUpdated) =>
+    result(
+      firebase
+        .firestore()
+        .collection(USERS_COLLECTION)
+        .doc(userId)
+        .collection(EXCALIDRAWS_COLLECTION)
+        .doc(id)
+        .get()
+        .then((doc) => {
+          const data = doc.data() as any;
+
+          return ok(
+            data.last_updated.toDate().getTime() !==
+              currentLastUpdated.getTime()
+          );
+        })
+        .catch((error: Error) => err("ERROR", error.message))
+    ),
   getExcalidraw(userId: string, id: string) {
     return result(
       Promise.all([
@@ -96,7 +115,23 @@ export const storage: Storage = {
             }
           ),
       ])
-        .then(() => ok(undefined))
+        .then(() =>
+          firebase
+            .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(userId)
+            .collection(EXCALIDRAWS_COLLECTION)
+            .doc(id)
+            .get()
+            .then((doc) => {
+              const metadata = doc.data()!;
+
+              return ok({
+                ...(metadata as ExcalidrawMetadata),
+                last_updated: metadata.last_updated.toDate() as Date,
+              });
+            })
+        )
         .catch((error: Error) => err("ERROR", error.message))
     ),
   saveImage: (userId, id, image) => {
@@ -173,7 +208,3 @@ export const storage: Storage = {
         })
     ),
 };
-
-/*
-,
-*/

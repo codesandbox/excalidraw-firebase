@@ -37,12 +37,17 @@ export interface Storage {
     StorageError
   >;
   getPreviews(): Result<ExcalidrawsByUser, StorageError>;
+  hasExcalidrawUpdated(
+    userId: string,
+    id: string,
+    date: Date
+  ): Result<boolean, StorageError>;
   saveExcalidraw(
     userId: string,
     id: string,
     elements: any[],
     appState: any
-  ): Result<void, StorageError>;
+  ): Result<ExcalidrawMetadata, StorageError>;
   saveImage(
     userId: string,
     id: string,
