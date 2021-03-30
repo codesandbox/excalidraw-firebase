@@ -10,6 +10,8 @@ const List = styled("ul", {
   listStyleType: "none",
   display: "flex",
   flexWrap: "wrap",
+  padding: '0 2rem',
+  margin: '0'
 });
 
 const Avatar = styled("img", {
@@ -35,26 +37,31 @@ const UserWrapper = styled("div", {
   display: "flex",
   alignItems: "center",
   padding: "0 2rem",
+  margin:'5rem 0 0 0'
 });
 
 const UserName = styled("h2", {
   color: "#333",
   padding: "1rem",
   textAlign: "left",
+  margin: '0',
+  letterSpacing: '-0.02rem',
+  textTransform: 'capitalize'
 });
 
 const CreateNewExcalidraw = styled("li", {
   fontSize: "24px",
   fontWeight: "bold",
-  border: "1px dashed #eaeaea",
+  border: "1px dashed #dad7d7",
   padding: "2rem",
-  margin: "1rem",
+  letterSpacing: '-0.01rem',
+  margin: "1rem 0 0 0",
   cursor: "pointer",
   boxSizing: "border-box",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  width: "200px",
+  width: "100%",
   height: "200px",
   "&:hover": {
     backgroundColor: "#fafafa",
@@ -81,7 +88,7 @@ export const Dashboard = () => {
       "PREVIEWS_LOADED" | "CREATE_EXCALIDRAW_ERROR"
     >
   ) => (
-    <div>
+    <div style={{paddingBottom: '5rem'}}>
       <List>
         {createExcalidraw}
         {context.excalidraws[auth.context.user.uid].excalidraws
