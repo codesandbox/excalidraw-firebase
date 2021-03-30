@@ -35,24 +35,29 @@ export type DashboardContext =
       error: string;
     };
 
+const CREATE_EXCALIDRAW_SUCCESS = Symbol("CREATE_EXCALIDRAW_SUCCESS");
+const CREATE_EXCALIDRAW_ERROR = Symbol("CREATE_EXCALIDRAW_ERROR");
+const LOADING_PREVIEWS_SUCCESS = Symbol("LOADING_PREVIEWS_SUCCESS");
+const LOADING_PREVIEWS_ERROR = Symbol("LOADING_PREVIEWS_ERROR");
+
 export type DashboardAction =
   | {
       type: "CREATE_EXCALIDRAW";
     }
   | {
-      type: "CREATE_EXCALIDRAW_SUCCESS";
+      type: typeof CREATE_EXCALIDRAW_SUCCESS;
       id: string;
     }
   | {
-      type: "CREATE_EXCALIDRAW_ERROR";
+      type: typeof CREATE_EXCALIDRAW_ERROR;
       error: string;
     }
   | {
-      type: "LOADING_PREVIEWS_SUCCESS";
+      type: typeof LOADING_PREVIEWS_SUCCESS;
       excalidraws: ExcalidrawsByUser;
     }
   | {
-      type: "LOADING_PREVIEWS_ERROR";
+      type: typeof LOADING_PREVIEWS_ERROR;
       error: string;
     };
 
@@ -67,12 +72,12 @@ export const DashboardProvider = ({
   const dashboard = useStates<DashboardContext, DashboardAction>(
     {
       LOADING_PREVIEWS: {
-        LOADING_PREVIEWS_SUCCESS: ({ excalidraws }) => ({
+        [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }) => ({
           state: "PREVIEWS_LOADED",
           excalidraws,
           showCount: 10,
         }),
-        LOADING_PREVIEWS_ERROR: ({ error }) => ({
+        [LOADING_PREVIEWS_ERROR]: ({ error }) => ({
           state: "PREVIEWS_ERROR",
           error,
         }),
@@ -85,11 +90,11 @@ export const DashboardProvider = ({
         }),
       },
       CREATING_EXCALIDRAW: {
-        CREATE_EXCALIDRAW_SUCCESS: ({ id }) => ({
+        [CREATE_EXCALIDRAW_SUCCESS]: ({ id }) => ({
           state: "EXCALIDRAW_CREATED",
           id,
         }),
-        CREATE_EXCALIDRAW_ERROR: ({ error }, { excalidraws, showCount }) => ({
+        [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws, showCount }) => ({
           state: "CREATE_EXCALIDRAW_ERROR",
           error,
           excalidraws,
@@ -128,14 +133,14 @@ export const DashboardProvider = ({
           storage.getPreviews().resolve(
             (excalidraws) => {
               dashboard.dispatch({
-                type: "LOADING_PREVIEWS_SUCCESS",
+                type: LOADING_PREVIEWS_SUCCESS,
                 excalidraws,
               });
             },
             {
               ERROR: (error) => {
                 dashboard.dispatch({
-                  type: "LOADING_PREVIEWS_ERROR",
+                  type: LOADING_PREVIEWS_ERROR,
                   error,
                 });
               },
@@ -145,14 +150,14 @@ export const DashboardProvider = ({
           storage.createExcalidraw(auth.context.user.uid).resolve(
             (id) => {
               dashboard.dispatch({
-                type: "CREATE_EXCALIDRAW_SUCCESS",
+                type: CREATE_EXCALIDRAW_SUCCESS,
                 id,
               });
             },
             {
               ERROR: (error) => {
                 dashboard.dispatch({
-                  type: "CREATE_EXCALIDRAW_ERROR",
+                  type: CREATE_EXCALIDRAW_ERROR,
                   error,
                 });
               },

@@ -6,34 +6,6 @@ import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { ExcalidrawContext, useExcalidraw } from "../features/Excalidraw";
-import { PopoverMenu } from "./PopoverMenu";
-import { styled } from "../stitches.config";
-// import * as Dialog from "@radix-ui/react-dialog";
-
-const WarningOverlay = styled("div", {
-  width: "100vw",
-  height: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-});
-
-const WarningText = styled("div", {
-  padding: "1rem",
-  fontSize: "20px",
-  fontWeight: "bold",
-});
-
-const WarningButton = styled("button", {
-  borderRadius: "3px",
-  padding: "0.5rem 1rem",
-  margin: "1rem",
-  fontSize: "18px",
-});
-
-const WarningMessageContainer = styled("div", {
-  zIndex: 1,
-});
 
 type RenderExcalidrawContext = PickState<
   ExcalidrawContext,
@@ -54,7 +26,7 @@ export const Excalidraw = () => {
     () =>
       debounce((elements, appState) => {
         excalidraw.dispatch({
-          type: "CHANGE_DETECTED",
+          type: "EXCALIDRAW_CHANGE",
           elements,
           appState,
           version: getSceneVersion(elements),
@@ -122,7 +94,6 @@ export const Excalidraw = () => {
           }}
           readOnly={readOnly}
         />
-        <PopoverMenu onDelete={() => {}} />
         <div className="edit" style={variant.style} onClick={variant.onClick}>
           {variant.content}
         </div>

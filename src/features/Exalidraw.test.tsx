@@ -1,10 +1,6 @@
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
-import {
-  ExcalidrawContext,
-  ExcalidrawProvider,
-  useExcalidraw,
-} from "./Excalidraw";
+import { ExcalidrawProvider, useExcalidraw } from "./Excalidraw";
 import { EnvironmentProvider } from "../environment";
 import { createOnVisibilityChange } from "../environment/onVisibilityChange/test";
 import { createStorageMock } from "../environment/storage/test";
