@@ -166,6 +166,7 @@ export const storage: Storage = {
                   return {
                     id: userDoc.id,
                     name: userDoc.data().name,
+                    avatarUrl: userDoc.data().avatarUrl,
                     excalidraws: collection.docs.map(
                       (doc) =>
                         ({
@@ -184,6 +185,7 @@ export const storage: Storage = {
             users.reduce<ExcalidrawsByUser>((aggr, user) => {
               aggr[user.id] = {
                 name: user.name,
+                avatarUrl: user.avatarUrl,
                 excalidraws: user.excalidraws,
               };
 

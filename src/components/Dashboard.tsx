@@ -12,11 +12,33 @@ const List = styled("ul", {
   flexWrap: "wrap",
 });
 
-const UserName = styled("h2", {
-  borderTop: "1px solid #EAEAEA",
-  borderBottom: "1px solid #EAEAEA",
+const Avatar = styled("img", {
+  borderRadius: 999999,
+  width: 40,
+  height: 40,
+  border: "1px solid #333",
+});
+
+const EmptyAvatar = styled("div", {
   backgroundColor: "#333",
+  borderRadius: 999999,
+  width: 40,
+  height: 40,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
   color: "#EAEAEA",
+  fontWeight: "bold",
+});
+
+const UserWrapper = styled("div", {
+  display: "flex",
+  alignItems: "center",
+  padding: "0 2rem",
+});
+
+const UserName = styled("h2", {
+  color: "#333",
   padding: "1rem",
   textAlign: "left",
 });
@@ -74,22 +96,33 @@ export const Dashboard = () => {
       </List>
       {Object.keys(context.excalidraws)
         .filter((uid) => uid !== auth.context.user.uid)
-        .map((uid) => (
-          <div>
-            <UserName>{context.excalidraws[uid].name}</UserName>
-            <List key={uid}>
-              {context.excalidraws[uid].excalidraws
-                .slice(0, context.showCount)
-                .map((excalidraw) => (
-                  <ExcalidrawPreview
-                    key={excalidraw.id}
-                    userId={uid}
-                    metadata={excalidraw}
-                  />
-                ))}
-            </List>
-          </div>
-        ))}
+        .map((uid) => {
+          const user = context.excalidraws[uid];
+
+          return (
+            <div>
+              <UserWrapper>
+                {user.avatarUrl ? (
+                  <Avatar src={user.avatarUrl} />
+                ) : (
+                  <EmptyAvatar>?</EmptyAvatar>
+                )}
+                <UserName>{user.name}</UserName>
+              </UserWrapper>
+              <List key={uid}>
+                {user.excalidraws
+                  .slice(0, context.showCount)
+                  .map((excalidraw) => (
+                    <ExcalidrawPreview
+                      key={excalidraw.id}
+                      userId={uid}
+                      metadata={excalidraw}
+                    />
+                  ))}
+              </List>
+            </div>
+          );
+        })}
     </div>
   );
 

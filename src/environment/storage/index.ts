@@ -20,6 +20,7 @@ export type ExcalidrawData = {
 export type ExcalidrawsByUser = {
   [userId: string]: {
     name: string;
+    avatarUrl: string | null;
     excalidraws: ExcalidrawMetadata[];
   };
 };

@@ -10,6 +10,22 @@ const getUser = (firebaseUser: firebase.User): User => ({
   avatarUrl: firebaseUser.providerData[0]?.photoURL ?? null,
 });
 
+const updateUserData = (user: User) => {
+  /*
+            We update the user document with name and avatarUrl so other
+            users can see it as well
+          */
+  firebase.firestore().collection(USERS_COLLECTION).doc(user.uid).set(
+    {
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+    },
+    {
+      merge: true,
+    }
+  );
+};
+
 export const auth: Auth = {
   signIn: () => {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -19,23 +35,8 @@ export const auth: Auth = {
       .then((result) => {
         if (result.user) {
           const user = getUser(result.user);
-          /*
-            We update the user document with name and avatarUrl so other
-            users can see it as well
-          */
-          firebase
-            .firestore()
-            .collection(USERS_COLLECTION)
-            .doc(result.user.uid)
-            .set(
-              {
-                name: user.name,
-                avatarUrl: user.avatarUrl,
-              },
-              {
-                merge: true,
-              }
-            );
+
+          updateUserData(user);
 
           return ok(user);
         }
@@ -48,7 +49,13 @@ export const auth: Auth = {
   },
   onAuthChange: (cb: (user: User | null) => void) => {
     return firebase.auth().onAuthStateChanged((firebaseUser) => {
-      cb(firebaseUser ? getUser(firebaseUser) : null);
+      if (firebaseUser) {
+        const user = getUser(firebaseUser);
+        updateUserData(user);
+        cb(user);
+      } else {
+        cb(null);
+      }
     });
   },
 };
