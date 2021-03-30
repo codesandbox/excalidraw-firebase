@@ -9,7 +9,6 @@ import { EnvironmentProvider } from "../environment";
 import { createOnVisibilityChange } from "../environment/onVisibilityChange/test";
 import { createStorageMock } from "../environment/storage/test";
 import { createExcalidrawImageMock } from "../environment/createExcalidrawImage/test";
-import { ok } from "react-states";
 
 describe("Excalidraw", () => {
   test("Should set UNFOCUSED state when moving away from tab in EDIT state", async () => {
@@ -49,9 +48,7 @@ describe("Excalidraw", () => {
       onVisibilityChange.trigger(false);
     });
 
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "UNFOCUSED"
-    );
+    expect(excalidraw.context.state).toBe("UNFOCUSED");
   });
 
   test("Should set UNFOCUSED state when moving away from tab in SYNCING state", async () => {
@@ -94,11 +91,7 @@ describe("Excalidraw", () => {
       onVisibilityChange.trigger(false);
     });
 
-    await waitFor(() =>
-      expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-        "UNFOCUSED"
-      )
-    );
+    await waitFor(() => expect(excalidraw.context.state).toBe("UNFOCUSED"));
   });
 
   test("Should set FOCUSED state when app becomes visible again, download update when Excalidraw has changed on server and go to EDIT", async () => {
@@ -141,17 +134,11 @@ describe("Excalidraw", () => {
       onVisibilityChange.trigger(true);
     });
 
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "FOCUSED"
-    );
+    expect(excalidraw.context.state).toBe("FOCUSED");
 
     storage.hasExcalidrawUpdated.ok(true);
 
-    await waitFor(() => {
-      return expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-        "UPDATING"
-      );
-    });
+    await waitFor(() => expect(excalidraw.context.state).toBe("UPDATING"));
 
     storage.getExcalidraw.ok({
       data: {
@@ -166,9 +153,7 @@ describe("Excalidraw", () => {
       },
     });
 
-    await waitFor(() =>
-      expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>("EDIT")
-    );
+    await waitFor(() => expect(excalidraw.context.state).toBe("EDIT"));
   });
 
   test("Should set FOCUSED state when app becomes visible again and go to EDIT when there is no change on server", async () => {
@@ -211,14 +196,10 @@ describe("Excalidraw", () => {
       onVisibilityChange.trigger(true);
     });
 
-    expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>(
-      "FOCUSED"
-    );
+    expect(excalidraw.context.state).toBe("FOCUSED");
 
     storage.hasExcalidrawUpdated.ok(false);
 
-    await waitFor(() =>
-      expect(excalidraw.context.state).toBe<ExcalidrawContext["state"]>("EDIT")
-    );
+    await waitFor(() => expect(excalidraw.context.state).toBe("EDIT"));
   });
 });
