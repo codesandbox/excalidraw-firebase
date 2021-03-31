@@ -1,6 +1,6 @@
-import { err, ok, result } from "react-states";
+import { result } from "react-states";
 import firebase from "firebase/app";
-import { Auth, SignInError, User } from "./";
+import { Auth, User } from "./";
 
 const USERS_COLLECTION = "users";
 
@@ -29,23 +29,24 @@ const updateUserData = (user: User) => {
 export const auth: Auth = {
   signIn: () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    const promise = firebase
-      .auth()
-      .signInWithPopup(provider)
-      .then((result) => {
-        if (result.user) {
-          const user = getUser(result.user);
 
-          updateUserData(user);
+    return result((ok, err) =>
+      firebase
+        .auth()
+        .signInWithPopup(provider)
+        .then((result) => {
+          if (result.user) {
+            const user = getUser(result.user);
 
-          return ok(user);
-        }
+            updateUserData(user);
 
-        return err("NOT_SIGNED_IN");
-      })
-      .catch((error: Error) => err("ERROR", error));
+            return ok(user);
+          }
 
-    return result<User, SignInError>(promise);
+          return err("NOT_SIGNED_IN");
+        })
+        .catch((error: Error) => err("ERROR", error))
+    );
   },
   onAuthChange: (cb: (user: User | null) => void) => {
     return firebase.auth().onAuthStateChanged((firebaseUser) => {

@@ -1,6 +1,6 @@
 import firebase from "firebase/app";
 import { ExcalidrawMetadata, ExcalidrawsByUser, Storage } from "./";
-import { err, ok, result } from "react-states";
+import { result } from "react-states";
 
 const EXCALIDRAWS_COLLECTION = "excalidraws";
 const EXCALIDRAWS_DATA_COLLECTION = "excalidrawsData";
@@ -8,7 +8,7 @@ const USERS_COLLECTION = "users";
 
 export const storage: Storage = {
   createExcalidraw: (userId) =>
-    result(
+    result((ok, err) =>
       firebase
         .firestore()
         .collection(USERS_COLLECTION)
@@ -21,7 +21,7 @@ export const storage: Storage = {
         .catch((error: Error) => err("ERROR", error.message))
     ),
   hasExcalidrawUpdated: (userId, id, currentLastUpdated) =>
-    result(
+    result((ok, err) =>
       firebase
         .firestore()
         .collection(USERS_COLLECTION)
@@ -40,7 +40,7 @@ export const storage: Storage = {
         .catch((error: Error) => err("ERROR", error.message))
     ),
   getExcalidraw(userId: string, id: string) {
-    return result(
+    return result((ok, err) =>
       Promise.all([
         firebase
           .firestore()
@@ -86,7 +86,7 @@ export const storage: Storage = {
     );
   },
   saveExcalidraw: (userId, id, elements, appState) =>
-    result(
+    result((ok, err) =>
       Promise.all([
         firebase
           .firestore()
@@ -135,7 +135,7 @@ export const storage: Storage = {
         .catch((error: Error) => err("ERROR", error.message))
     ),
   saveImage: (userId, id, image) => {
-    return result(
+    return result((ok, err) =>
       firebase
         .storage()
         .ref()
@@ -146,7 +146,7 @@ export const storage: Storage = {
     );
   },
   getPreviews: () =>
-    result(
+    result((ok, err) =>
       firebase
         .firestore()
         .collection(USERS_COLLECTION)
@@ -196,7 +196,7 @@ export const storage: Storage = {
         .catch((error: Error) => err("ERROR", error.message))
     ),
   getImageSrc: (userId, id) =>
-    result(
+    result((ok, err) =>
       firebase
         .storage()
         .ref()
