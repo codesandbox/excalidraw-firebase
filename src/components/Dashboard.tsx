@@ -2,9 +2,9 @@ import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
 import { useDashboard } from "../features/Dashboard";
 import { styled } from "../stitches.config";
-import { useAuthenticatedAuth } from "../features/Auth";
 import { PickState } from "react-states";
 import { DashboardContext } from "../features/Dashboard";
+import { useAuth } from "../features/Auth";
 
 const List = styled("ul", {
   listStyleType: "none",
@@ -62,7 +62,7 @@ const CreateNewExcalidraw = styled("li", {
 });
 
 export const Dashboard = () => {
-  const auth = useAuthenticatedAuth();
+  const auth = useAuth().when("AUTHENTICATED");
   const dashboard = useDashboard();
 
   const createExcalidraw = (

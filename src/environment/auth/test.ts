@@ -11,14 +11,17 @@ const createOnAuthChangeMock = () => {
   };
 
   onAuthChangeMock.trigger = (user) => {
-    registeredCallback(user);
+    Promise.resolve().then(() => {
+      registeredCallback(user);
+    });
   };
 
   return onAuthChangeMock;
 };
 
-export const createAuthMock = (): Auth & {
+export const createAuth = (): Auth & {
   signIn: ResultMock<Auth["signIn"]>;
+  onAuthChange: ReturnType<typeof createOnAuthChangeMock>;
 } => {
   return {
     signIn: createResultMock(),

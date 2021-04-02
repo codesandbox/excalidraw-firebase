@@ -1,12 +1,12 @@
 import firebase from "firebase/app";
-import { ExcalidrawMetadata, ExcalidrawsByUser, Storage } from "./";
+import { ExcalidrawMetadata, ExcalidrawsByUser, Storage } from ".";
 import { result } from "react-states";
 
 const EXCALIDRAWS_COLLECTION = "excalidraws";
 const EXCALIDRAWS_DATA_COLLECTION = "excalidrawsData";
 const USERS_COLLECTION = "users";
 
-export const storage: Storage = {
+export const createStorage = (): Storage => ({
   createExcalidraw: (userId) =>
     result((ok, err) =>
       firebase
@@ -209,4 +209,4 @@ export const storage: Storage = {
           return err("ERROR", error.message);
         })
     ),
-};
+});

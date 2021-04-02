@@ -15,7 +15,7 @@ export const Auth = () => {
             </button>
           </div>
         ),
-        AUTHENTICATING: () => (
+        CHECKING_AUTHENTICATION: () => (
           <div className="center-wrapper">
             <div className="lds-dual-ring"></div>
           </div>
@@ -24,6 +24,12 @@ export const Auth = () => {
         SIGNING_IN: () => (
           <div className="center-wrapper">
             <div className="lds-dual-ring"></div>
+          </div>
+        ),
+        ERROR: ({ error }) => (
+          <div className="center-wrapper">
+            <h4>Uh oh, something bad happened</h4>
+            {error}
           </div>
         ),
       })}

@@ -118,7 +118,13 @@ export type ExcalidrawAction =
       type: typeof CONTINUE;
     };
 
-export const ExcalidrawProvider = ({
+export type ExcalidrawStates = States<ExcalidrawContext, ExcalidrawAction>;
+
+const context = React.createContext({} as ExcalidrawStates);
+
+export const useExcalidraw = () => React.useContext(context);
+
+export const ExcalidrawFeature = ({
   id,
   userId,
   children,
@@ -401,12 +407,6 @@ export const ExcalidrawProvider = ({
 
   return <context.Provider value={excalidraw}>{children}</context.Provider>;
 };
-
-const context = React.createContext(
-  {} as States<ExcalidrawContext, ExcalidrawAction>
-);
-
-export const useExcalidraw = () => React.useContext(context);
 
 function hasChangedExcalidraw(
   oldData: {

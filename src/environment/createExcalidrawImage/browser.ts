@@ -1,5 +1,5 @@
 import { exportToCanvas } from "./excalidraw-src/scene/export";
-import { CreateExcalidrawImage } from "./";
+import { CreateExcalidrawImage } from ".";
 import { result } from "react-states";
 
 export const canvasToBlob = async (
@@ -19,7 +19,7 @@ export const canvasToBlob = async (
   });
 };
 
-export const createExcalidrawImage: CreateExcalidrawImage = (
+export const createCreateExcalidrawImage = (): CreateExcalidrawImage => (
   elements,
   appState
 ) => {

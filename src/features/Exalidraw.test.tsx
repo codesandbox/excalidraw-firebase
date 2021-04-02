@@ -1,31 +1,35 @@
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
-import { ExcalidrawProvider, useExcalidraw } from "./Excalidraw";
-import { EnvironmentProvider } from "../environment";
+import {
+  ExcalidrawFeature,
+  ExcalidrawStates,
+  useExcalidraw,
+} from "./Excalidraw";
+import { Environment } from "../environment";
 import { createOnVisibilityChange } from "../environment/onVisibilityChange/test";
-import { createStorageMock } from "../environment/storage/test";
-import { createExcalidrawImageMock } from "../environment/createExcalidrawImage/test";
+import { createStorage } from "../environment/storage/test";
+import { createCreateExcalidrawImage } from "../environment/createExcalidrawImage/test";
 
 describe("Excalidraw", () => {
-  test("Should set UNFOCUSED state when moving away from tab in EDIT state", async () => {
+  test("Should go to UNFOCUSED when moving away from tab in EDIT state", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
 
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
+    let excalidraw!: ExcalidrawStates;
+    const ExcalidrawConsumer = () => {
       excalidraw = useExcalidraw();
 
       return null;
     };
 
     render(
-      <EnvironmentProvider
+      <Environment
         environment={{
           onVisibilityChange,
         }}
       >
-        <ExcalidrawProvider
+        <ExcalidrawFeature
           userId={userId}
           id={id}
           initialContext={{
@@ -35,9 +39,9 @@ describe("Excalidraw", () => {
             metadata: { id, author: userId, last_updated: new Date() },
           }}
         >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
+          <ExcalidrawConsumer />
+        </ExcalidrawFeature>
+      </Environment>
     );
 
     act(() => {
@@ -47,28 +51,28 @@ describe("Excalidraw", () => {
     expect(excalidraw.context.state).toBe("UNFOCUSED");
   });
 
-  test("Should set UNFOCUSED state when moving away from tab in SYNCING state", async () => {
+  test("Should go to UNFOCUSED when moving away from tab in SYNCING state", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock();
+    const storage = createStorage();
 
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
+    let excalidraw!: ExcalidrawStates;
+    const ExcalidrawConsumer = () => {
       excalidraw = useExcalidraw();
 
       return null;
     };
 
     render(
-      <EnvironmentProvider
+      <Environment
         environment={{
           storage,
           onVisibilityChange,
-          createExcalidrawImage: createExcalidrawImageMock(),
+          createExcalidrawImage: createCreateExcalidrawImage(),
         }}
       >
-        <ExcalidrawProvider
+        <ExcalidrawFeature
           userId={userId}
           id={id}
           initialContext={{
@@ -78,9 +82,9 @@ describe("Excalidraw", () => {
             image: new Blob(),
           }}
         >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
+          <ExcalidrawConsumer />
+        </ExcalidrawFeature>
+      </Environment>
     );
 
     act(() => {
@@ -90,28 +94,28 @@ describe("Excalidraw", () => {
     await waitFor(() => expect(excalidraw.context.state).toBe("UNFOCUSED"));
   });
 
-  test("Should set FOCUSED state when app becomes visible again, download update when Excalidraw has changed on server and go to EDIT", async () => {
+  test("Should go to FOCUSED when app becomes visible again, download update when Excalidraw has changed on server and go to EDIT", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock();
+    const storage = createStorage();
 
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
+    let excalidraw!: ExcalidrawStates;
+    const ExcalidrawConsumer = () => {
       excalidraw = useExcalidraw();
 
       return null;
     };
 
     render(
-      <EnvironmentProvider
+      <Environment
         environment={{
           onVisibilityChange,
           storage,
-          createExcalidrawImage: createExcalidrawImageMock(),
+          createExcalidrawImage: createCreateExcalidrawImage(),
         }}
       >
-        <ExcalidrawProvider
+        <ExcalidrawFeature
           userId={userId}
           id={id}
           initialContext={{
@@ -121,9 +125,9 @@ describe("Excalidraw", () => {
             image: new Blob(),
           }}
         >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
+          <ExcalidrawConsumer />
+        </ExcalidrawFeature>
+      </Environment>
     );
 
     act(() => {
@@ -152,28 +156,28 @@ describe("Excalidraw", () => {
     await waitFor(() => expect(excalidraw.context.state).toBe("EDIT"));
   });
 
-  test("Should set FOCUSED state when app becomes visible again and go to EDIT when there is no change on server", async () => {
+  test("Should go to FOCUSED when app becomes visible again and go to EDIT when there is no change on server", async () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const storage = createStorageMock();
+    const storage = createStorage();
 
-    let excalidraw!: ReturnType<typeof useExcalidraw>;
-    const ExcalidrawExposer = () => {
+    let excalidraw!: ExcalidrawStates;
+    const ExcalidrawConsumer = () => {
       excalidraw = useExcalidraw();
 
       return null;
     };
 
     render(
-      <EnvironmentProvider
+      <Environment
         environment={{
           onVisibilityChange,
           storage,
-          createExcalidrawImage: createExcalidrawImageMock(),
+          createExcalidrawImage: createCreateExcalidrawImage(),
         }}
       >
-        <ExcalidrawProvider
+        <ExcalidrawFeature
           userId={userId}
           id={id}
           initialContext={{
@@ -183,9 +187,9 @@ describe("Excalidraw", () => {
             image: new Blob(),
           }}
         >
-          <ExcalidrawExposer />
-        </ExcalidrawProvider>
-      </EnvironmentProvider>
+          <ExcalidrawConsumer />
+        </ExcalidrawFeature>
+      </Environment>
     );
 
     act(() => {

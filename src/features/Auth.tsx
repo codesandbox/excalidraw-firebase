@@ -6,11 +6,10 @@ import { User } from "../environment/auth";
 
 export type AuthContext =
   | {
-      state: "AUTHENTICATING";
+      state: "CHECKING_AUTHENTICATION";
     }
   | {
       state: "UNAUTHENTICATED";
-      error?: string;
     }
   | {
       state: "SIGNING_IN";
@@ -18,6 +17,10 @@ export type AuthContext =
   | {
       state: "AUTHENTICATED";
       user: User;
+    }
+  | {
+      state: "ERROR";
+      error: string;
     };
 
 const SIGN_IN_SUCCESS = Symbol("SIGN_IN_SUCCESS");
@@ -36,28 +39,16 @@ export type AuthAction =
       error: string;
     };
 
-export type AuthFeature = States<AuthContext, AuthAction>;
+export type AuthStates = States<AuthContext, AuthAction>;
 
-const context = createContext({} as AuthFeature);
+const context = createContext({} as AuthStates);
 
 export const useAuth = () => useContext(context);
-
-export const useAuthenticatedAuth = () => {
-  const auth = useAuth();
-
-  if (auth.is("AUTHENTICATED")) {
-    return auth;
-  }
-
-  throw new Error(
-    "You are not using the Auth provider in an Authenticated component"
-  );
-};
 
 export const AuthFeature = ({
   children,
   initialContext = {
-    state: "AUTHENTICATING",
+    state: "CHECKING_AUTHENTICATION",
   },
 }: {
   children: React.ReactNode;
@@ -66,14 +57,13 @@ export const AuthFeature = ({
   const environment = useEnvironment();
   const auth = useStates<AuthContext, AuthAction>(
     {
-      AUTHENTICATING: {
+      CHECKING_AUTHENTICATION: {
         [SIGN_IN_SUCCESS]: ({ user }) => ({
           state: "AUTHENTICATED",
           user,
         }),
-        [SIGN_IN_ERROR]: ({ error }) => ({
+        [SIGN_IN_ERROR]: () => ({
           state: "UNAUTHENTICATED",
-          error,
         }),
       },
       UNAUTHENTICATED: {
@@ -85,11 +75,12 @@ export const AuthFeature = ({
           user,
         }),
         [SIGN_IN_ERROR]: ({ error }) => ({
-          state: "UNAUTHENTICATED",
+          state: "ERROR",
           error,
         }),
       },
       AUTHENTICATED: {},
+      ERROR: {},
     },
     initialContext
   );
@@ -121,7 +112,7 @@ export const AuthFeature = ({
               },
             }
           ),
-        AUTHENTICATING: () =>
+        CHECKING_AUTHENTICATION: () =>
           environment.auth.onAuthChange((user) => {
             if (user) {
               auth.dispatch({ type: SIGN_IN_SUCCESS, user });

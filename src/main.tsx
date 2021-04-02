@@ -1,19 +1,37 @@
 import React from "react";
 import ReactDOM from "react-dom";
-
-import "./index.css";
-import { Auth } from "./components/Auth";
-import { AuthFeature } from "./features/Auth";
-import * as productionEnvironment from "./environment/production";
-import { EnvironmentProvider } from "./environment";
+import firebase from "firebase/app";
+import "firebase/auth";
+import "firebase/firestore";
+import "firebase/storage";
 import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
 
+import "./index.css";
+
+import config from "./firebase.config.json";
+import { Auth } from "./components/Auth";
+import { AuthFeature } from "./features/Auth";
+import { Environment } from "./environment";
+import { createCreateExcalidrawImage } from "./environment/createExcalidrawImage/browser";
+import { createStorage } from "./environment/storage/browser";
+import { createOnVisibilityChange } from "./environment/onVisibilityChange/browser";
+import { createAuth } from "./environment/auth/browser";
+
+firebase.initializeApp(config);
+
 const app = (
-  <EnvironmentProvider environment={productionEnvironment}>
+  <Environment
+    environment={{
+      auth: createAuth(),
+      createExcalidrawImage: createCreateExcalidrawImage(),
+      onVisibilityChange: createOnVisibilityChange(),
+      storage: createStorage(),
+    }}
+  >
     <AuthFeature>
       <Auth />
     </AuthFeature>
-  </EnvironmentProvider>
+  </Environment>
 );
 
 ReactDOM.render(

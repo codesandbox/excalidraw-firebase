@@ -1,6 +1,6 @@
 import { result } from "react-states";
 import firebase from "firebase/app";
-import { Auth, User } from "./";
+import { Auth, User } from ".";
 
 const USERS_COLLECTION = "users";
 
@@ -12,9 +12,9 @@ const getUser = (firebaseUser: firebase.User): User => ({
 
 const updateUserData = (user: User) => {
   /*
-            We update the user document with name and avatarUrl so other
-            users can see it as well
-          */
+    We update the user document with name and avatarUrl so other
+    users can see it as well
+  */
   firebase.firestore().collection(USERS_COLLECTION).doc(user.uid).set(
     {
       name: user.name,
@@ -26,7 +26,7 @@ const updateUserData = (user: User) => {
   );
 };
 
-export const auth: Auth = {
+export const createAuth = (): Auth => ({
   signIn: () => {
     const provider = new firebase.auth.GoogleAuthProvider();
 
@@ -59,4 +59,4 @@ export const auth: Auth = {
       }
     });
   },
-};
+});

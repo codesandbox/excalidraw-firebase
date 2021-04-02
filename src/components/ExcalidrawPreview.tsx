@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useStates } from "react-states";
-import { useAuthenticatedAuth } from "../features/Auth";
 import { ExcalidrawMetadata } from "../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { styled } from "../stitches.config";

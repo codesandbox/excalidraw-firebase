@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
-import { useAuthenticatedAuth } from "./Auth";
 import { ExcalidrawsByUser } from "../environment/storage";
 import { useEnvironment } from "../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
+import { useAuth } from "./Auth";
 
 export type DashboardContext =
   | {
@@ -61,13 +61,23 @@ export type DashboardAction =
       error: string;
     };
 
-export const DashboardProvider = ({
+export type DashboardStates = States<DashboardContext, DashboardAction>;
+
+const context = React.createContext({} as DashboardStates);
+
+export const useDashboard = () => React.useContext(context);
+
+export const DashboardFeature = ({
   children,
+  initialContext = {
+    state: "LOADING_PREVIEWS",
+  },
 }: {
   children: React.ReactNode;
+  initialContext?: DashboardContext;
 }) => {
   const history = useHistory();
-  const auth = useAuthenticatedAuth();
+  const auth = useAuth().when("AUTHENTICATED");
   const { storage } = useEnvironment();
   const dashboard = useStates<DashboardContext, DashboardAction>(
     {
@@ -117,9 +127,7 @@ export const DashboardProvider = ({
       },
       EXCALIDRAW_CREATED: {},
     },
-    {
-      state: "LOADING_PREVIEWS",
-    }
+    initialContext
   );
 
   if (process.env.NODE_ENV === "development") {
@@ -172,9 +180,3 @@ export const DashboardProvider = ({
 
   return <context.Provider value={dashboard}>{children}</context.Provider>;
 };
-
-const context = React.createContext(
-  {} as States<DashboardContext, DashboardAction>
-);
-
-export const useDashboard = () => React.useContext(context);

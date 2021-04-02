@@ -15,7 +15,7 @@ const environmentContext = createContext({} as Environment);
 
 export const useEnvironment = () => useContext(environmentContext);
 
-export const EnvironmentProvider = ({
+export const Environment = ({
   children,
   environment,
 }: {

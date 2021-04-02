@@ -1,7 +1,7 @@
 import { createResultMock, ResultMock } from "react-states";
 import { Storage } from ".";
 
-export const createStorageMock = (): {
+export const createStorage = (): {
   [T in keyof Storage]: ResultMock<Storage[T]>;
 } => ({
   createExcalidraw: createResultMock(),
