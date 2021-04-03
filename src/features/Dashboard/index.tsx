@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
-import { ExcalidrawsByUser } from "../environment/storage";
-import { useEnvironment } from "../environment";
+import { ExcalidrawsByUser } from "../../environment/storage";
+import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
-import { useAuth } from "./Auth";
+import { useAuth } from "../Auth";
 
 export type DashboardContext =
   | {

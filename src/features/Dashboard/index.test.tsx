@@ -1,7 +1,7 @@
 import * as React from "react";
 import { act, render, waitFor } from "@testing-library/react";
-import { Environment } from "../environment";
-import { createStorage } from "../environment/storage/test";
+import { Environment } from "../../environment";
+import { createStorage } from "../../environment/storage/test";
 import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import {
@@ -9,8 +9,8 @@ import {
   DashboardFeature,
   DashboardStates,
   useDashboard,
-} from "./Dashboard";
-import { AuthFeature } from "./Auth";
+} from ".";
+import { AuthFeature } from "../Auth";
 
 describe("Dashboard", () => {
   test("Should go to PREVIEWS_LOADED when mounting and successfully downloading previews", async () => {

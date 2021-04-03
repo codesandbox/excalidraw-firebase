@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { States, useStates } from "react-states";
 import { useDevtools } from "react-states/devtools";
-import { useEnvironment } from "../environment";
-import { User } from "../environment/auth";
+import { useEnvironment } from "../../environment";
+import { User } from "../../environment/auth";
 
 export type AuthContext =
   | {

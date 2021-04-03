@@ -1,14 +1,10 @@
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
-import {
-  ExcalidrawFeature,
-  ExcalidrawStates,
-  useExcalidraw,
-} from "./Excalidraw";
-import { Environment } from "../environment";
-import { createOnVisibilityChange } from "../environment/onVisibilityChange/test";
-import { createStorage } from "../environment/storage/test";
-import { createCreateExcalidrawImage } from "../environment/createExcalidrawImage/test";
+import { ExcalidrawFeature, ExcalidrawStates, useExcalidraw } from ".";
+import { Environment } from "../../environment";
+import { createOnVisibilityChange } from "../../environment/onVisibilityChange/test";
+import { createStorage } from "../../environment/storage/test";
+import { createCreateExcalidrawImage } from "../../environment/createExcalidrawImage/test";
 
 describe("Excalidraw", () => {
   test("Should go to UNFOCUSED when moving away from tab in EDIT state", async () => {

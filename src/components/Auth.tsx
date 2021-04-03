@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigation } from "./Navigation";
+import { Pages } from "../pages";
 import { useAuth } from "../features/Auth";
 
 export const Auth = () => {
@@ -20,7 +20,7 @@ export const Auth = () => {
             <div className="lds-dual-ring"></div>
           </div>
         ),
-        AUTHENTICATED: () => <Navigation />,
+        AUTHENTICATED: () => <Pages />,
         SIGNING_IN: () => (
           <div className="center-wrapper">
             <div className="lds-dual-ring"></div>

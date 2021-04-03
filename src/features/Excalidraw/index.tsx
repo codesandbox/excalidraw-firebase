@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { States, useStates } from "react-states";
-import { ExcalidrawData, ExcalidrawMetadata } from "../environment/storage";
-import { useEnvironment } from "../environment";
+import { ExcalidrawData, ExcalidrawMetadata } from "../../environment/storage";
+import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 
 export type BaseContext = {

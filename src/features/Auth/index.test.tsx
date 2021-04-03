@@ -1,8 +1,8 @@
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
-import { Environment } from "../environment";
-import { AuthStates, useAuth, AuthFeature, AuthContext } from "./Auth";
-import { createAuth } from "../environment/auth/test";
+import { Environment } from "../../environment";
+import { AuthStates, useAuth, AuthFeature, AuthContext } from ".";
+import { createAuth } from "../../environment/auth/test";
 
 describe("Auth", () => {
   test("Should go to AUTHENTICATED when mounted and is logged in", async () => {
