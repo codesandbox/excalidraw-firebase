@@ -11,7 +11,7 @@ type RenderExcalidrawContext = PickState<
   ExcalidrawContext,
   | "LOADED"
   | "EDIT"
-  | "EDIT_CLIPBOARD"
+  | "COPIED_TO_CLIPBOARD"
   | "SYNCING"
   | "DIRTY"
   | "SYNCING_DIRTY"
@@ -63,7 +63,7 @@ export const Excalidraw = () => {
     };
 
     const variant = map(context, {
-      EDIT_CLIPBOARD: variants.active,
+      COPIED_TO_CLIPBOARD: variants.active,
       DIRTY: variants.loading,
       EDIT: variants.default,
       LOADED: variants.loading,
@@ -81,7 +81,7 @@ export const Excalidraw = () => {
       SYNCING_DIRTY: () => false,
       DIRTY: () => false,
       EDIT: () => false,
-      EDIT_CLIPBOARD: () => false,
+      COPIED_TO_CLIPBOARD: () => false,
     });
 
     return (
@@ -120,7 +120,7 @@ export const Excalidraw = () => {
     LOADED: renderExcalidraw,
     FOCUSED: renderExcalidraw,
     EDIT: renderExcalidraw,
-    EDIT_CLIPBOARD: renderExcalidraw,
+    COPIED_TO_CLIPBOARD: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,

@@ -113,29 +113,30 @@ export const ExcalidrawPreview = ({
     [preview]
   );
 
+  const renderPreview = (background: string) => (
+    <Wrapper style={{ background, cursor: "pointer" }}>
+      <WrapperLink to={`/${userId}/${metadata.id}`} />
+      <span
+        style={{
+          backgroundColor: "#333",
+          color: "#EAEAEA",
+          padding: "0.25rem 0.5rem",
+          borderRadius: "3px",
+        }}
+      >
+        {formatDistanceToNow(metadata.last_updated)} ago
+      </span>
+    </Wrapper>
+  );
+
   return preview.map({
     LOADING_PREVIEW: () => (
       <Wrapper>
         <div className="lds-dual-ring"></div>
       </Wrapper>
     ),
-    PREVIEW_LOADED: ({ src }) => (
-      <Wrapper style={{ backgroundImage: `url(${src})`, cursor: "pointer" }}>
-        <WrapperLink to={`/${userId}/${metadata.id}`} />
-        <span
-          style={{
-            backgroundColor: "#333",
-            color: "#EAEAEA",
-            padding: "0.25rem 0.5rem",
-            borderRadius: "3px",
-          }}
-        >
-          {formatDistanceToNow(metadata.last_updated)} ago
-        </span>
-      </Wrapper>
-    ),
-    LOADING_ERROR: ({ error }) => (
-      <Wrapper style={{ color: "tomato", overflow: "hidden" }}>{error}</Wrapper>
-    ),
+    PREVIEW_LOADED: ({ src }) =>
+      renderPreview(`center / contain no-repeat url(${src})`),
+    LOADING_ERROR: () => renderPreview("#FFF"),
   });
 };

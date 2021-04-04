@@ -27,7 +27,7 @@ export type ExcalidrawContext =
             state: "EDIT";
           }
         | {
-            state: "EDIT_CLIPBOARD";
+            state: "COPIED_TO_CLIPBOARD";
           }
         | {
             state: "DIRTY";
@@ -170,14 +170,14 @@ export const ExcalidrawFeature = ({
             : currentContext,
         COPY_TO_CLIPBOARD: (_, currentContext) => ({
           ...currentContext,
-          state: "EDIT_CLIPBOARD",
+          state: "COPIED_TO_CLIPBOARD",
         }),
         [BLUR]: (_, currentContext) => ({
           ...currentContext,
           state: "UNFOCUSED",
         }),
       },
-      EDIT_CLIPBOARD: {
+      COPIED_TO_CLIPBOARD: {
         EXCALIDRAW_CHANGE: (newData, currentContext) =>
           hasChangedExcalidraw(currentContext.data, newData)
             ? {
@@ -376,7 +376,7 @@ export const ExcalidrawFeature = ({
             clearTimeout(id);
           };
         },
-        EDIT_CLIPBOARD: ({ image }) => {
+        COPIED_TO_CLIPBOARD: ({ image }) => {
           // @ts-ignore
           navigator.clipboard.write([
             // @ts-ignore

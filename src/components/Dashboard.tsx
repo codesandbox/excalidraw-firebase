@@ -127,20 +127,32 @@ export const Dashboard = () => {
   );
 
   return dashboard.map({
-    CREATING_EXCALIDRAW: () => <div className="lds-dual-ring"></div>,
+    CREATING_EXCALIDRAW: () => (
+      <div className="center-wrapper">
+        <div className="lds-dual-ring"></div>
+      </div>
+    ),
     PREVIEWS_ERROR: ({ error }) => (
-      <>
+      <div className="center-wrapper">
         <p style={{ color: "tomato" }}>There was an error: {error}</p>
-      </>
+      </div>
     ),
     CREATE_EXCALIDRAW_ERROR: (context) => (
-      <>
+      <div className="center-wrapper">
         <p style={{ color: "tomato" }}>There was an error: {context.error}</p>
         {renderPreviews(context)}
-      </>
+      </div>
     ),
-    EXCALIDRAW_CREATED: () => <div className="lds-dual-ring"></div>,
-    LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
+    EXCALIDRAW_CREATED: () => (
+      <div className="center-wrapper">
+        <div className="lds-dual-ring"></div>
+      </div>
+    ),
+    LOADING_PREVIEWS: () => (
+      <div className="center-wrapper">
+        <div className="lds-dual-ring"></div>
+      </div>
+    ),
     PREVIEWS_LOADED: renderPreviews,
   });
 };
