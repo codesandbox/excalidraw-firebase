@@ -39,6 +39,9 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       hasChangedExcalidraw(currentContext.data, newData)
         ? {
             ...currentContext,
+            clipboard: {
+              state: "NOT_COPIED",
+            },
             state: "DIRTY",
             data: newData,
           }
