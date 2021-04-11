@@ -16,6 +16,7 @@ import { createCreateExcalidrawImage } from "./environment/createExcalidrawImage
 import { createStorage } from "./environment/storage/browser";
 import { createOnVisibilityChange } from "./environment/onVisibilityChange/browser";
 import { createAuth } from "./environment/auth/browser";
+import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
 
 firebase.initializeApp(config);
 
@@ -26,6 +27,7 @@ const app = (
       createExcalidrawImage: createCreateExcalidrawImage(),
       onVisibilityChange: createOnVisibilityChange(),
       storage: createStorage(),
+      copyImageToClipboard: createCopyImageToClipboard(),
     }}
   >
     <AuthFeature>

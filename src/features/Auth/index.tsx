@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect } from "react";
-import { States, useStates } from "react-states";
+import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { exec, matches, StatesReducer, transitions } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
 import { User } from "../../environment/auth";
@@ -39,11 +39,48 @@ export type AuthAction =
       error: string;
     };
 
-export type AuthStates = States<AuthContext, AuthAction>;
+export type AuthReducer = StatesReducer<AuthContext, AuthAction>;
 
-const context = createContext({} as AuthStates);
+const context = createContext({} as AuthReducer);
 
 export const useAuth = () => useContext(context);
+
+export const useAuthenticatedAuth = () => {
+  const auth = useAuth();
+
+  if (matches(auth, "AUTHENTICATED")) {
+    return auth;
+  }
+
+  throw new Error("Invalid use of Auth");
+};
+
+const reducer = transitions<AuthContext, AuthAction>({
+  CHECKING_AUTHENTICATION: {
+    [SIGN_IN_SUCCESS]: ({ user }) => ({
+      state: "AUTHENTICATED",
+      user,
+    }),
+    [SIGN_IN_ERROR]: () => ({
+      state: "UNAUTHENTICATED",
+    }),
+  },
+  UNAUTHENTICATED: {
+    SIGN_IN: () => ({ state: "SIGNING_IN" }),
+  },
+  SIGNING_IN: {
+    [SIGN_IN_SUCCESS]: ({ user }) => ({
+      state: "AUTHENTICATED",
+      user,
+    }),
+    [SIGN_IN_ERROR]: ({ error }) => ({
+      state: "ERROR",
+      error,
+    }),
+  },
+  AUTHENTICATED: {},
+  ERROR: {},
+});
 
 export const AuthFeature = ({
   children,
@@ -55,57 +92,31 @@ export const AuthFeature = ({
   initialContext?: AuthContext;
 }) => {
   const environment = useEnvironment();
-  const auth = useStates<AuthContext, AuthAction>(
-    {
-      CHECKING_AUTHENTICATION: {
-        [SIGN_IN_SUCCESS]: ({ user }) => ({
-          state: "AUTHENTICATED",
-          user,
-        }),
-        [SIGN_IN_ERROR]: () => ({
-          state: "UNAUTHENTICATED",
-        }),
-      },
-      UNAUTHENTICATED: {
-        SIGN_IN: () => ({ state: "SIGNING_IN" }),
-      },
-      SIGNING_IN: {
-        [SIGN_IN_SUCCESS]: ({ user }) => ({
-          state: "AUTHENTICATED",
-          user,
-        }),
-        [SIGN_IN_ERROR]: ({ error }) => ({
-          state: "ERROR",
-          error,
-        }),
-      },
-      AUTHENTICATED: {},
-      ERROR: {},
-    },
-    initialContext
-  );
+  const authReducer = useReducer(reducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
-    useDevtools("auth", auth as any);
+    useDevtools("auth", authReducer);
   }
+
+  const [auth, dispatch] = authReducer;
 
   useEffect(
     () =>
-      auth.exec({
+      exec(auth, {
         SIGNING_IN: () =>
           environment.auth.signIn().resolve(
             (user) => {
-              auth.dispatch({ type: SIGN_IN_SUCCESS, user });
+              dispatch({ type: SIGN_IN_SUCCESS, user });
             },
             {
               NOT_SIGNED_IN: () => {
-                auth.dispatch({
+                dispatch({
                   type: SIGN_IN_ERROR,
                   error: "Authenticated, but no user",
                 });
               },
               ERROR: (error) => {
-                auth.dispatch({
+                dispatch({
                   type: SIGN_IN_ERROR,
                   error: error.message,
                 });
@@ -115,9 +126,9 @@ export const AuthFeature = ({
         CHECKING_AUTHENTICATION: () =>
           environment.auth.onAuthChange((user) => {
             if (user) {
-              auth.dispatch({ type: SIGN_IN_SUCCESS, user });
+              dispatch({ type: SIGN_IN_SUCCESS, user });
             } else {
-              auth.dispatch({
+              dispatch({
                 type: SIGN_IN_ERROR,
                 error: "Not authenticated",
               });
@@ -127,5 +138,5 @@ export const AuthFeature = ({
     [auth]
   );
 
-  return <context.Provider value={auth}>{children}</context.Provider>;
+  return <context.Provider value={authReducer}>{children}</context.Provider>;
 };

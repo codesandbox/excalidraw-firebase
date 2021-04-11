@@ -2,9 +2,9 @@ import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
 import { useDashboard } from "../features/Dashboard";
 import { styled } from "../stitches.config";
-import { PickState } from "react-states";
+import { match, PickState } from "react-states";
 import { DashboardContext } from "../features/Dashboard";
-import { useAuth } from "../features/Auth";
+import { useAuthenticatedAuth } from "../features/Auth";
 
 const List = styled("ul", {
   listStyleType: "none",
@@ -62,13 +62,13 @@ const CreateNewExcalidraw = styled("li", {
 });
 
 export const Dashboard = () => {
-  const auth = useAuth().when("AUTHENTICATED");
-  const dashboard = useDashboard();
+  const [auth] = useAuthenticatedAuth();
+  const [dashboard, dispatch] = useDashboard();
 
   const createExcalidraw = (
     <CreateNewExcalidraw
       onClick={() => {
-        dashboard.dispatch({ type: "CREATE_EXCALIDRAW" });
+        dispatch({ type: "CREATE_EXCALIDRAW" });
       }}
     >
       Create new Excalidraw
@@ -84,23 +84,23 @@ export const Dashboard = () => {
     <div>
       <List>
         {createExcalidraw}
-        {context.excalidraws[auth.context.user.uid].excalidraws
+        {context.excalidraws[auth.user.uid].excalidraws
           .slice(0, context.showCount)
           .map((excalidraw) => (
             <ExcalidrawPreview
               key={excalidraw.id}
-              userId={auth.context.user.uid}
+              userId={auth.user.uid}
               metadata={excalidraw}
             />
           ))}
       </List>
       {Object.keys(context.excalidraws)
-        .filter((uid) => uid !== auth.context.user.uid)
+        .filter((uid) => uid !== auth.user.uid)
         .map((uid) => {
           const user = context.excalidraws[uid];
 
           return (
-            <div>
+            <div key={uid}>
               <UserWrapper>
                 {user.avatarUrl ? (
                   <Avatar src={user.avatarUrl} />
@@ -126,7 +126,7 @@ export const Dashboard = () => {
     </div>
   );
 
-  return dashboard.map({
+  return match(dashboard, {
     CREATING_EXCALIDRAW: () => (
       <div className="center-wrapper">
         <div className="lds-dual-ring"></div>

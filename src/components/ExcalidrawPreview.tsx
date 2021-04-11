@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useStates } from "react-states";
+import { exec, match, transitions } from "react-states";
 import { ExcalidrawMetadata } from "../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { styled } from "../stitches.config";
@@ -59,6 +59,21 @@ type ExcalidrawPreviewAction =
       error: string;
     };
 
+const reducer = transitions<ExcalidrawPreviewContext, ExcalidrawPreviewAction>({
+  LOADING_PREVIEW: {
+    LOADING_PREVIEW_SUCCESS: ({ src }) => ({
+      state: "PREVIEW_LOADED",
+      src,
+    }),
+    LOADING_PREVIEW_ERROR: ({ error }) => ({
+      state: "LOADING_ERROR",
+      error,
+    }),
+  },
+  PREVIEW_LOADED: {},
+  LOADING_ERROR: {},
+});
+
 export const ExcalidrawPreview = ({
   userId,
   metadata,
@@ -67,41 +82,24 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-
-  const preview = useStates<ExcalidrawPreviewContext, ExcalidrawPreviewAction>(
-    {
-      LOADING_PREVIEW: {
-        LOADING_PREVIEW_SUCCESS: ({ src }) => ({
-          state: "PREVIEW_LOADED",
-          src,
-        }),
-        LOADING_PREVIEW_ERROR: ({ error }) => ({
-          state: "LOADING_ERROR",
-          error,
-        }),
-      },
-      PREVIEW_LOADED: {},
-      LOADING_ERROR: {},
-    },
-    {
-      state: "LOADING_PREVIEW",
-    }
-  );
+  const [preview, dispatch] = React.useReducer(reducer, {
+    state: "LOADING_PREVIEW",
+  });
 
   React.useEffect(
     () =>
-      preview.exec({
+      exec(preview, {
         LOADING_PREVIEW: () => {
           storage.getImageSrc(userId, metadata.id).resolve(
             (src) => {
-              preview.dispatch({
+              dispatch({
                 type: "LOADING_PREVIEW_SUCCESS",
                 src,
               });
             },
             {
               ERROR: (error) => {
-                preview.dispatch({
+                dispatch({
                   type: "LOADING_PREVIEW_ERROR",
                   error,
                 });
@@ -129,7 +127,7 @@ export const ExcalidrawPreview = ({
     </Wrapper>
   );
 
-  return preview.map({
+  return match(preview, {
     LOADING_PREVIEW: () => (
       <Wrapper>
         <div className="lds-dual-ring"></div>

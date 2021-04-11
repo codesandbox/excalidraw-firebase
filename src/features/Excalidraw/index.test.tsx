@@ -1,6 +1,7 @@
 import React from "react";
-import { render, act, waitFor } from "@testing-library/react";
-import { ExcalidrawFeature, ExcalidrawStates, useExcalidraw } from ".";
+import { act, waitFor } from "@testing-library/react";
+import { renderStatesReducer } from "react-states/cjs/test";
+import { ExcalidrawFeature, useExcalidraw } from ".";
 import { Environment } from "../../environment";
 import { createOnVisibilityChange } from "../../environment/onVisibilityChange/test";
 import { createStorage } from "../../environment/storage/test";
@@ -11,40 +12,38 @@ describe("Excalidraw", () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-
-    let excalidraw!: ExcalidrawStates;
-    const ExcalidrawConsumer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <Environment
-        environment={{
-          onVisibilityChange,
-        }}
-      >
-        <ExcalidrawFeature
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "EDIT",
-            data: { appState: {}, elements: [], version: 0 },
-            image: new Blob(),
-            metadata: { id, author: userId, last_updated: new Date() },
+    const [excalidraw] = renderStatesReducer(
+      () => useExcalidraw(),
+      (UseExcalidraw) => (
+        <Environment
+          environment={{
+            onVisibilityChange,
           }}
         >
-          <ExcalidrawConsumer />
-        </ExcalidrawFeature>
-      </Environment>
+          <ExcalidrawFeature
+            userId={userId}
+            id={id}
+            initialContext={{
+              state: "EDIT",
+              data: { appState: {}, elements: [], version: 0 },
+              image: new Blob(),
+              metadata: { id, author: userId, last_updated: new Date() },
+              clipboard: {
+                state: "NOT_COPIED",
+              },
+            }}
+          >
+            <UseExcalidraw />
+          </ExcalidrawFeature>
+        </Environment>
+      )
     );
 
     act(() => {
       onVisibilityChange.trigger(false);
     });
 
-    expect(excalidraw.context.state).toBe("UNFOCUSED");
+    expect(excalidraw.state).toBe("UNFOCUSED");
   });
 
   test("Should go to UNFOCUSED when moving away from tab in SYNCING state", async () => {
@@ -52,42 +51,40 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-
-    let excalidraw!: ExcalidrawStates;
-    const ExcalidrawConsumer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <Environment
-        environment={{
-          storage,
-          onVisibilityChange,
-          createExcalidrawImage: createCreateExcalidrawImage(),
-        }}
-      >
-        <ExcalidrawFeature
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "SYNCING",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
+    const [excalidraw] = renderStatesReducer(
+      () => useExcalidraw(),
+      (UseExcalidraw) => (
+        <Environment
+          environment={{
+            storage,
+            onVisibilityChange,
+            createExcalidrawImage: createCreateExcalidrawImage(),
           }}
         >
-          <ExcalidrawConsumer />
-        </ExcalidrawFeature>
-      </Environment>
+          <ExcalidrawFeature
+            userId={userId}
+            id={id}
+            initialContext={{
+              state: "SYNCING",
+              data: { appState: {}, elements: [], version: 0 },
+              metadata: { id, author: userId, last_updated: new Date() },
+              image: new Blob(),
+              clipboard: {
+                state: "NOT_COPIED",
+              },
+            }}
+          >
+            <UseExcalidraw />
+          </ExcalidrawFeature>
+        </Environment>
+      )
     );
 
     act(() => {
       onVisibilityChange.trigger(false);
     });
 
-    await waitFor(() => expect(excalidraw.context.state).toBe("UNFOCUSED"));
+    await waitFor(() => expect(excalidraw.state).toBe("UNFOCUSED"));
   });
 
   test("Should go to FOCUSED when app becomes visible again, download update when Excalidraw has changed on server and go to EDIT", async () => {
@@ -95,46 +92,44 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-
-    let excalidraw!: ExcalidrawStates;
-    const ExcalidrawConsumer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <Environment
-        environment={{
-          onVisibilityChange,
-          storage,
-          createExcalidrawImage: createCreateExcalidrawImage(),
-        }}
-      >
-        <ExcalidrawFeature
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "UNFOCUSED",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
+    const [excalidraw] = renderStatesReducer(
+      () => useExcalidraw(),
+      (UseExcalidraw) => (
+        <Environment
+          environment={{
+            onVisibilityChange,
+            storage,
+            createExcalidrawImage: createCreateExcalidrawImage(),
           }}
         >
-          <ExcalidrawConsumer />
-        </ExcalidrawFeature>
-      </Environment>
+          <ExcalidrawFeature
+            userId={userId}
+            id={id}
+            initialContext={{
+              state: "UNFOCUSED",
+              data: { appState: {}, elements: [], version: 0 },
+              metadata: { id, author: userId, last_updated: new Date() },
+              image: new Blob(),
+              clipboard: {
+                state: "NOT_COPIED",
+              },
+            }}
+          >
+            <UseExcalidraw />
+          </ExcalidrawFeature>
+        </Environment>
+      )
     );
 
     act(() => {
       onVisibilityChange.trigger(true);
     });
 
-    expect(excalidraw.context.state).toBe("FOCUSED");
+    expect(excalidraw.state).toBe("FOCUSED");
 
     storage.hasExcalidrawUpdated.ok(true);
 
-    await waitFor(() => expect(excalidraw.context.state).toBe("UPDATING"));
+    await waitFor(() => expect(excalidraw.state).toBe("UPDATING"));
 
     storage.getExcalidraw.ok({
       data: {
@@ -149,7 +144,7 @@ describe("Excalidraw", () => {
       },
     });
 
-    await waitFor(() => expect(excalidraw.context.state).toBe("EDIT"));
+    await waitFor(() => expect(excalidraw.state).toBe("EDIT"));
   });
 
   test("Should go to FOCUSED when app becomes visible again and go to EDIT when there is no change on server", async () => {
@@ -157,45 +152,43 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-
-    let excalidraw!: ExcalidrawStates;
-    const ExcalidrawConsumer = () => {
-      excalidraw = useExcalidraw();
-
-      return null;
-    };
-
-    render(
-      <Environment
-        environment={{
-          onVisibilityChange,
-          storage,
-          createExcalidrawImage: createCreateExcalidrawImage(),
-        }}
-      >
-        <ExcalidrawFeature
-          userId={userId}
-          id={id}
-          initialContext={{
-            state: "UNFOCUSED",
-            data: { appState: {}, elements: [], version: 0 },
-            metadata: { id, author: userId, last_updated: new Date() },
-            image: new Blob(),
+    const [excalidraw] = renderStatesReducer(
+      () => useExcalidraw(),
+      (UseExcalidraw) => (
+        <Environment
+          environment={{
+            onVisibilityChange,
+            storage,
+            createExcalidrawImage: createCreateExcalidrawImage(),
           }}
         >
-          <ExcalidrawConsumer />
-        </ExcalidrawFeature>
-      </Environment>
+          <ExcalidrawFeature
+            userId={userId}
+            id={id}
+            initialContext={{
+              state: "UNFOCUSED",
+              data: { appState: {}, elements: [], version: 0 },
+              metadata: { id, author: userId, last_updated: new Date() },
+              image: new Blob(),
+              clipboard: {
+                state: "NOT_COPIED",
+              },
+            }}
+          >
+            <UseExcalidraw />
+          </ExcalidrawFeature>
+        </Environment>
+      )
     );
 
     act(() => {
       onVisibilityChange.trigger(true);
     });
 
-    expect(excalidraw.context.state).toBe("FOCUSED");
+    expect(excalidraw.state).toBe("FOCUSED");
 
     storage.hasExcalidrawUpdated.ok(false);
 
-    await waitFor(() => expect(excalidraw.context.state).toBe("EDIT"));
+    await waitFor(() => expect(excalidraw.state).toBe("EDIT"));
   });
 });

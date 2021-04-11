@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
-import { States, useStates } from "react-states";
+import React, { useEffect, useReducer } from "react";
+import { exec, StatesReducer } from "react-states";
 import { ExcalidrawsByUser } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
-import { useAuth } from "../Auth";
+import { useAuthenticatedAuth } from "../Auth";
+import { transitions } from "react-states/cjs";
 
 export type DashboardContext =
   | {
@@ -61,11 +62,59 @@ export type DashboardAction =
       error: string;
     };
 
-export type DashboardStates = States<DashboardContext, DashboardAction>;
+export type DashboardReducer = StatesReducer<DashboardContext, DashboardAction>;
 
-const context = React.createContext({} as DashboardStates);
+const context = React.createContext({} as DashboardReducer);
 
 export const useDashboard = () => React.useContext(context);
+
+const reducer = transitions<DashboardContext, DashboardAction>({
+  LOADING_PREVIEWS: {
+    [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }) => ({
+      state: "PREVIEWS_LOADED",
+      excalidraws,
+      showCount: 10,
+    }),
+    [LOADING_PREVIEWS_ERROR]: ({ error }) => ({
+      state: "PREVIEWS_ERROR",
+      error,
+    }),
+  },
+  PREVIEWS_LOADED: {
+    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
+      state: "CREATING_EXCALIDRAW",
+      excalidraws,
+      showCount,
+    }),
+  },
+  CREATING_EXCALIDRAW: {
+    [CREATE_EXCALIDRAW_SUCCESS]: ({ id }) => ({
+      state: "EXCALIDRAW_CREATED",
+      id,
+    }),
+    [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws, showCount }) => ({
+      state: "CREATE_EXCALIDRAW_ERROR",
+      error,
+      excalidraws,
+      showCount,
+    }),
+  },
+  PREVIEWS_ERROR: {
+    CREATE_EXCALIDRAW: () => ({
+      state: "CREATING_EXCALIDRAW",
+      excalidraws: {},
+      showCount: 0,
+    }),
+  },
+  CREATE_EXCALIDRAW_ERROR: {
+    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
+      state: "CREATING_EXCALIDRAW",
+      excalidraws,
+      showCount,
+    }),
+  },
+  EXCALIDRAW_CREATED: {},
+});
 
 export const DashboardFeature = ({
   children,
@@ -77,77 +126,30 @@ export const DashboardFeature = ({
   initialContext?: DashboardContext;
 }) => {
   const history = useHistory();
-  const auth = useAuth().when("AUTHENTICATED");
+  const [auth] = useAuthenticatedAuth();
   const { storage } = useEnvironment();
-  const dashboard = useStates<DashboardContext, DashboardAction>(
-    {
-      LOADING_PREVIEWS: {
-        [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }) => ({
-          state: "PREVIEWS_LOADED",
-          excalidraws,
-          showCount: 10,
-        }),
-        [LOADING_PREVIEWS_ERROR]: ({ error }) => ({
-          state: "PREVIEWS_ERROR",
-          error,
-        }),
-      },
-      PREVIEWS_LOADED: {
-        CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidraws,
-          showCount,
-        }),
-      },
-      CREATING_EXCALIDRAW: {
-        [CREATE_EXCALIDRAW_SUCCESS]: ({ id }) => ({
-          state: "EXCALIDRAW_CREATED",
-          id,
-        }),
-        [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws, showCount }) => ({
-          state: "CREATE_EXCALIDRAW_ERROR",
-          error,
-          excalidraws,
-          showCount,
-        }),
-      },
-      PREVIEWS_ERROR: {
-        CREATE_EXCALIDRAW: () => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidraws: {},
-          showCount: 0,
-        }),
-      },
-      CREATE_EXCALIDRAW_ERROR: {
-        CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
-          state: "CREATING_EXCALIDRAW",
-          excalidraws,
-          showCount,
-        }),
-      },
-      EXCALIDRAW_CREATED: {},
-    },
-    initialContext
-  );
+  const dashboardReducer = useReducer(reducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
-    useDevtools("dashboard", dashboard);
+    useDevtools("dashboard", dashboardReducer);
   }
+
+  const [dashboard, dispatch] = dashboardReducer;
 
   useEffect(
     () =>
-      dashboard.exec({
+      exec(dashboard, {
         LOADING_PREVIEWS: () =>
           storage.getPreviews().resolve(
             (excalidraws) => {
-              dashboard.dispatch({
+              dispatch({
                 type: LOADING_PREVIEWS_SUCCESS,
                 excalidraws,
               });
             },
             {
               ERROR: (error) => {
-                dashboard.dispatch({
+                dispatch({
                   type: LOADING_PREVIEWS_ERROR,
                   error,
                 });
@@ -155,16 +157,16 @@ export const DashboardFeature = ({
             }
           ),
         CREATING_EXCALIDRAW: () =>
-          storage.createExcalidraw(auth.context.user.uid).resolve(
+          storage.createExcalidraw(auth.user.uid).resolve(
             (id) => {
-              dashboard.dispatch({
+              dispatch({
                 type: CREATE_EXCALIDRAW_SUCCESS,
                 id,
               });
             },
             {
               ERROR: (error) => {
-                dashboard.dispatch({
+                dispatch({
                   type: CREATE_EXCALIDRAW_ERROR,
                   error,
                 });
@@ -172,11 +174,13 @@ export const DashboardFeature = ({
             }
           ),
         EXCALIDRAW_CREATED: ({ id }) => {
-          history.push(`/${auth.context.user.uid}/${id}`);
+          history.push(`/${auth.user.uid}/${id}`);
         },
       }),
     [dashboard]
   );
 
-  return <context.Provider value={dashboard}>{children}</context.Provider>;
+  return (
+    <context.Provider value={dashboardReducer}>{children}</context.Provider>
+  );
 };

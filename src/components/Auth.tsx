@@ -1,16 +1,17 @@
 import React from "react";
 import { Pages } from "../pages";
 import { useAuth } from "../features/Auth";
+import { match } from "react-states";
 
 export const Auth = () => {
-  const auth = useAuth();
+  const [auth, dispatch] = useAuth();
 
   return (
     <div className="App">
-      {auth.map({
+      {match(auth, {
         UNAUTHENTICATED: () => (
           <div className="center-wrapper">
-            <button onClick={() => auth.dispatch({ type: "SIGN_IN" })}>
+            <button onClick={() => dispatch({ type: "SIGN_IN" })}>
               Sign In
             </button>
           </div>

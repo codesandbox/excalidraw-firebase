@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickState, map } from "react-states";
+import { PickState, match } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
@@ -11,7 +11,6 @@ type RenderExcalidrawContext = PickState<
   ExcalidrawContext,
   | "LOADED"
   | "EDIT"
-  | "COPIED_TO_CLIPBOARD"
   | "SYNCING"
   | "DIRTY"
   | "SYNCING_DIRTY"
@@ -20,12 +19,12 @@ type RenderExcalidrawContext = PickState<
 >;
 
 export const Excalidraw = () => {
-  const excalidraw = useExcalidraw();
+  const [excalidraw, dispatch] = useExcalidraw();
 
   const onChange = useMemo(
     () =>
       debounce((elements, appState) => {
-        excalidraw.dispatch({
+        dispatch({
           type: "EXCALIDRAW_CHANGE",
           elements,
           appState,
@@ -37,7 +36,7 @@ export const Excalidraw = () => {
 
   const renderExcalidraw = (context: RenderExcalidrawContext) => {
     const copyToClipboard = () => {
-      excalidraw.dispatch({ type: "COPY_TO_CLIPBOARD" });
+      dispatch({ type: "COPY_TO_CLIPBOARD" });
     };
     const variants = {
       default: () => ({
@@ -62,18 +61,21 @@ export const Excalidraw = () => {
       }),
     };
 
-    const variant = map(context, {
-      COPIED_TO_CLIPBOARD: variants.active,
+    const variant = match(context, {
       DIRTY: variants.loading,
-      EDIT: variants.default,
       LOADED: variants.loading,
       SYNCING: variants.loading,
       SYNCING_DIRTY: variants.loading,
       FOCUSED: variants.loading,
       UNFOCUSED: variants.loading,
+      EDIT: () =>
+        match(context.clipboard, {
+          COPIED: variants.active,
+          NOT_COPIED: variants.default,
+        }),
     });
 
-    const readOnly = map(context, {
+    const readOnly = match(context, {
       FOCUSED: () => true,
       UNFOCUSED: () => true,
       LOADED: () => false,
@@ -81,7 +83,6 @@ export const Excalidraw = () => {
       SYNCING_DIRTY: () => false,
       DIRTY: () => false,
       EDIT: () => false,
-      COPIED_TO_CLIPBOARD: () => false,
     });
 
     return (
@@ -90,7 +91,7 @@ export const Excalidraw = () => {
           data={context.data}
           onChange={onChange}
           onInitialized={() => {
-            excalidraw.dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
+            dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
           }}
           readOnly={readOnly}
         />
@@ -101,7 +102,7 @@ export const Excalidraw = () => {
     );
   };
 
-  return excalidraw.map({
+  return match(excalidraw, {
     LOADING: () => (
       <div className="center-wrapper">
         <div className="lds-dual-ring"></div>
@@ -120,7 +121,6 @@ export const Excalidraw = () => {
     LOADED: renderExcalidraw,
     FOCUSED: renderExcalidraw,
     EDIT: renderExcalidraw,
-    COPIED_TO_CLIPBOARD: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,
