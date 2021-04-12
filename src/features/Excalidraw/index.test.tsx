@@ -1,6 +1,6 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
-import { renderStatesReducer } from "react-states/cjs/test";
+import { renderReducerHook } from "react-states/cjs/test";
 import { ExcalidrawFeature, useExcalidraw } from ".";
 import { Environment } from "../../environment";
 import { createOnVisibilityChange } from "../../environment/onVisibilityChange/test";
@@ -12,7 +12,7 @@ describe("Excalidraw", () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
-    const [excalidraw] = renderStatesReducer(
+    const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -51,7 +51,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesReducer(
+    const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -92,7 +92,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesReducer(
+    const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -152,7 +152,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesReducer(
+    const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
