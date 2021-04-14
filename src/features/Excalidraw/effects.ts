@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { exec, StatesReducer } from "react-states";
+import { exec, match, StatesReducer } from "react-states";
 import { useEnvironment } from "../../environment";
 
 import {
@@ -16,6 +16,7 @@ import {
   SYNC_ERROR,
   SYNC_SUCCESS,
   ExcalidrawReducer,
+  SUBSCRIPTION_UPDATE,
 } from "./types";
 
 export const useVisibilityChangeEffect = ([_, dispatch]: ExcalidrawReducer) => {
@@ -52,6 +53,40 @@ export const useClipboardEffect = ([excalidraw]: ExcalidrawReducer) => {
         SYNCING_DIRTY: copyToClipboard,
       }),
     []
+  );
+};
+
+export const useSubscriptionEffect = (
+  userId: string,
+  id: string,
+  [excalidraw, dispatch]: ExcalidrawReducer
+) => {
+  const { storage } = useEnvironment();
+  const shouldSubscribe = match(excalidraw, {
+    DIRTY: () => true,
+    EDIT: () => true,
+    UPDATING_FROM_PEER: () => true,
+    SYNCING: () => true,
+    SYNCING_DIRTY: () => true,
+    UPDATING: () => true,
+    UNFOCUSED: () => false,
+    ERROR: () => false,
+    FOCUSED: () => false,
+    LOADED: () => false,
+    LOADING: () => false,
+  });
+
+  useEffect(
+    () =>
+      shouldSubscribe
+        ? storage.subscribeToChanges(userId, id, (data) => {
+            dispatch({
+              type: SUBSCRIPTION_UPDATE,
+              data,
+            });
+          })
+        : undefined,
+    [shouldSubscribe]
   );
 };
 

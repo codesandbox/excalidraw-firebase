@@ -150,4 +150,7 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
     }),
     [LOADING_ERROR]: ({ error }) => ({ state: "ERROR", error }),
   },
+  UPDATING_FROM_PEER: {
+    EXCALIDRAW_CHANGE: () => ({ state: "DIRTY" }),
+  },
 });

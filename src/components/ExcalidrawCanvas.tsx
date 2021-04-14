@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ExcalidrawComponent from "@excalidraw/excalidraw";
+import { ExcalidrawContext } from "../features/Excalidraw";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;
@@ -24,11 +25,13 @@ export const ExcalidrawCanvas = React.memo(
     onChange,
     onInitialized,
     readOnly,
+    state,
   }: {
     data: any;
     onChange: (elements: any[], appState: any) => void;
     onInitialized: () => void;
     readOnly: boolean;
+    state: ExcalidrawContext["state"];
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
@@ -62,6 +65,12 @@ export const ExcalidrawCanvas = React.memo(
     useEffect(() => {
       excalidrawRef.current.readyPromise.then(onInitialized);
     }, []);
+
+    useEffect(() => {
+      if (state === "UPDATING_FROM_PEER") {
+        excalidrawRef.current.updateScene(data);
+      }
+    }, [state]);
 
     return (
       <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>

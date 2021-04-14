@@ -50,6 +50,9 @@ export type ExcalidrawContext =
         | {
             state: "UPDATING";
           }
+        | {
+            state: "UPDATING_FROM_PEER";
+          }
       ));
 
 export const LOADING_SUCCESS = Symbol("LOADING_SUCCESS");
@@ -61,6 +64,7 @@ export const FOCUS = Symbol("FOCUS");
 export const BLUR = Symbol("BLUR");
 export const REFRESH = Symbol("REFRESH");
 export const CONTINUE = Symbol("CONTINUE");
+export const SUBSCRIPTION_UPDATE = Symbol("SUBSCRIPTION_UPDATE");
 
 export type ExcalidrawAction =
   | {
@@ -119,6 +123,10 @@ export type ExcalidrawAction =
    */
   | {
       type: typeof CONTINUE;
+    }
+  | {
+      type: typeof SUBSCRIPTION_UPDATE;
+      data: ExcalidrawData;
     };
 
 export type ExcalidrawReducer = StatesReducer<

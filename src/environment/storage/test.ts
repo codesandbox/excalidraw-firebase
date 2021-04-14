@@ -1,8 +1,8 @@
-import { createResultMock, ResultMock } from "react-states";
-import { ExcalidrawElement, Storage } from ".";
+import { createResultMock } from "react-states";
+import { ExcalidrawData, Storage } from ".";
 
 type CreateSubscriptionMock = Storage["subscribeToChanges"] & {
-  trigger: (elements: ExcalidrawElement[]) => void;
+  trigger: (data: ExcalidrawData) => void;
 };
 
 function createSubscriptionMock(): CreateSubscriptionMock {

@@ -191,26 +191,27 @@ describe("Excalidraw", () => {
 
     await waitFor(() => expect(excalidraw.state).toBe("EDIT"));
   });
-  test("Should subscribe to changes", async () => {
+  test("Should go to UPDATE_FROM_PEER when receiving subscription update", async () => {
     const userId = "123";
     const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
+    const onVisibilityChange = createOnVisibilityChange();
+    const createExcalidrawImage = createCreateExcalidrawImage();
     const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
           environment={{
-            onVisibilityChange,
             storage,
-            createExcalidrawImage: createCreateExcalidrawImage(),
+            createExcalidrawImage,
+            onVisibilityChange,
           }}
         >
           <ExcalidrawFeature
             userId={userId}
             id={id}
             initialContext={{
-              state: "UNFOCUSED",
+              state: "EDIT",
               data: { appState: {}, elements: [], version: 0 },
               metadata: { id, author: userId, last_updated: new Date() },
               image: new Blob(),
@@ -226,13 +227,13 @@ describe("Excalidraw", () => {
     );
 
     act(() => {
-      onVisibilityChange.trigger(true);
+      storage.subscribeToChanges.trigger({
+        appState: {},
+        elements: [],
+        version: 0,
+      });
     });
 
-    expect(excalidraw.state).toBe("FOCUSED");
-
-    storage.hasExcalidrawUpdated.ok(false);
-
-    await waitFor(() => expect(excalidraw.state).toBe("EDIT"));
+    expect(excalidraw.state).toBe("UPDATING_FROM_PEER");
   });
 });
