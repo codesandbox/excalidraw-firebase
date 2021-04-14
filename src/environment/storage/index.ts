@@ -5,6 +5,10 @@ export type StorageError = {
   data: string;
 };
 
+export type ExcalidrawElement = {
+  version: number;
+};
+
 export type ExcalidrawMetadata = {
   id: string;
   author: string;
@@ -12,7 +16,7 @@ export type ExcalidrawMetadata = {
 };
 
 export type ExcalidrawData = {
-  elements: any[];
+  elements: ExcalidrawElement[];
   appState: any;
   version: number;
 };
@@ -55,4 +59,9 @@ export interface Storage {
     image: Blob
   ): Result<void, StorageError>;
   getImageSrc(userId: string, id: string): Result<string, StorageError>;
+  subscribeToChanges(
+    userId: string,
+    id: string,
+    listener: (data: ExcalidrawData) => void
+  ): () => void;
 }
