@@ -1,11 +1,9 @@
 import { useEffect } from "react";
-import { exec, match, StatesReducer } from "react-states";
+import { exec, match } from "react-states";
 import { useEnvironment } from "../../environment";
 
 import {
   BaseContext,
-  ExcalidrawAction,
-  ExcalidrawContext,
   BLUR,
   CONTINUE,
   FOCUS,
@@ -56,6 +54,18 @@ export const useClipboardEffect = ([excalidraw]: ExcalidrawReducer) => {
   );
 };
 
+/*
+  - A is at version 0
+  - B is at version 0
+  - A goes to version 1
+  - B receives data from A
+  - B is now at version 1 with merged elements of A and B
+  - Excalidraw upates scene with merged elements
+  - Change event calculates the new version
+  - If version has changed (Meaning B also had changes), a new sync occurs. Where A no does the same
+  version evaluation and possibly syncs back again, as there were new changes in the meantime
+  - If no version changed, we are in sync
+*/
 export const useSubscriptionEffect = (
   userId: string,
   id: string,
@@ -139,36 +149,34 @@ export const useStorageEffects = (
         SYNCING: ({ data }) => {
           // We do not want to cancel this, as the sync should
           // always go through, even moving to a new state
-          storage
-            .saveExcalidraw(userId, id, data.elements, data.appState)
-            .resolve(
-              (metadata) =>
-                createExcalidrawImage(data.elements, data.appState).resolve(
-                  (image) => {
-                    dispatch({
-                      type: SYNC_SUCCESS,
-                      image,
-                      metadata,
-                    });
+          storage.saveExcalidraw(userId, id, data).resolve(
+            (metadata) =>
+              createExcalidrawImage(data.elements, data.appState).resolve(
+                (image) => {
+                  dispatch({
+                    type: SYNC_SUCCESS,
+                    image,
+                    metadata,
+                  });
 
-                    return storage
-                      .saveImage(userId, id, image)
-                      .resolve(() => {}, {
-                        ERROR: () => {},
-                      });
-                  },
-                  {
-                    ERROR: () => {
-                      dispatch({ type: SYNC_ERROR });
-                    },
-                  }
-                ),
-              {
-                ERROR: () => {
-                  dispatch({ type: SYNC_ERROR });
+                  return storage
+                    .saveImage(userId, id, image)
+                    .resolve(() => {}, {
+                      ERROR: () => {},
+                    });
                 },
-              }
-            );
+                {
+                  ERROR: () => {
+                    dispatch({ type: SYNC_ERROR });
+                  },
+                }
+              ),
+            {
+              ERROR: () => {
+                dispatch({ type: SYNC_ERROR });
+              },
+            }
+          );
         },
         DIRTY: () => {
           const id = setTimeout(() => {

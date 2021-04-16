@@ -5,6 +5,7 @@ import { ExcalidrawContext, ExcalidrawReducer } from "./types";
 import {
   useClipboardEffect,
   useStorageEffects,
+  useSubscriptionEffect,
   useVisibilityChangeEffect,
 } from "./effects";
 
@@ -27,17 +28,16 @@ export const ExcalidrawFeature = ({
   children: React.ReactNode;
   initialContext?: ExcalidrawContext;
 }) => {
-  const excalidrawReducer = useReducer(reducer, initialContext);
+  const excalidraw = useReducer(reducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
-    useDevtools("excalidraw", excalidrawReducer);
+    useDevtools("excalidraw", excalidraw);
   }
 
-  useVisibilityChangeEffect(excalidrawReducer);
-  useClipboardEffect(excalidrawReducer);
-  useStorageEffects(userId, id, excalidrawReducer);
+  useVisibilityChangeEffect(excalidraw);
+  useClipboardEffect(excalidraw);
+  useStorageEffects(userId, id, excalidraw);
+  useSubscriptionEffect(userId, id, excalidraw);
 
-  return (
-    <context.Provider value={excalidrawReducer}>{children}</context.Provider>
-  );
+  return <context.Provider value={excalidraw}>{children}</context.Provider>;
 };

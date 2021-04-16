@@ -1,7 +1,12 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
 import { renderReducerHook } from "react-states/cjs/test";
-import { ExcalidrawFeature, useExcalidraw } from ".";
+import {
+  ExcalidrawFeature,
+  useExcalidraw,
+  ExcalidrawContext,
+  ExcalidrawElement,
+} from ".";
 import { Environment } from "../../environment";
 import { createOnVisibilityChange } from "../../environment/onVisibilityChange/test";
 import { createStorage } from "../../environment/storage/test";
@@ -12,12 +17,14 @@ describe("Excalidraw", () => {
     const userId = "123";
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
+    const storage = createStorage();
     const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
           environment={{
             onVisibilityChange,
+            storage,
           }}
         >
           <ExcalidrawFeature
@@ -191,12 +198,119 @@ describe("Excalidraw", () => {
 
     await waitFor(() => expect(excalidraw.state).toBe("EDIT"));
   });
-  test("Should go to UPDATE_FROM_PEER when receiving subscription update", async () => {
+  test("Should go to UPDATE_FROM_PEER when receiving subscription update in all active subscription states", async () => {
+    const userId = "123";
+    const id = "456";
+    const subscriptionStates = [
+      "DIRTY",
+      "EDIT",
+      "UPDATING_FROM_PEER",
+      "SYNCING",
+      "SYNCING_DIRTY",
+      "UPDATING",
+    ] as const;
+
+    subscriptionStates.forEach((state) => {
+      const storage = createStorage();
+      const onVisibilityChange = createOnVisibilityChange();
+      const createExcalidrawImage = createCreateExcalidrawImage();
+      const [excalidraw] = renderReducerHook(
+        () => useExcalidraw(),
+        (UseExcalidraw) => (
+          <Environment
+            environment={{
+              storage,
+              createExcalidrawImage,
+              onVisibilityChange,
+            }}
+          >
+            <ExcalidrawFeature
+              userId={userId}
+              id={id}
+              initialContext={{
+                state,
+                data: {
+                  appState: {},
+                  elements: [],
+                  version: 0,
+                },
+                metadata: { id, author: userId, last_updated: new Date() },
+                image: new Blob(),
+                clipboard: {
+                  state: "NOT_COPIED",
+                },
+              }}
+            >
+              <UseExcalidraw />
+            </ExcalidrawFeature>
+          </Environment>
+        )
+      );
+
+      act(() => {
+        storage.subscribeToChanges.trigger({
+          appState: {},
+          elements: [],
+          version: 1,
+        });
+      });
+
+      expect(excalidraw.state).toBe("UPDATING_FROM_PEER");
+    });
+  });
+  test("Should go to UPDATE_FROM_PEER with merged elements when recieving subscription update", async () => {
     const userId = "123";
     const id = "456";
     const storage = createStorage();
     const onVisibilityChange = createOnVisibilityChange();
     const createExcalidrawImage = createCreateExcalidrawImage();
+    // We test elements out of order, where existing has
+    // an update and new elements has an udpate
+    const existingElements: ExcalidrawElement[] = [
+      {
+        id: "1",
+        version: 1,
+      },
+      {
+        id: "0",
+        version: 0,
+      },
+    ];
+    const newElements: ExcalidrawElement[] = [
+      {
+        id: "0",
+        version: 1,
+      },
+      {
+        id: "1",
+        version: 0,
+      },
+    ];
+    const finalElements: ExcalidrawElement[] = [
+      {
+        id: "0",
+        version: 1,
+      },
+      {
+        id: "1",
+        version: 1,
+      },
+    ];
+    // Jest does not support "toEqual" Blob
+    const fakeBlob = null as any;
+    const initialContext = {
+      state: "EDIT",
+      data: {
+        appState: {},
+        elements: existingElements,
+        version: 0,
+      },
+      metadata: { id, author: userId, last_updated: new Date() },
+      image: fakeBlob,
+      clipboard: {
+        state: "NOT_COPIED",
+      },
+    } as const;
     const [excalidraw] = renderReducerHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
@@ -210,15 +324,7 @@ describe("Excalidraw", () => {
           <ExcalidrawFeature
             userId={userId}
             id={id}
-            initialContext={{
-              state: "EDIT",
-              data: { appState: {}, elements: [], version: 0 },
-              metadata: { id, author: userId, last_updated: new Date() },
-              image: new Blob(),
-              clipboard: {
-                state: "NOT_COPIED",
-              },
-            }}
+            initialContext={initialContext}
           >
             <UseExcalidraw />
           </ExcalidrawFeature>
@@ -229,11 +335,19 @@ describe("Excalidraw", () => {
     act(() => {
       storage.subscribeToChanges.trigger({
         appState: {},
-        elements: [],
-        version: 0,
+        elements: newElements,
+        version: 1,
       });
     });
 
-    expect(excalidraw.state).toBe("UPDATING_FROM_PEER");
+    expect(excalidraw).toEqual<ExcalidrawContext>({
+      ...initialContext,
+      state: "UPDATING_FROM_PEER",
+      data: {
+        ...initialContext.data,
+        elements: finalElements,
+        version: 1,
+      },
+    });
   });
 });

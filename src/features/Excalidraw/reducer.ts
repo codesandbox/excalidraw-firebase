@@ -1,4 +1,5 @@
 import { transitions } from "react-states";
+import { ExcalidrawData, ExcalidrawElement } from "../../environment/storage";
 import {
   ExcalidrawContext,
   ExcalidrawAction,
@@ -11,9 +12,62 @@ import {
   FOCUS,
   REFRESH,
   CONTINUE,
+  SUBSCRIPTION_UPDATE,
+  BaseContext,
 } from "./types";
 
 import { hasChangedExcalidraw } from "./utils";
+
+const mergeElements = (
+  newElements: ExcalidrawElement[],
+  oldElements: ExcalidrawElement[]
+): ExcalidrawElement[] => {
+  const initialElements = oldElements.reduce<{
+    [id: string]: ExcalidrawElement;
+  }>((aggr, element) => {
+    aggr[element.id] = element;
+
+    return aggr;
+  }, {});
+  const mergedElements = newElements.reduce((aggr, element) => {
+    const isExistingElement = Boolean(aggr[element.id]);
+    const isNewVersion =
+      isExistingElement && aggr[element.id].version < element.version;
+
+    if (!isExistingElement || isNewVersion) {
+      aggr[element.id] = element;
+    }
+
+    return aggr;
+  }, initialElements);
+
+  return Object.values(mergedElements);
+};
+
+const getChangedData = (
+  newData: ExcalidrawData,
+  oldData: ExcalidrawData
+): ExcalidrawData | undefined => {
+  if (newData.version === oldData.version) {
+    return;
+  }
+
+  return {
+    ...newData,
+    elements: mergeElements(newData.elements, oldData.elements),
+  };
+};
+
+const onSubscriptionUpdate = (
+  { data }: { data: ExcalidrawData },
+  currentContext: ExcalidrawContext & BaseContext
+): ExcalidrawContext => {
+  const changedData = getChangedData(data, currentContext.data);
+
+  return changedData
+    ? { ...currentContext, state: "UPDATING_FROM_PEER", data: changedData }
+    : currentContext;
+};
 
 export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
   LOADING: {
@@ -56,6 +110,7 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       ...currentContext,
       state: "UNFOCUSED",
     }),
+    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   DIRTY: {
     [SYNC]: (_, currentContext) => ({
@@ -74,6 +129,7 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       ...currentContext,
       state: "UNFOCUSED",
     }),
+    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   SYNCING: {
     EXCALIDRAW_CHANGE: (newData, currentContext) =>
@@ -95,6 +151,7 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       ...currentContext,
       state: "UNFOCUSED",
     }),
+    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   SYNCING_DIRTY: {
     EXCALIDRAW_CHANGE: (newData, currentContext) =>
@@ -117,6 +174,7 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       ...currentContext,
       state: "UNFOCUSED",
     }),
+    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   ERROR: {},
   UNFOCUSED: {
@@ -149,8 +207,15 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       image,
     }),
     [LOADING_ERROR]: ({ error }) => ({ state: "ERROR", error }),
+    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   UPDATING_FROM_PEER: {
-    EXCALIDRAW_CHANGE: () => ({ state: "DIRTY" }),
+    EXCALIDRAW_CHANGE: ({ appState, elements, version }, currentContext) => ({
+      ...currentContext,
+      state: "DIRTY",
+      appState,
+      elements,
+      version,
+    }),
   },
 });

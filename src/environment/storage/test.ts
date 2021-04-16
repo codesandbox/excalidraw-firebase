@@ -12,8 +12,8 @@ function createSubscriptionMock(): CreateSubscriptionMock {
     return () => {};
   };
 
-  subscriptionMock.trigger = (elements) => {
-    cb({ elements });
+  subscriptionMock.trigger = (data) => {
+    cb(data);
   };
 
   return subscriptionMock;

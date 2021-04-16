@@ -6,6 +6,7 @@ export type StorageError = {
 };
 
 export type ExcalidrawElement = {
+  id: string;
   version: number;
 };
 
@@ -50,8 +51,7 @@ export interface Storage {
   saveExcalidraw(
     userId: string,
     id: string,
-    elements: any[],
-    appState: any
+    data: ExcalidrawData
   ): Result<ExcalidrawMetadata, StorageError>;
   saveImage(
     userId: string,

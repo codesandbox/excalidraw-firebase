@@ -1,5 +1,11 @@
 import { StatesReducer } from "react-states";
-import { ExcalidrawData, ExcalidrawMetadata } from "../../environment/storage";
+import {
+  ExcalidrawData,
+  ExcalidrawElement,
+  ExcalidrawMetadata,
+} from "../../environment/storage";
+
+export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
 
 export type ClipboardContext =
   | {

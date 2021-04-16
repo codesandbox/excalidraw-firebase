@@ -16,6 +16,7 @@ type RenderExcalidrawContext = PickState<
   | "SYNCING_DIRTY"
   | "UNFOCUSED"
   | "FOCUSED"
+  | "UPDATING_FROM_PEER"
 >;
 
 export const Excalidraw = () => {
@@ -68,6 +69,7 @@ export const Excalidraw = () => {
       SYNCING_DIRTY: variants.loading,
       FOCUSED: variants.loading,
       UNFOCUSED: variants.loading,
+      UPDATING_FROM_PEER: variants.active,
       EDIT: () =>
         match(context.clipboard, {
           COPIED: variants.active,
@@ -83,6 +85,7 @@ export const Excalidraw = () => {
       SYNCING_DIRTY: () => false,
       DIRTY: () => false,
       EDIT: () => false,
+      UPDATING_FROM_PEER: () => false,
     });
 
     return (
@@ -94,6 +97,7 @@ export const Excalidraw = () => {
             dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
           }}
           readOnly={readOnly}
+          state={context.state}
         />
         <div className="edit" style={variant.style} onClick={variant.onClick}>
           {variant.content}
@@ -125,5 +129,6 @@ export const Excalidraw = () => {
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,
     UNFOCUSED: renderExcalidraw,
+    UPDATING_FROM_PEER: renderExcalidraw,
   });
 };

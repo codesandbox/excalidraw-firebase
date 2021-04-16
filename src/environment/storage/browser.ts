@@ -85,7 +85,7 @@ export const createStorage = (): Storage => ({
         .catch((error: Error) => err("ERROR", error.message))
     );
   },
-  saveExcalidraw: (userId, id, elements, appState) =>
+  saveExcalidraw: (userId, id, data) =>
     result((ok, err) =>
       Promise.all([
         firebase
@@ -95,10 +95,11 @@ export const createStorage = (): Storage => ({
           .collection(EXCALIDRAWS_DATA_COLLECTION)
           .doc(id)
           .set({
-            elements: JSON.stringify(elements),
+            elements: JSON.stringify(data.elements),
             appState: JSON.stringify({
-              viewBackgroundColor: appState.viewBackgroundColor,
+              viewBackgroundColor: data.appState.viewBackgroundColor,
             }),
+            version: data.version,
           }),
         firebase
           .firestore()
@@ -209,4 +210,22 @@ export const createStorage = (): Storage => ({
           return err("ERROR", error.message);
         })
     ),
+  subscribeToChanges: (userId, id, listener) =>
+    firebase
+      .firestore()
+      .collection(USERS_COLLECTION)
+      .doc(userId)
+      .collection(EXCALIDRAWS_DATA_COLLECTION)
+      .doc(id)
+      .onSnapshot((doc) => {
+        if (doc.metadata.hasPendingWrites) return;
+
+        const data = doc.data()!;
+
+        listener({
+          appState: JSON.parse(data.appState),
+          elements: JSON.parse(data.elements),
+          version: data.version,
+        });
+      }),
 });
