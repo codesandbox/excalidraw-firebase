@@ -161,7 +161,6 @@ export const createStorage = (): Storage => ({
                 .doc(userDoc.id)
                 .collection(EXCALIDRAWS_COLLECTION)
                 .orderBy("last_updated", "desc")
-                .limit(10)
                 .get()
                 .then((collection) => {
                   return {

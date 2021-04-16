@@ -14,12 +14,10 @@ export type DashboardContext =
   | {
       state: "PREVIEWS_LOADED";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
     }
   | {
       state: "CREATING_EXCALIDRAW";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
     }
   | {
       state: "EXCALIDRAW_CREATED";
@@ -32,7 +30,6 @@ export type DashboardContext =
   | {
       state: "CREATE_EXCALIDRAW_ERROR";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
       error: string;
     };
 
@@ -81,10 +78,9 @@ const reducer = transitions<DashboardContext, DashboardAction>({
     }),
   },
   PREVIEWS_LOADED: {
-    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
-      showCount,
     }),
   },
   CREATING_EXCALIDRAW: {
@@ -92,11 +88,10 @@ const reducer = transitions<DashboardContext, DashboardAction>({
       state: "EXCALIDRAW_CREATED",
       id,
     }),
-    [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws, showCount }) => ({
+    [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws }) => ({
       state: "CREATE_EXCALIDRAW_ERROR",
       error,
       excalidraws,
-      showCount,
     }),
   },
   PREVIEWS_ERROR: {
@@ -107,10 +102,9 @@ const reducer = transitions<DashboardContext, DashboardAction>({
     }),
   },
   CREATE_EXCALIDRAW_ERROR: {
-    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }) => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
-      showCount,
     }),
   },
   EXCALIDRAW_CREATED: {},
