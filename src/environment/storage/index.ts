@@ -10,6 +10,10 @@ export type ExcalidrawElement = {
   version: number;
 };
 
+export type ExcalidrawAppState = {
+  viewBackgroundColor: string;
+};
+
 export type ExcalidrawMetadata = {
   id: string;
   author: string;

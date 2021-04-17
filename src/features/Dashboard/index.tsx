@@ -67,42 +67,43 @@ export const useDashboard = () => React.useContext(context);
 
 const reducer = transitions<DashboardContext, DashboardAction>({
   LOADING_PREVIEWS: {
-    [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }) => ({
+    [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }): DashboardContext => ({
       state: "PREVIEWS_LOADED",
       excalidraws,
-      showCount: 10,
     }),
-    [LOADING_PREVIEWS_ERROR]: ({ error }) => ({
+    [LOADING_PREVIEWS_ERROR]: ({ error }): DashboardContext => ({
       state: "PREVIEWS_ERROR",
       error,
     }),
   },
   PREVIEWS_LOADED: {
-    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
     }),
   },
   CREATING_EXCALIDRAW: {
-    [CREATE_EXCALIDRAW_SUCCESS]: ({ id }) => ({
+    [CREATE_EXCALIDRAW_SUCCESS]: ({ id }): DashboardContext => ({
       state: "EXCALIDRAW_CREATED",
       id,
     }),
-    [CREATE_EXCALIDRAW_ERROR]: ({ error }, { excalidraws }) => ({
+    [CREATE_EXCALIDRAW_ERROR]: (
+      { error },
+      { excalidraws }
+    ): DashboardContext => ({
       state: "CREATE_EXCALIDRAW_ERROR",
       error,
       excalidraws,
     }),
   },
   PREVIEWS_ERROR: {
-    CREATE_EXCALIDRAW: () => ({
+    CREATE_EXCALIDRAW: (): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws: {},
-      showCount: 0,
     }),
   },
   CREATE_EXCALIDRAW_ERROR: {
-    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
     }),

@@ -81,9 +81,7 @@ export type ExcalidrawAction =
     }
   | {
       type: "EXCALIDRAW_CHANGE";
-      elements: any[];
-      appState: any;
-      version: number;
+      data: ExcalidrawData;
     }
   | {
       type: typeof LOADING_SUCCESS;

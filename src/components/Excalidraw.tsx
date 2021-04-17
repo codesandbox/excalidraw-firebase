@@ -27,9 +27,11 @@ export const Excalidraw = () => {
       debounce((elements, appState) => {
         dispatch({
           type: "EXCALIDRAW_CHANGE",
-          elements,
-          appState,
-          version: getSceneVersion(elements),
+          data: {
+            elements,
+            appState,
+            version: getSceneVersion(elements),
+          },
         });
       }, 100),
     []

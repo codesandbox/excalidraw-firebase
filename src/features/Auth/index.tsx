@@ -57,23 +57,23 @@ export const useAuthenticatedAuth = () => {
 
 const reducer = transitions<AuthContext, AuthAction>({
   CHECKING_AUTHENTICATION: {
-    [SIGN_IN_SUCCESS]: ({ user }) => ({
+    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: () => ({
+    [SIGN_IN_ERROR]: (): AuthContext => ({
       state: "UNAUTHENTICATED",
     }),
   },
   UNAUTHENTICATED: {
-    SIGN_IN: () => ({ state: "SIGNING_IN" }),
+    SIGN_IN: (): AuthContext => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    [SIGN_IN_SUCCESS]: ({ user }) => ({
+    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: ({ error }) => ({
+    [SIGN_IN_ERROR]: ({ error }): AuthContext => ({
       state: "ERROR",
       error,
     }),
