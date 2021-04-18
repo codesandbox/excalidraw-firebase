@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Dispatch, useEffect } from "react";
 import { exec, match } from "react-states";
 import { useEnvironment } from "../../environment";
 
@@ -13,11 +13,14 @@ import {
   SYNC,
   SYNC_ERROR,
   SYNC_SUCCESS,
-  ExcalidrawReducer,
   SUBSCRIPTION_UPDATE,
+  ExcalidrawAction,
+  ExcalidrawContext,
 } from "./types";
 
-export const useVisibilityChangeEffect = ([_, dispatch]: ExcalidrawReducer) => {
+export const useVisibilityChangeEffect = (
+  dispatch: Dispatch<ExcalidrawAction>
+) => {
   const { onVisibilityChange } = useEnvironment();
 
   useEffect(
@@ -33,7 +36,7 @@ export const useVisibilityChangeEffect = ([_, dispatch]: ExcalidrawReducer) => {
   );
 };
 
-export const useClipboardEffect = ([excalidraw]: ExcalidrawReducer) => {
+export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
   const { copyImageToClipboard } = useEnvironment();
 
   const copyToClipboard = ({ image, clipboard }: BaseContext) =>
@@ -69,7 +72,7 @@ export const useClipboardEffect = ([excalidraw]: ExcalidrawReducer) => {
 export const useSubscriptionEffect = (
   userId: string,
   id: string,
-  [excalidraw, dispatch]: ExcalidrawReducer
+  [excalidraw, dispatch]: [ExcalidrawContext, Dispatch<ExcalidrawAction>]
 ) => {
   const { storage } = useEnvironment();
   const shouldSubscribe = match(excalidraw, {
@@ -103,7 +106,7 @@ export const useSubscriptionEffect = (
 export const useStorageEffects = (
   userId: string,
   id: string,
-  [excalidraw, dispatch]: ExcalidrawReducer
+  [excalidraw, dispatch]: [ExcalidrawContext, Dispatch<ExcalidrawAction>]
 ) => {
   const { createExcalidrawImage, storage } = useEnvironment();
 

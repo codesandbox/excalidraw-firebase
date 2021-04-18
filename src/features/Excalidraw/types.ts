@@ -1,4 +1,3 @@
-import { StatesReducer } from "react-states";
 import {
   ExcalidrawData,
   ExcalidrawElement,
@@ -81,9 +80,7 @@ export type ExcalidrawAction =
     }
   | {
       type: "EXCALIDRAW_CHANGE";
-      elements: any[];
-      appState: any;
-      version: number;
+      data: ExcalidrawData;
     }
   | {
       type: typeof LOADING_SUCCESS;
@@ -134,8 +131,3 @@ export type ExcalidrawAction =
       type: typeof SUBSCRIPTION_UPDATE;
       data: ExcalidrawData;
     };
-
-export type ExcalidrawReducer = StatesReducer<
-  ExcalidrawContext,
-  ExcalidrawAction
->;

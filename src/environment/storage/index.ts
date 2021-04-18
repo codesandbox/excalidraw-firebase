@@ -18,7 +18,7 @@ export type ExcalidrawMetadata = {
 
 export type ExcalidrawData = {
   elements: ExcalidrawElement[];
-  appState: any;
+  appState: { viewBackgroundColor: string };
   version: number;
 };
 

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
-import { exec, matches, StatesReducer, transitions } from "react-states";
+import React, { createContext, useEffect, useReducer } from "react";
+import { exec, transitions } from "react-states";
+import { createUseTransitionsReducer, TransitionsReducer } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
 import { User } from "../../environment/auth";
@@ -39,21 +40,11 @@ export type AuthAction =
       error: string;
     };
 
-export type AuthReducer = StatesReducer<AuthContext, AuthAction>;
+const reducerContext = createContext(
+  {} as TransitionsReducer<AuthContext, AuthAction>
+);
 
-const context = createContext({} as AuthReducer);
-
-export const useAuth = () => useContext(context);
-
-export const useAuthenticatedAuth = () => {
-  const auth = useAuth();
-
-  if (matches(auth, "AUTHENTICATED")) {
-    return auth;
-  }
-
-  throw new Error("Invalid use of Auth");
-};
+export const useAuth = createUseTransitionsReducer(reducerContext);
 
 const reducer = transitions<AuthContext, AuthAction>({
   CHECKING_AUTHENTICATION: {
@@ -92,17 +83,17 @@ export const AuthFeature = ({
   initialContext?: AuthContext;
 }) => {
   const environment = useEnvironment();
-  const authReducer = useReducer(reducer, initialContext);
+  const auth = useReducer(reducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
-    useDevtools("auth", authReducer);
+    useDevtools("auth", auth);
   }
 
-  const [auth, dispatch] = authReducer;
+  const [context, dispatch] = auth;
 
   useEffect(
     () =>
-      exec(auth, {
+      exec(context, {
         SIGNING_IN: () =>
           environment.auth.signIn().resolve(
             (user) => {
@@ -135,8 +126,10 @@ export const AuthFeature = ({
             }
           }),
       }),
-    [auth]
+    [context]
   );
 
-  return <context.Provider value={authReducer}>{children}</context.Provider>;
+  return (
+    <reducerContext.Provider value={auth}>{children}</reducerContext.Provider>
+  );
 };

@@ -1,19 +1,29 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { reducer } from "./reducer";
-import { ExcalidrawContext, ExcalidrawReducer } from "./types";
+import { ExcalidrawAction, ExcalidrawContext } from "./types";
 import {
   useClipboardEffect,
   useStorageEffects,
   useSubscriptionEffect,
   useVisibilityChangeEffect,
 } from "./effects";
+import { createUseTransitionsReducer, TransitionsReducer } from "react-states";
 
 export * from "./types";
 
-const context = createContext({} as ExcalidrawReducer);
+const reducerContext = createContext(
+  {} as TransitionsReducer<ExcalidrawContext, ExcalidrawAction>
+);
 
-export const useExcalidraw = () => useContext(context);
+export const useExcalidraw = createUseTransitionsReducer(reducerContext);
+
+export type Props = {
+  id: string;
+  userId: string;
+  children: React.ReactNode;
+  initialContext?: ExcalidrawContext;
+};
 
 export const ExcalidrawFeature = ({
   id,
@@ -22,22 +32,23 @@ export const ExcalidrawFeature = ({
   initialContext = {
     state: "LOADING",
   },
-}: {
-  id: string;
-  userId: string;
-  children: React.ReactNode;
-  initialContext?: ExcalidrawContext;
-}) => {
+}: Props) => {
   const excalidraw = useReducer(reducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
     useDevtools("excalidraw", excalidraw);
   }
 
-  useVisibilityChangeEffect(excalidraw);
-  useClipboardEffect(excalidraw);
+  const [context, dispatch] = excalidraw;
+
+  useVisibilityChangeEffect(dispatch);
+  useClipboardEffect(context);
   useStorageEffects(userId, id, excalidraw);
   useSubscriptionEffect(userId, id, excalidraw);
 
-  return <context.Provider value={excalidraw}>{children}</context.Provider>;
+  return (
+    <reducerContext.Provider value={excalidraw}>
+      {children}
+    </reducerContext.Provider>
+  );
 };

@@ -1,11 +1,11 @@
 import React, { useEffect, useReducer } from "react";
-import { exec, StatesReducer } from "react-states";
+import { exec, TransitionsReducer } from "react-states";
 import { ExcalidrawsByUser } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
-import { useAuthenticatedAuth } from "../Auth";
-import { transitions } from "react-states/cjs";
+import { createUseTransitionsReducer, transitions } from "react-states/cjs";
+import { useAuth } from "../Auth";
 
 export type DashboardContext =
   | {
@@ -62,11 +62,11 @@ export type DashboardAction =
       error: string;
     };
 
-export type DashboardReducer = StatesReducer<DashboardContext, DashboardAction>;
+const reducerContext = React.createContext(
+  {} as TransitionsReducer<DashboardContext, DashboardAction>
+);
 
-const context = React.createContext({} as DashboardReducer);
-
-export const useDashboard = () => React.useContext(context);
+export const useDashboard = createUseTransitionsReducer(reducerContext);
 
 const reducer = transitions<DashboardContext, DashboardAction>({
   LOADING_PREVIEWS: {
@@ -126,7 +126,7 @@ export const DashboardFeature = ({
   initialContext?: DashboardContext;
 }) => {
   const history = useHistory();
-  const [auth] = useAuthenticatedAuth();
+  const [auth] = useAuth("AUTHENTICATED");
   const { storage } = useEnvironment();
   const dashboardReducer = useReducer(reducer, initialContext);
 
@@ -181,6 +181,8 @@ export const DashboardFeature = ({
   );
 
   return (
-    <context.Provider value={dashboardReducer}>{children}</context.Provider>
+    <reducerContext.Provider value={dashboardReducer}>
+      {children}
+    </reducerContext.Provider>
   );
 };

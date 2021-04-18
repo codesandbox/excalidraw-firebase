@@ -1,5 +1,5 @@
 import { transitions } from "react-states";
-import { ExcalidrawData, ExcalidrawElement } from "../../environment/storage";
+import { ExcalidrawData } from "../../environment/storage";
 import {
   ExcalidrawContext,
   ExcalidrawAction,
@@ -16,47 +16,7 @@ import {
   BaseContext,
 } from "./types";
 
-import { hasChangedExcalidraw } from "./utils";
-
-const mergeElements = (
-  newElements: ExcalidrawElement[],
-  oldElements: ExcalidrawElement[]
-): ExcalidrawElement[] => {
-  const initialElements = oldElements.reduce<{
-    [id: string]: ExcalidrawElement;
-  }>((aggr, element) => {
-    aggr[element.id] = element;
-
-    return aggr;
-  }, {});
-  const mergedElements = newElements.reduce((aggr, element) => {
-    const isExistingElement = Boolean(aggr[element.id]);
-    const isNewVersion =
-      isExistingElement && aggr[element.id].version < element.version;
-
-    if (!isExistingElement || isNewVersion) {
-      aggr[element.id] = element;
-    }
-
-    return aggr;
-  }, initialElements);
-
-  return Object.values(mergedElements);
-};
-
-const getChangedData = (
-  newData: ExcalidrawData,
-  oldData: ExcalidrawData
-): ExcalidrawData | undefined => {
-  if (newData.version === oldData.version) {
-    return;
-  }
-
-  return {
-    ...newData,
-    elements: mergeElements(newData.elements, oldData.elements),
-  };
-};
+import { getChangedData, hasChangedExcalidraw } from "./utils";
 
 const onSubscriptionUpdate = (
   { data }: { data: ExcalidrawData },
@@ -71,7 +31,7 @@ const onSubscriptionUpdate = (
 
 export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
   LOADING: {
-    [LOADING_SUCCESS]: ({ data, metadata, image }) => ({
+    [LOADING_SUCCESS]: ({ data, metadata, image }): ExcalidrawContext => ({
       state: "LOADED",
       data,
       metadata,
@@ -80,97 +40,106 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
         state: "NOT_COPIED",
       },
     }),
-    [LOADING_ERROR]: ({ error }) => ({ state: "ERROR", error }),
+    [LOADING_ERROR]: ({ error }): ExcalidrawContext => ({
+      state: "ERROR",
+      error,
+    }),
   },
   LOADED: {
-    INITIALIZE_CANVAS_SUCCESS: (_, currentContext) => ({
+    INITIALIZE_CANVAS_SUCCESS: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "EDIT",
     }),
   },
   EDIT: {
-    EXCALIDRAW_CHANGE: (newData, currentContext) =>
-      hasChangedExcalidraw(currentContext.data, newData)
+    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
+      hasChangedExcalidraw(currentContext.data, data)
         ? {
             ...currentContext,
             clipboard: {
               state: "NOT_COPIED",
             },
             state: "DIRTY",
-            data: newData,
+            data,
           }
         : currentContext,
-    COPY_TO_CLIPBOARD: (_, currentContext) => ({
+    COPY_TO_CLIPBOARD: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       clipboard: {
         state: "COPIED",
       },
     }),
-    [BLUR]: (_, currentContext) => ({
+    [BLUR]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
     [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   DIRTY: {
-    [SYNC]: (_, currentContext) => ({
+    [SYNC]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "SYNCING",
     }),
-    EXCALIDRAW_CHANGE: (newData, currentContext) =>
-      hasChangedExcalidraw(currentContext.data, newData)
+    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
+      hasChangedExcalidraw(currentContext.data, data)
         ? {
             ...currentContext,
             state: "DIRTY",
-            data: newData,
+            data,
           }
         : currentContext,
-    [BLUR]: (_, currentContext) => ({
+    [BLUR]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
     [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   SYNCING: {
-    EXCALIDRAW_CHANGE: (newData, currentContext) =>
-      hasChangedExcalidraw(currentContext.data, newData)
+    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
+      hasChangedExcalidraw(currentContext.data, data)
         ? {
             ...currentContext,
             state: "SYNCING_DIRTY",
-            data: newData,
+            data,
           }
         : currentContext,
-    [SYNC_SUCCESS]: ({ image, metadata }, currentContext) => ({
+    [SYNC_SUCCESS]: (
+      { image, metadata },
+      currentContext
+    ): ExcalidrawContext => ({
       ...currentContext,
       state: "EDIT",
       metadata,
       image,
     }),
-    [SYNC_ERROR]: (_) => ({ state: "ERROR", error: "Unable to sync" }),
-    [BLUR]: (_, currentContext) => ({
+    [SYNC_ERROR]: (): ExcalidrawContext => ({
+      state: "ERROR",
+      error: "Unable to sync",
+    }),
+    [BLUR]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
     [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   SYNCING_DIRTY: {
-    EXCALIDRAW_CHANGE: (newData, currentContext) =>
-      hasChangedExcalidraw(currentContext.data, newData)
+    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
+      hasChangedExcalidraw(currentContext.data, data)
         ? {
             ...currentContext,
             state: "SYNCING_DIRTY",
-            data: newData,
+            data,
           }
         : currentContext,
-    [SYNC_SUCCESS]: (_, currentContext) => ({
+    [SYNC_SUCCESS]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "DIRTY",
     }),
-    [SYNC_ERROR]: (_, currentContext) => ({
+    [SYNC_ERROR]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "DIRTY",
     }),
-    [BLUR]: (_, currentContext) => ({
+    [BLUR]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
@@ -178,44 +147,51 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
   },
   ERROR: {},
   UNFOCUSED: {
-    [FOCUS]: (_, currentContext) => ({
+    [FOCUS]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "FOCUSED",
     }),
-    [SYNC_SUCCESS]: ({ image, metadata }, currentContext) => ({
+    [SYNC_SUCCESS]: (
+      { image, metadata },
+      currentContext
+    ): ExcalidrawContext => ({
       ...currentContext,
       metadata,
       image,
     }),
   },
   FOCUSED: {
-    [REFRESH]: (_, currentContext) => ({
+    [REFRESH]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UPDATING",
     }),
-    [CONTINUE]: (_, currentContext) => ({
+    [CONTINUE]: (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "EDIT",
     }),
   },
   UPDATING: {
-    [LOADING_SUCCESS]: ({ data, metadata, image }, currentContext) => ({
+    [LOADING_SUCCESS]: (
+      { data, metadata, image },
+      currentContext
+    ): ExcalidrawContext => ({
       ...currentContext,
       state: "EDIT",
       data,
       metadata,
       image,
     }),
-    [LOADING_ERROR]: ({ error }) => ({ state: "ERROR", error }),
+    [LOADING_ERROR]: ({ error }): ExcalidrawContext => ({
+      state: "ERROR",
+      error,
+    }),
     [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   UPDATING_FROM_PEER: {
-    EXCALIDRAW_CHANGE: ({ appState, elements, version }, currentContext) => ({
+    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "DIRTY",
-      appState,
-      elements,
-      version,
+      data,
     }),
   },
 });
