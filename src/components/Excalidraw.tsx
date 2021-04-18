@@ -71,7 +71,7 @@ export const Excalidraw = () => {
       SYNCING_DIRTY: variants.loading,
       FOCUSED: variants.loading,
       UNFOCUSED: variants.loading,
-      UPDATING_FROM_PEER: variants.active,
+      UPDATING_FROM_PEER: variants.default,
       EDIT: () =>
         match(context.clipboard, {
           COPIED: variants.active,
