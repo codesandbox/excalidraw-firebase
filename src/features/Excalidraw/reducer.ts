@@ -185,7 +185,6 @@ export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
       state: "ERROR",
       error,
     }),
-    [SUBSCRIPTION_UPDATE]: onSubscriptionUpdate,
   },
   UPDATING_FROM_PEER: {
     EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext => ({
