@@ -8,7 +8,7 @@ import {
   useSubscriptionEffect,
   useVisibilityChangeEffect,
 } from "./effects";
-import { createUseTransitionsReducer, TransitionsReducer } from "react-states";
+import { createTransitionsReducerHook, TransitionsReducer } from "react-states";
 
 export * from "./types";
 
@@ -16,7 +16,7 @@ const reducerContext = createContext(
   {} as TransitionsReducer<ExcalidrawContext, ExcalidrawAction>
 );
 
-export const useExcalidraw = createUseTransitionsReducer(reducerContext);
+export const useExcalidraw = createTransitionsReducerHook(reducerContext);
 
 export type Props = {
   id: string;
@@ -39,9 +39,9 @@ export const ExcalidrawFeature = ({
     useDevtools("excalidraw", excalidraw);
   }
 
-  const [context, dispatch] = excalidraw;
+  const [context, send] = excalidraw;
 
-  useVisibilityChangeEffect(dispatch);
+  useVisibilityChangeEffect(send);
   useClipboardEffect(context);
   useStorageEffects(userId, id, excalidraw);
   useSubscriptionEffect(userId, id, excalidraw);

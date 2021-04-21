@@ -4,16 +4,14 @@ import { useAuth } from "../features/Auth";
 import { match } from "react-states";
 
 export const Auth = () => {
-  const [auth, dispatch] = useAuth();
+  const [auth, send] = useAuth();
 
   return (
     <div className="App">
       {match(auth, {
         UNAUTHENTICATED: () => (
           <div className="center-wrapper">
-            <button onClick={() => dispatch({ type: "SIGN_IN" })}>
-              Sign In
-            </button>
+            <button onClick={() => send({ type: "SIGN_IN" })}>Sign In</button>
           </div>
         ),
         CHECKING_AUTHENTICATION: () => (

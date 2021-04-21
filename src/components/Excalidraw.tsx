@@ -20,12 +20,12 @@ type RenderExcalidrawContext = PickState<
 >;
 
 export const Excalidraw = () => {
-  const [excalidraw, dispatch] = useExcalidraw();
+  const [excalidraw, send] = useExcalidraw();
 
   const onChange = useMemo(
     () =>
       debounce((elements, appState) => {
-        dispatch({
+        send({
           type: "EXCALIDRAW_CHANGE",
           data: {
             elements,
@@ -39,7 +39,7 @@ export const Excalidraw = () => {
 
   const renderExcalidraw = (context: RenderExcalidrawContext) => {
     const copyToClipboard = () => {
-      dispatch({ type: "COPY_TO_CLIPBOARD" });
+      send({ type: "COPY_TO_CLIPBOARD" });
     };
     const variants = {
       default: () => ({
@@ -96,7 +96,7 @@ export const Excalidraw = () => {
           data={context.data}
           onChange={onChange}
           onInitialized={() => {
-            dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
+            send({ type: "INITIALIZE_CANVAS_SUCCESS" });
           }}
           readOnly={readOnly}
           state={context.state}

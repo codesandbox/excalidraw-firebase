@@ -82,7 +82,7 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, dispatch] = React.useReducer(reducer, {
+  const [preview, send] = React.useReducer(reducer, {
     state: "LOADING_PREVIEW",
   });
 
@@ -92,14 +92,14 @@ export const ExcalidrawPreview = ({
         LOADING_PREVIEW: () => {
           storage.getImageSrc(userId, metadata.id).resolve(
             (src) => {
-              dispatch({
+              send({
                 type: "LOADING_PREVIEW_SUCCESS",
                 src,
               });
             },
             {
               ERROR: (error) => {
-                dispatch({
+                send({
                   type: "LOADING_PREVIEW_ERROR",
                   error,
                 });

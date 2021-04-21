@@ -1,5 +1,5 @@
-import { Dispatch, useEffect } from "react";
-import { exec, match } from "react-states";
+import { useEffect } from "react";
+import { exec, match, Send, TransitionsReducer } from "react-states";
 import { useEnvironment } from "../../environment";
 
 import {
@@ -14,22 +14,20 @@ import {
   SYNC_ERROR,
   SYNC_SUCCESS,
   SUBSCRIPTION_UPDATE,
-  ExcalidrawAction,
+  ExcalidrawEvent,
   ExcalidrawContext,
 } from "./types";
 
-export const useVisibilityChangeEffect = (
-  dispatch: Dispatch<ExcalidrawAction>
-) => {
+export const useVisibilityChangeEffect = (send: Send<ExcalidrawEvent>) => {
   const { onVisibilityChange } = useEnvironment();
 
   useEffect(
     () =>
       onVisibilityChange((visible) => {
         if (visible) {
-          dispatch({ type: FOCUS });
+          send({ type: FOCUS });
         } else {
-          dispatch({ type: BLUR });
+          send({ type: BLUR });
         }
       }),
     []
@@ -72,7 +70,7 @@ export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
 export const useSubscriptionEffect = (
   userId: string,
   id: string,
-  [excalidraw, dispatch]: [ExcalidrawContext, Dispatch<ExcalidrawAction>]
+  [excalidraw, send]: TransitionsReducer<ExcalidrawContext, ExcalidrawEvent>
 ) => {
   const { storage } = useEnvironment();
   const shouldSubscribe = match(excalidraw, {
@@ -93,7 +91,7 @@ export const useSubscriptionEffect = (
     () =>
       shouldSubscribe
         ? storage.subscribeToChanges(userId, id, (data) => {
-            dispatch({
+            send({
               type: SUBSCRIPTION_UPDATE,
               data,
             });
@@ -106,7 +104,7 @@ export const useSubscriptionEffect = (
 export const useStorageEffects = (
   userId: string,
   id: string,
-  [excalidraw, dispatch]: [ExcalidrawContext, Dispatch<ExcalidrawAction>]
+  [excalidraw, send]: TransitionsReducer<ExcalidrawContext, ExcalidrawEvent>
 ) => {
   const { createExcalidrawImage, storage } = useEnvironment();
 
@@ -118,7 +116,7 @@ export const useStorageEffects = (
           response.data.appState
         ).resolve(
           (image) => {
-            dispatch({
+            send({
               type: LOADING_SUCCESS,
               metadata: response.metadata,
               data: response.data,
@@ -127,7 +125,7 @@ export const useStorageEffects = (
           },
           {
             ERROR: (error) => {
-              dispatch({
+              send({
                 type: LOADING_ERROR,
                 error: error.message,
               });
@@ -136,7 +134,7 @@ export const useStorageEffects = (
         ),
       {
         ERROR: (error) => {
-          dispatch({
+          send({
             type: LOADING_ERROR,
             error,
           });
@@ -156,7 +154,7 @@ export const useStorageEffects = (
             (metadata) =>
               createExcalidrawImage(data.elements, data.appState).resolve(
                 (image) => {
-                  dispatch({
+                  send({
                     type: SYNC_SUCCESS,
                     image,
                     metadata,
@@ -170,20 +168,20 @@ export const useStorageEffects = (
                 },
                 {
                   ERROR: () => {
-                    dispatch({ type: SYNC_ERROR });
+                    send({ type: SYNC_ERROR });
                   },
                 }
               ),
             {
               ERROR: () => {
-                dispatch({ type: SYNC_ERROR });
+                send({ type: SYNC_ERROR });
               },
             }
           );
         },
         DIRTY: () => {
           const id = setTimeout(() => {
-            dispatch({
+            send({
               type: SYNC,
             });
           }, 500);
@@ -198,14 +196,14 @@ export const useStorageEffects = (
             .resolve(
               (hasUpdated) => {
                 if (hasUpdated) {
-                  dispatch({ type: REFRESH });
+                  send({ type: REFRESH });
                 } else {
-                  dispatch({ type: CONTINUE });
+                  send({ type: CONTINUE });
                 }
               },
               {
                 ERROR: () => {
-                  dispatch({ type: CONTINUE });
+                  send({ type: CONTINUE });
                 },
               }
             ),

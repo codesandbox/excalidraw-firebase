@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useReducer } from "react";
 import { exec, transitions } from "react-states";
-import { createUseTransitionsReducer, TransitionsReducer } from "react-states";
+import { createTransitionsReducerHook, TransitionsReducer } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
 import { User } from "../../environment/auth";
@@ -27,7 +27,7 @@ export type AuthContext =
 const SIGN_IN_SUCCESS = Symbol("SIGN_IN_SUCCESS");
 const SIGN_IN_ERROR = Symbol("SIGN_IN_ERROR");
 
-export type AuthAction =
+export type AuthEvent =
   | {
       type: "SIGN_IN";
     }
@@ -41,30 +41,30 @@ export type AuthAction =
     };
 
 const reducerContext = createContext(
-  {} as TransitionsReducer<AuthContext, AuthAction>
+  {} as TransitionsReducer<AuthContext, AuthEvent>
 );
 
-export const useAuth = createUseTransitionsReducer(reducerContext);
+export const useAuth = createTransitionsReducerHook(reducerContext);
 
-const reducer = transitions<AuthContext, AuthAction>({
+const reducer = transitions<AuthContext, AuthEvent>({
   CHECKING_AUTHENTICATION: {
-    [SIGN_IN_SUCCESS]: ({ user }) => ({
+    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: () => ({
+    [SIGN_IN_ERROR]: (): AuthContext => ({
       state: "UNAUTHENTICATED",
     }),
   },
   UNAUTHENTICATED: {
-    SIGN_IN: () => ({ state: "SIGNING_IN" }),
+    SIGN_IN: (): AuthContext => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    [SIGN_IN_SUCCESS]: ({ user }) => ({
+    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: ({ error }) => ({
+    [SIGN_IN_ERROR]: ({ error }): AuthContext => ({
       state: "ERROR",
       error,
     }),
@@ -89,7 +89,7 @@ export const AuthFeature = ({
     useDevtools("auth", auth);
   }
 
-  const [context, dispatch] = auth;
+  const [context, send] = auth;
 
   useEffect(
     () =>
@@ -97,17 +97,17 @@ export const AuthFeature = ({
         SIGNING_IN: () =>
           environment.auth.signIn().resolve(
             (user) => {
-              dispatch({ type: SIGN_IN_SUCCESS, user });
+              send({ type: SIGN_IN_SUCCESS, user });
             },
             {
               NOT_SIGNED_IN: () => {
-                dispatch({
+                send({
                   type: SIGN_IN_ERROR,
                   error: "Authenticated, but no user",
                 });
               },
               ERROR: (error) => {
-                dispatch({
+                send({
                   type: SIGN_IN_ERROR,
                   error: error.message,
                 });
@@ -117,9 +117,9 @@ export const AuthFeature = ({
         CHECKING_AUTHENTICATION: () =>
           environment.auth.onAuthChange((user) => {
             if (user) {
-              dispatch({ type: SIGN_IN_SUCCESS, user });
+              send({ type: SIGN_IN_SUCCESS, user });
             } else {
-              dispatch({
+              send({
                 type: SIGN_IN_ERROR,
                 error: "Not authenticated",
               });

@@ -71,7 +71,7 @@ export const REFRESH = Symbol("REFRESH");
 export const CONTINUE = Symbol("CONTINUE");
 export const SUBSCRIPTION_UPDATE = Symbol("SUBSCRIPTION_UPDATE");
 
-export type ExcalidrawAction =
+export type ExcalidrawEvent =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
     }

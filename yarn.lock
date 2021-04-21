@@ -5066,10 +5066,10 @@ react-shallow-renderer@^16.13.1:
     object-assign "^4.1.1"
     react-is "^16.12.0 || ^17.0.0"
 
-react-states@^5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/react-states/-/react-states-5.4.0.tgz#685668444fe6d066e5eeecc1ac5d10522674a3a2"
-  integrity sha512-Xnk+HxkIpEI4f969/o/lLaFE+uxgjDJnehuXe9eSnQ7aupmvd08rBVljyOzUwQ2rwxu1DXoPU+ttmXQb10l+Ug==
+react-states@^6.2.1-next:
+  version "6.2.1-next"
+  resolved "https://registry.yarnpkg.com/react-states/-/react-states-6.2.1-next.tgz#b0cadceb054e93ae494eb24b10ee1826d31ac0f4"
+  integrity sha512-c+EYwRwWohvpflCiadsfR5QAmYrsAwutA1NVbqM+2Vhs/Hvx8Et05uW7sLb2vNNaEW+PDR2N/SZoRJV6mPmgew==
 
 react-style-singleton@^2.1.0:
   version "2.1.1"

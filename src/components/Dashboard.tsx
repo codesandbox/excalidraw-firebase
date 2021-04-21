@@ -63,12 +63,12 @@ const CreateNewExcalidraw = styled("li", {
 
 export const Dashboard = () => {
   const [auth] = useAuth("AUTHENTICATED");
-  const [dashboard, dispatch] = useDashboard();
+  const [dashboard, send] = useDashboard();
 
   const createExcalidraw = (
     <CreateNewExcalidraw
       onClick={() => {
-        dispatch({ type: "CREATE_EXCALIDRAW" });
+        send({ type: "CREATE_EXCALIDRAW" });
       }}
     >
       Create new Excalidraw
