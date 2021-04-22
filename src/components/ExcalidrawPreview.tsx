@@ -11,7 +11,7 @@ const Wrapper = styled("li", {
   borderRadius: "3px",
   border: "1px solid #eaeaea",
   display: "flex",
-  margin: "1rem",
+  margin: "1rem 1rem 0 0",
   padding: "1rem",
   alignItems: "center",
   justifyContent: "center",
