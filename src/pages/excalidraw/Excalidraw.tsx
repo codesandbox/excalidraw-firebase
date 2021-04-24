@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickState, match } from "react-states";
+import { PickContext, match } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
 
-type RenderExcalidrawContext = PickState<
+type RenderExcalidrawContext = PickContext<
   ExcalidrawContext,
   | "LOADED"
   | "EDIT"

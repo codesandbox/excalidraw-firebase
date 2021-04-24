@@ -1,10 +1,14 @@
 import React, { useEffect, useReducer } from "react";
-import { exec, TransitionsReducer } from "react-states";
+import {
+  exec,
+  createStatesHook,
+  createStatesContext,
+  createStatesReducer,
+} from "react-states";
 import { ExcalidrawsByUser } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
-import { createTransitionsReducerHook, transitions } from "react-states/cjs";
 import { useAuth } from "../Auth";
 
 export type DashboardContext =
@@ -41,7 +45,7 @@ const CREATE_EXCALIDRAW_ERROR = Symbol("CREATE_EXCALIDRAW_ERROR");
 const LOADING_PREVIEWS_SUCCESS = Symbol("LOADING_PREVIEWS_SUCCESS");
 const LOADING_PREVIEWS_ERROR = Symbol("LOADING_PREVIEWS_ERROR");
 
-export type DashboardAction =
+export type DashboardEvent =
   | {
       type: "CREATE_EXCALIDRAW";
     }
@@ -62,13 +66,7 @@ export type DashboardAction =
       error: string;
     };
 
-const reducerContext = React.createContext(
-  {} as TransitionsReducer<DashboardContext, DashboardAction>
-);
-
-export const useDashboard = createTransitionsReducerHook(reducerContext);
-
-const reducer = transitions<DashboardContext, DashboardAction>({
+const dashboardReducer = createStatesReducer<DashboardContext, DashboardEvent>({
   LOADING_PREVIEWS: {
     [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }): DashboardContext => ({
       state: "PREVIEWS_LOADED",
@@ -119,6 +117,13 @@ const reducer = transitions<DashboardContext, DashboardAction>({
   EXCALIDRAW_CREATED: {},
 });
 
+const dashboardContext = createStatesContext<
+  DashboardContext,
+  DashboardEvent
+>();
+
+export const useDashboard = createStatesHook(dashboardContext);
+
 export const DashboardFeature = ({
   children,
   initialContext = {
@@ -131,13 +136,13 @@ export const DashboardFeature = ({
   const history = useHistory();
   const [auth] = useAuth("AUTHENTICATED");
   const { storage } = useEnvironment();
-  const dashboardReducer = useReducer(reducer, initialContext);
+  const dashboardStates = useReducer(dashboardReducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
-    useDevtools("dashboard", dashboardReducer);
+    useDevtools("dashboard", dashboardStates);
   }
 
-  const [dashboard, send] = dashboardReducer;
+  const [dashboard, send] = dashboardStates;
 
   useEffect(
     () =>
@@ -184,8 +189,8 @@ export const DashboardFeature = ({
   );
 
   return (
-    <reducerContext.Provider value={dashboardReducer}>
+    <dashboardContext.Provider value={dashboardStates}>
       {children}
-    </reducerContext.Provider>
+    </dashboardContext.Provider>
   );
 };

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { exec, match, transitions } from "react-states";
+import { exec, match, createStatesReducer } from "react-states";
 import { ExcalidrawMetadata } from "../../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { styled } from "../../stitches.config";
@@ -59,7 +59,10 @@ type ExcalidrawPreviewAction =
       error: string;
     };
 
-const reducer = transitions<ExcalidrawPreviewContext, ExcalidrawPreviewAction>({
+const excalidrawPreviewReducer = createStatesReducer<
+  ExcalidrawPreviewContext,
+  ExcalidrawPreviewAction
+>({
   LOADING_PREVIEW: {
     LOADING_PREVIEW_SUCCESS: ({ src }) => ({
       state: "PREVIEW_LOADED",
@@ -82,7 +85,7 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, send] = React.useReducer(reducer, {
+  const [preview, send] = React.useReducer(excalidrawPreviewReducer, {
     state: "LOADING_PREVIEW",
   });
 

@@ -1,4 +1,4 @@
-import { transitions } from "react-states";
+import { createStatesReducer } from "react-states";
 import { ExcalidrawData } from "../../environment/storage";
 import {
   ExcalidrawContext,
@@ -29,7 +29,10 @@ const onSubscriptionUpdate = (
     : currentContext;
 };
 
-export const reducer = transitions<ExcalidrawContext, ExcalidrawEvent>({
+export const excalidrawReducer = createStatesReducer<
+  ExcalidrawContext,
+  ExcalidrawEvent
+>({
   LOADING: {
     [LOADING_SUCCESS]: ({ data, metadata, image }): ExcalidrawContext => ({
       state: "LOADED",

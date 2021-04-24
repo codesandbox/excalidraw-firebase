@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { exec, match, Send, TransitionsReducer } from "react-states";
+import { exec, match, Send, States } from "react-states";
 import { useEnvironment } from "../../environment";
 
 import {
@@ -70,7 +70,7 @@ export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
 export const useSubscriptionEffect = (
   userId: string,
   id: string,
-  [excalidraw, send]: TransitionsReducer<ExcalidrawContext, ExcalidrawEvent>
+  [excalidraw, send]: States<ExcalidrawContext, ExcalidrawEvent>
 ) => {
   const { storage } = useEnvironment();
   const shouldSubscribe = match(excalidraw, {
@@ -104,7 +104,7 @@ export const useSubscriptionEffect = (
 export const useStorageEffects = (
   userId: string,
   id: string,
-  [excalidraw, send]: TransitionsReducer<ExcalidrawContext, ExcalidrawEvent>
+  [excalidraw, send]: States<ExcalidrawContext, ExcalidrawEvent>
 ) => {
   const { createExcalidrawImage, storage } = useEnvironment();
 

@@ -2,7 +2,7 @@ import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
 import { useDashboard } from "../../features/Dashboard";
 import { styled } from "../../stitches.config";
-import { match, PickState } from "react-states";
+import { match, PickContext } from "react-states";
 import { DashboardContext } from "../../features/Dashboard";
 import { useAuth } from "../../features/Auth";
 
@@ -83,7 +83,7 @@ export const Dashboard = () => {
   );
 
   const renderPreviews = (
-    context: PickState<
+    context: PickContext<
       DashboardContext,
       "PREVIEWS_LOADED" | "CREATE_EXCALIDRAW_ERROR"
     >
