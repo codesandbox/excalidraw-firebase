@@ -32,7 +32,12 @@ export const ExcalidrawFeature = ({
   initialContext = {
     state: "LOADING",
   },
-}: Props) => {
+}: {
+  id: string;
+  userId: string;
+  children: React.ReactNode;
+  initialContext?: ExcalidrawContext;
+}) => {
   const excalidrawStates = useReducer(excalidrawReducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {

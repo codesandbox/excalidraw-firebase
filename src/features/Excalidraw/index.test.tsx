@@ -1,6 +1,6 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
-import { renderReducerHook } from "react-states/cjs/test";
+import { renderStatesHook } from "react-states/cjs/test";
 import {
   ExcalidrawFeature,
   useExcalidraw,
@@ -18,7 +18,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderReducerHook(
+    const [excalidraw] = renderStatesHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -32,7 +32,13 @@ describe("Excalidraw", () => {
             id={id}
             initialContext={{
               state: "EDIT",
-              data: { appState: {}, elements: [], version: 0 },
+              data: {
+                appState: {
+                  viewBackgroundColor: "#FFF",
+                },
+                elements: [],
+                version: 0,
+              },
               image: new Blob(),
               metadata: { id, author: userId, last_updated: new Date() },
               clipboard: {
@@ -58,7 +64,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderReducerHook(
+    const [excalidraw] = renderStatesHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -73,7 +79,13 @@ describe("Excalidraw", () => {
             id={id}
             initialContext={{
               state: "SYNCING",
-              data: { appState: {}, elements: [], version: 0 },
+              data: {
+                appState: {
+                  viewBackgroundColor: "#FFF",
+                },
+                elements: [],
+                version: 0,
+              },
               metadata: { id, author: userId, last_updated: new Date() },
               image: new Blob(),
               clipboard: {
@@ -99,7 +111,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderReducerHook(
+    const [excalidraw] = renderStatesHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -114,7 +126,13 @@ describe("Excalidraw", () => {
             id={id}
             initialContext={{
               state: "UNFOCUSED",
-              data: { appState: {}, elements: [], version: 0 },
+              data: {
+                appState: {
+                  viewBackgroundColor: "#FFF",
+                },
+                elements: [],
+                version: 0,
+              },
               metadata: { id, author: userId, last_updated: new Date() },
               image: new Blob(),
               clipboard: {
@@ -140,7 +158,9 @@ describe("Excalidraw", () => {
 
     storage.getExcalidraw.ok({
       data: {
-        appState: {},
+        appState: {
+          viewBackgroundColor: "#FFF",
+        },
         elements: [],
         version: 0,
       },
@@ -159,7 +179,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderReducerHook(
+    const [excalidraw] = renderStatesHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -174,7 +194,13 @@ describe("Excalidraw", () => {
             id={id}
             initialContext={{
               state: "UNFOCUSED",
-              data: { appState: {}, elements: [], version: 0 },
+              data: {
+                appState: {
+                  viewBackgroundColor: "#FFF",
+                },
+                elements: [],
+                version: 0,
+              },
               metadata: { id, author: userId, last_updated: new Date() },
               image: new Blob(),
               clipboard: {
@@ -214,7 +240,7 @@ describe("Excalidraw", () => {
       const storage = createStorage();
       const onVisibilityChange = createOnVisibilityChange();
       const createExcalidrawImage = createCreateExcalidrawImage();
-      const [excalidraw] = renderReducerHook(
+      const [excalidraw] = renderStatesHook(
         () => useExcalidraw(),
         (UseExcalidraw) => (
           <Environment
@@ -230,7 +256,7 @@ describe("Excalidraw", () => {
               initialContext={{
                 state,
                 data: {
-                  appState: {},
+                  appState: { viewBackgroundColor: "#FFF" },
                   elements: [],
                   version: 0,
                 },
@@ -249,7 +275,7 @@ describe("Excalidraw", () => {
 
       act(() => {
         storage.subscribeToChanges.trigger({
-          appState: {},
+          appState: { viewBackgroundColor: "#FFF" },
           elements: [],
           version: 1,
         });
@@ -298,10 +324,10 @@ describe("Excalidraw", () => {
     ];
     // Jest does not support "toEqual" Blob
     const fakeBlob = null as any;
-    const initialContext = {
+    const initialContext: ExcalidrawContext = {
       state: "EDIT",
       data: {
-        appState: {},
+        appState: { viewBackgroundColor: "#FFF" },
         elements: existingElements,
         version: 0,
       },
@@ -311,7 +337,7 @@ describe("Excalidraw", () => {
         state: "NOT_COPIED",
       },
     } as const;
-    const [excalidraw] = renderReducerHook(
+    const [excalidraw] = renderStatesHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -334,7 +360,7 @@ describe("Excalidraw", () => {
 
     act(() => {
       storage.subscribeToChanges.trigger({
-        appState: {},
+        appState: { viewBackgroundColor: "#FFF" },
         elements: newElements,
         version: 1,
       });

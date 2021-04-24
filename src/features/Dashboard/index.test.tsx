@@ -6,13 +6,13 @@ import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import { DashboardContext, DashboardFeature, useDashboard } from ".";
 import { AuthFeature } from "../Auth";
-import { renderReducerHook } from "react-states/cjs/test";
+import { renderStatesHook } from "react-states/cjs/test";
 
 describe("Dashboard", () => {
   test("Should go to PREVIEWS_LOADED when mounting and successfully downloading previews", async () => {
     const storage = createStorage();
 
-    const [context] = renderReducerHook(
+    const [context] = renderStatesHook(
       () => useDashboard(),
       (UseDashboard) => (
         <Environment
@@ -66,7 +66,7 @@ describe("Dashboard", () => {
   });
   test("Should go to PREVIEWS_ERROR when mounting and unsuccessfully downloading previews", async () => {
     const storage = createStorage();
-    const [context] = renderReducerHook(
+    const [context] = renderStatesHook(
       () => useDashboard(),
       (UseDashboard) => (
         <Environment
@@ -104,7 +104,7 @@ describe("Dashboard", () => {
   test("Should go to EXCALIDRAW_CREATED when creating a new Excalidraw successfully", async () => {
     const storage = createStorage();
     const history = createMemoryHistory();
-    const [context, dispatch] = renderReducerHook(
+    const [context, dispatch] = renderStatesHook(
       () => useDashboard(),
       (UseDashboard) => (
         <Environment
@@ -162,7 +162,7 @@ describe("Dashboard", () => {
   test("Should go to CREATE_EXCALIDRAW_ERROR when creating a new Excalidraw unsuccessfully", async () => {
     const storage = createStorage();
 
-    const [context, dispatch] = renderReducerHook(
+    const [context, dispatch] = renderStatesHook(
       () => useDashboard(),
       (UseDashboard) => (
         <Environment
