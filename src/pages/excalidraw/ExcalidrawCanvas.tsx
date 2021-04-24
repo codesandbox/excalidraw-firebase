@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ExcalidrawComponent from "@excalidraw/excalidraw";
-import { ExcalidrawContext } from "../features/Excalidraw";
+import { ExcalidrawContext } from "../../features/Excalidraw";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;

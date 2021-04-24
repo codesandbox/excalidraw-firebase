@@ -9,7 +9,7 @@ import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
 import "./index.css";
 
 import config from "./firebase.config.json";
-import { Auth } from "./components/Auth";
+import { Pages } from "./pages";
 import { AuthFeature } from "./features/Auth";
 import { Environment } from "./environment";
 import { createCreateExcalidrawImage } from "./environment/createExcalidrawImage/browser";
@@ -31,7 +31,7 @@ const app = (
     }}
   >
     <AuthFeature>
-      <Auth />
+      <Pages />
     </AuthFeature>
   </Environment>
 );

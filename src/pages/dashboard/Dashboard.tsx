@@ -1,17 +1,17 @@
 import React from "react";
 import { ExcalidrawPreview } from "./ExcalidrawPreview";
-import { useDashboard } from "../features/Dashboard";
-import { styled } from "../stitches.config";
+import { useDashboard } from "../../features/Dashboard";
+import { styled } from "../../stitches.config";
 import { match, PickState } from "react-states";
-import { DashboardContext } from "../features/Dashboard";
-import { useAuth } from "../features/Auth";
+import { DashboardContext } from "../../features/Dashboard";
+import { useAuth } from "../../features/Auth";
 
 const List = styled("ul", {
   listStyleType: "none",
   display: "flex",
   flexWrap: "wrap",
-  padding: '0 2rem',
-  margin: '0'
+  padding: "0 2rem",
+  margin: "0",
 });
 
 const Avatar = styled("img", {
@@ -37,16 +37,16 @@ const UserWrapper = styled("div", {
   display: "flex",
   alignItems: "center",
   padding: "0 2rem",
-  margin:'5rem 0 0 0'
+  margin: "5rem 0 0 0",
 });
 
 const UserName = styled("h2", {
   color: "#333",
   padding: "1rem",
   textAlign: "left",
-  margin: '0',
-  letterSpacing: '-0.02rem',
-  textTransform: 'capitalize'
+  margin: "0",
+  letterSpacing: "-0.02rem",
+  textTransform: "capitalize",
 });
 
 const CreateNewExcalidraw = styled("li", {
@@ -54,7 +54,7 @@ const CreateNewExcalidraw = styled("li", {
   fontWeight: "bold",
   border: "1px dashed #dad7d7",
   padding: "2rem",
-  letterSpacing: '-0.01rem',
+  letterSpacing: "-0.01rem",
   margin: "1rem 0 0 0",
   cursor: "pointer",
   boxSizing: "border-box",
@@ -88,7 +88,7 @@ export const Dashboard = () => {
       "PREVIEWS_LOADED" | "CREATE_EXCALIDRAW_ERROR"
     >
   ) => (
-    <div style={{paddingBottom: '5rem'}}>
+    <div style={{ paddingBottom: "5rem" }}>
       <List>
         {createExcalidraw}
         {context.excalidraws[auth.user.uid].excalidraws

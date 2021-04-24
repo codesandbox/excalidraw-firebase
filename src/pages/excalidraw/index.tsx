@@ -1,7 +1,7 @@
 import React from "react";
 
-import { Excalidraw } from "../components/Excalidraw";
-import { ExcalidrawFeature } from "../features/Excalidraw";
+import { Excalidraw } from "./Excalidraw";
+import { ExcalidrawFeature } from "../../features/Excalidraw";
 import { useParams } from "react-router-dom";
 
 export const ExcalidrawPage = () => {

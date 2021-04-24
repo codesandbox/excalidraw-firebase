@@ -5,7 +5,7 @@ import { PickState, match } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
-import { ExcalidrawContext, useExcalidraw } from "../features/Excalidraw";
+import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
 
 type RenderExcalidrawContext = PickState<
   ExcalidrawContext,

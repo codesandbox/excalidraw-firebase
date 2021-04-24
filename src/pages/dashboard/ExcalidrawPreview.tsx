@@ -1,10 +1,10 @@
 import * as React from "react";
 import { exec, match, transitions } from "react-states";
-import { ExcalidrawMetadata } from "../environment/storage";
+import { ExcalidrawMetadata } from "../../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { styled } from "../stitches.config";
+import { styled } from "../../stitches.config";
 import { Link } from "react-router-dom";
-import { useEnvironment } from "../environment";
+import { useEnvironment } from "../../environment";
 
 const Wrapper = styled("li", {
   position: "relative",

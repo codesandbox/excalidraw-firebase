@@ -2,7 +2,7 @@ import { transitions } from "react-states";
 import { ExcalidrawData } from "../../environment/storage";
 import {
   ExcalidrawContext,
-  ExcalidrawAction,
+  ExcalidrawEvent,
   LOADING_SUCCESS,
   LOADING_ERROR,
   BLUR,
@@ -29,7 +29,7 @@ const onSubscriptionUpdate = (
     : currentContext;
 };
 
-export const reducer = transitions<ExcalidrawContext, ExcalidrawAction>({
+export const reducer = transitions<ExcalidrawContext, ExcalidrawEvent>({
   LOADING: {
     [LOADING_SUCCESS]: ({ data, metadata, image }): ExcalidrawContext => ({
       state: "LOADED",

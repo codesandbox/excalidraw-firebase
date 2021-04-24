@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { reducer } from "./reducer";
-import { ExcalidrawAction, ExcalidrawContext } from "./types";
+import { ExcalidrawEvent, ExcalidrawContext } from "./types";
 import {
   useClipboardEffect,
   useStorageEffects,
@@ -13,7 +13,7 @@ import { createTransitionsReducerHook, TransitionsReducer } from "react-states";
 export * from "./types";
 
 const reducerContext = createContext(
-  {} as TransitionsReducer<ExcalidrawContext, ExcalidrawAction>
+  {} as TransitionsReducer<ExcalidrawContext, ExcalidrawEvent>
 );
 
 export const useExcalidraw = createTransitionsReducerHook(reducerContext);
