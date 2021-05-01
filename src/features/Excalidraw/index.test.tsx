@@ -1,6 +1,6 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
-import { renderStatesHook } from "react-states/cjs/test";
+import { renderHook } from "react-states/cjs/test";
 import {
   ExcalidrawFeature,
   useExcalidraw,
@@ -18,7 +18,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesHook(
+    const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -64,7 +64,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesHook(
+    const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -111,7 +111,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesHook(
+    const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -179,7 +179,7 @@ describe("Excalidraw", () => {
     const id = "456";
     const onVisibilityChange = createOnVisibilityChange();
     const storage = createStorage();
-    const [excalidraw] = renderStatesHook(
+    const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
@@ -240,7 +240,7 @@ describe("Excalidraw", () => {
       const storage = createStorage();
       const onVisibilityChange = createOnVisibilityChange();
       const createExcalidrawImage = createCreateExcalidrawImage();
-      const [excalidraw] = renderStatesHook(
+      const [excalidraw] = renderHook(
         () => useExcalidraw(),
         (UseExcalidraw) => (
           <Environment
@@ -337,7 +337,7 @@ describe("Excalidraw", () => {
         state: "NOT_COPIED",
       },
     } as const;
-    const [excalidraw] = renderStatesHook(
+    const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment

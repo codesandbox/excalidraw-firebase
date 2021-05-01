@@ -1,5 +1,5 @@
 import React from "react";
-import { renderStatesHook } from "react-states/cjs/test";
+import { renderHook } from "react-states/cjs/test";
 import { act, waitFor } from "@testing-library/react";
 import { Environment } from "../../environment";
 import { useAuth, AuthFeature, AuthContext } from ".";
@@ -8,7 +8,7 @@ import { createAuth } from "../../environment/auth/test";
 describe("Auth", () => {
   test("Should go to AUTHENTICATED when mounted and is logged in", async () => {
     const auth = createAuth();
-    const [context] = renderStatesHook(
+    const [context] = renderHook(
       () => useAuth(),
       (UseAuth) => (
         <Environment
@@ -43,7 +43,7 @@ describe("Auth", () => {
   test("Should go to UNAUTHENTICATED when mounted and is not logged in", async () => {
     const auth = createAuth();
 
-    const [context] = renderStatesHook(
+    const [context] = renderHook(
       () => useAuth(),
       (UseAuth) => (
         <Environment
@@ -69,7 +69,7 @@ describe("Auth", () => {
   test("Should go to AUTHENTICATED when signing in successfully", async () => {
     const auth = createAuth();
 
-    const [context, dispatch] = renderStatesHook(
+    const [context, dispatch] = renderHook(
       () => useAuth(),
       (UseAuth) => (
         <Environment
@@ -115,7 +115,7 @@ describe("Auth", () => {
   });
   test("Should go to ERROR when signing in unsuccsessfully", async () => {
     const auth = createAuth();
-    const [context, dispatch] = renderStatesHook(
+    const [context, dispatch] = renderHook(
       () => useAuth(),
       (UseAuth) => (
         <Environment
