@@ -1,15 +1,11 @@
 import React, { useEffect, useReducer } from "react";
-import {
-  exec,
-  createStatesHook,
-  createStatesContext,
-  createStatesReducer,
-} from "react-states";
+import { createContext, createHook, createReducer } from "react-states";
 import { ExcalidrawsByUser } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
 import { useAuth } from "../Auth";
+import { useEnterEffect } from "react-states/cjs";
 
 export type DashboardContext =
   | {
@@ -66,7 +62,7 @@ export type DashboardEvent =
       error: string;
     };
 
-const dashboardReducer = createStatesReducer<DashboardContext, DashboardEvent>({
+const dashboardReducer = createReducer<DashboardContext, DashboardEvent>({
   LOADING_PREVIEWS: {
     [LOADING_PREVIEWS_SUCCESS]: ({ excalidraws }): DashboardContext => ({
       state: "PREVIEWS_LOADED",
@@ -117,12 +113,9 @@ const dashboardReducer = createStatesReducer<DashboardContext, DashboardEvent>({
   EXCALIDRAW_CREATED: {},
 });
 
-const dashboardContext = createStatesContext<
-  DashboardContext,
-  DashboardEvent
->();
+const dashboardContext = createContext<DashboardContext, DashboardEvent>();
 
-export const useDashboard = createStatesHook(dashboardContext);
+export const useDashboard = createHook(dashboardContext);
 
 export const DashboardFeature = ({
   children,
@@ -144,49 +137,47 @@ export const DashboardFeature = ({
 
   const [dashboard, send] = dashboardStates;
 
-  useEffect(
-    () =>
-      exec(dashboard, {
-        LOADING_PREVIEWS: () =>
-          storage.getPreviews().resolve(
-            (excalidraws) => {
-              send({
-                type: LOADING_PREVIEWS_SUCCESS,
-                excalidraws,
-              });
-            },
-            {
-              ERROR: (error) => {
-                send({
-                  type: LOADING_PREVIEWS_ERROR,
-                  error,
-                });
-              },
-            }
-          ),
-        CREATING_EXCALIDRAW: () =>
-          storage.createExcalidraw(auth.user.uid).resolve(
-            (id) => {
-              send({
-                type: CREATE_EXCALIDRAW_SUCCESS,
-                id,
-              });
-            },
-            {
-              ERROR: (error) => {
-                send({
-                  type: CREATE_EXCALIDRAW_ERROR,
-                  error,
-                });
-              },
-            }
-          ),
-        EXCALIDRAW_CREATED: ({ id }) => {
-          history.push(`/${auth.user.uid}/${id}`);
+  useEnterEffect(dashboard, "LOADING_PREVIEWS", () =>
+    storage.getPreviews().resolve(
+      (excalidraws) => {
+        send({
+          type: LOADING_PREVIEWS_SUCCESS,
+          excalidraws,
+        });
+      },
+      {
+        ERROR: (error) => {
+          send({
+            type: LOADING_PREVIEWS_ERROR,
+            error,
+          });
         },
-      }),
-    [dashboard]
+      }
+    )
   );
+
+  useEnterEffect(dashboard, "CREATING_EXCALIDRAW", () =>
+    storage.createExcalidraw(auth.user.uid).resolve(
+      (id) => {
+        send({
+          type: CREATE_EXCALIDRAW_SUCCESS,
+          id,
+        });
+      },
+      {
+        ERROR: (error) => {
+          send({
+            type: CREATE_EXCALIDRAW_ERROR,
+            error,
+          });
+        },
+      }
+    )
+  );
+
+  useEnterEffect(dashboard, "EXCALIDRAW_CREATED", ({ id }) => {
+    history.push(`/${auth.user.uid}/${id}`);
+  });
 
   return (
     <dashboardContext.Provider value={dashboardStates}>

@@ -1,10 +1,7 @@
-import React, { useEffect, useReducer } from "react";
-import {
-  exec,
-  createStatesContext,
-  createStatesHook,
-  createStatesReducer,
-} from "react-states";
+import React, { useReducer } from "react";
+import { createContext, createHook, createReducer } from "react-states";
+import { useEnterEffect } from "react-states/cjs";
+
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
 import { User } from "../../environment/auth";
@@ -44,7 +41,7 @@ export type AuthEvent =
       error: string;
     };
 
-const authReducer = createStatesReducer<AuthContext, AuthEvent>({
+const authReducer = createReducer<AuthContext, AuthEvent>({
   CHECKING_AUTHENTICATION: {
     [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
@@ -71,9 +68,9 @@ const authReducer = createStatesReducer<AuthContext, AuthEvent>({
   ERROR: {},
 });
 
-const authContext = createStatesContext<AuthContext, AuthEvent>();
+const authContext = createContext<AuthContext, AuthEvent>();
 
-export const useAuth = createStatesHook(authContext);
+export const useAuth = createHook(authContext);
 
 export const AuthFeature = ({
   children,
@@ -93,42 +90,39 @@ export const AuthFeature = ({
 
   const [auth, send] = authStates;
 
-  useEffect(
-    () =>
-      exec(auth, {
-        SIGNING_IN: () =>
-          environment.auth.signIn().resolve(
-            (user) => {
-              send({ type: SIGN_IN_SUCCESS, user });
-            },
-            {
-              NOT_SIGNED_IN: () => {
-                send({
-                  type: SIGN_IN_ERROR,
-                  error: "Authenticated, but no user",
-                });
-              },
-              ERROR: (error) => {
-                send({
-                  type: SIGN_IN_ERROR,
-                  error: error.message,
-                });
-              },
-            }
-          ),
-        CHECKING_AUTHENTICATION: () =>
-          environment.auth.onAuthChange((user) => {
-            if (user) {
-              send({ type: SIGN_IN_SUCCESS, user });
-            } else {
-              send({
-                type: SIGN_IN_ERROR,
-                error: "Not authenticated",
-              });
-            }
-          }),
-      }),
-    [auth]
+  useEnterEffect(auth, "SIGNING_IN", () =>
+    environment.auth.signIn().resolve(
+      (user) => {
+        send({ type: SIGN_IN_SUCCESS, user });
+      },
+      {
+        NOT_SIGNED_IN: () => {
+          send({
+            type: SIGN_IN_ERROR,
+            error: "Authenticated, but no user",
+          });
+        },
+        ERROR: (error) => {
+          send({
+            type: SIGN_IN_ERROR,
+            error: error.message,
+          });
+        },
+      }
+    )
+  );
+
+  useEnterEffect(auth, "CHECKING_AUTHENTICATION", () =>
+    environment.auth.onAuthChange((user) => {
+      if (user) {
+        send({ type: SIGN_IN_SUCCESS, user });
+      } else {
+        send({
+          type: SIGN_IN_ERROR,
+          error: "Not authenticated",
+        });
+      }
+    })
   );
 
   return (

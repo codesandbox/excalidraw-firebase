@@ -8,15 +8,12 @@ import {
   useSubscriptionEffect,
   useVisibilityChangeEffect,
 } from "./effects";
-import { createStatesContext, createStatesHook } from "react-states";
+import { createContext, createHook } from "react-states";
 
 export * from "./types";
 
-const excalidrawContext = createStatesContext<
-  ExcalidrawContext,
-  ExcalidrawEvent
->();
-export const useExcalidraw = createStatesHook(excalidrawContext);
+const excalidrawContext = createContext<ExcalidrawContext, ExcalidrawEvent>();
+export const useExcalidraw = createHook(excalidrawContext);
 
 export type Props = {
   id: string;

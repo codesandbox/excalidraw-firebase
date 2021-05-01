@@ -1,4 +1,4 @@
-import { createStatesReducer } from "react-states";
+import { createReducer } from "react-states";
 import { ExcalidrawData } from "../../environment/storage";
 import {
   ExcalidrawContext,
@@ -25,11 +25,15 @@ const onSubscriptionUpdate = (
   const changedData = getChangedData(data, currentContext.data);
 
   return changedData
-    ? { ...currentContext, state: "UPDATING_FROM_PEER", data: changedData }
+    ? {
+        ...currentContext,
+        state: "UPDATING_FROM_PEER",
+        data: changedData,
+      }
     : currentContext;
 };
 
-export const excalidrawReducer = createStatesReducer<
+export const excalidrawReducer = createReducer<
   ExcalidrawContext,
   ExcalidrawEvent
 >({
@@ -60,7 +64,7 @@ export const excalidrawReducer = createStatesReducer<
         ? {
             ...currentContext,
             clipboard: {
-              state: "NOT_COPIED",
+              state: <const>"NOT_COPIED",
             },
             state: "DIRTY",
             data,

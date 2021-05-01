@@ -1,9 +1,14 @@
 import { useEffect } from "react";
-import { exec, match, Send, States } from "react-states";
+import {
+  match,
+  Send,
+  States,
+  useEnterEffect,
+  useMatchEffect,
+} from "react-states";
 import { useEnvironment } from "../../environment";
 
 import {
-  BaseContext,
   BLUR,
   CONTINUE,
   FOCUS,
@@ -37,21 +42,29 @@ export const useVisibilityChangeEffect = (send: Send<ExcalidrawEvent>) => {
 export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
   const { copyImageToClipboard } = useEnvironment();
 
-  const copyToClipboard = ({ image, clipboard }: BaseContext) =>
-    exec(clipboard, {
-      COPIED: () => copyImageToClipboard(image),
-    });
+  useMatchEffect(
+    excalidraw,
+    {
+      DIRTY: () => true,
+      EDIT: () => true,
+      FOCUSED: () => true,
+      SYNCING: () => true,
+      SYNCING_DIRTY: () => true,
 
-  useEffect(
-    () =>
-      exec(excalidraw, {
-        DIRTY: copyToClipboard,
-        EDIT: copyToClipboard,
-        FOCUSED: copyToClipboard,
-        SYNCING: copyToClipboard,
-        SYNCING_DIRTY: copyToClipboard,
-      }),
-    []
+      ERROR: () => false,
+      LOADED: () => false,
+      LOADING: () => false,
+      UNFOCUSED: () => false,
+      UPDATING: () => false,
+      UPDATING_FROM_PEER: () => false,
+    },
+    ({ image, clipboard }) =>
+      match(clipboard, {
+        COPIED: () => {
+          copyImageToClipboard(image);
+        },
+        NOT_COPIED: () => {},
+      })
   );
 };
 
@@ -73,31 +86,30 @@ export const useSubscriptionEffect = (
   [excalidraw, send]: States<ExcalidrawContext, ExcalidrawEvent>
 ) => {
   const { storage } = useEnvironment();
-  const shouldSubscribe = match(excalidraw, {
-    DIRTY: () => true,
-    EDIT: () => true,
-    UPDATING_FROM_PEER: () => true,
-    SYNCING: () => true,
-    SYNCING_DIRTY: () => true,
-    UPDATING: () => false,
-    UNFOCUSED: () => false,
-    ERROR: () => false,
-    FOCUSED: () => false,
-    LOADED: () => false,
-    LOADING: () => false,
-  });
 
-  useEffect(
+  useMatchEffect(
+    excalidraw,
+    {
+      DIRTY: () => true,
+      EDIT: () => true,
+      UPDATING_FROM_PEER: () => true,
+      SYNCING: () => true,
+      SYNCING_DIRTY: () => true,
+
+      UPDATING: () => false,
+      UNFOCUSED: () => false,
+      ERROR: () => false,
+      FOCUSED: () => false,
+      LOADED: () => false,
+      LOADING: () => false,
+    },
     () =>
-      shouldSubscribe
-        ? storage.subscribeToChanges(userId, id, (data) => {
-            send({
-              type: SUBSCRIPTION_UPDATE,
-              data,
-            });
-          })
-        : undefined,
-    [shouldSubscribe]
+      storage.subscribeToChanges(userId, id, (data) => {
+        send({
+          type: SUBSCRIPTION_UPDATE,
+          data,
+        });
+      })
   );
 };
 
@@ -142,72 +154,67 @@ export const useStorageEffects = (
       }
     );
 
-  useEffect(
-    () =>
-      exec(excalidraw, {
-        LOADING: loadExcalidraw,
-        UPDATING: loadExcalidraw,
-        SYNCING: ({ data }) => {
-          // We do not want to cancel this, as the sync should
-          // always go through, even moving to a new state
-          storage.saveExcalidraw(userId, id, data).resolve(
-            (metadata) =>
-              createExcalidrawImage(data.elements, data.appState).resolve(
-                (image) => {
-                  send({
-                    type: SYNC_SUCCESS,
-                    image,
-                    metadata,
-                  });
+  useEnterEffect(excalidraw, "LOADING", loadExcalidraw);
 
-                  return storage
-                    .saveImage(userId, id, image)
-                    .resolve(() => {}, {
-                      ERROR: () => {},
-                    });
-                },
-                {
-                  ERROR: () => {
-                    send({ type: SYNC_ERROR });
-                  },
-                }
-              ),
-            {
-              ERROR: () => {
-                send({ type: SYNC_ERROR });
-              },
-            }
-          );
-        },
-        DIRTY: () => {
-          const id = setTimeout(() => {
+  useEnterEffect(excalidraw, "UPDATING", loadExcalidraw);
+
+  useEnterEffect(excalidraw, "SYNCING", ({ data }) => {
+    // We do not want to cancel this, as the sync should
+    // always go through, even moving to a new state
+    storage.saveExcalidraw(userId, id, data).resolve(
+      (metadata) =>
+        createExcalidrawImage(data.elements, data.appState).resolve(
+          (image) => {
             send({
-              type: SYNC,
+              type: SYNC_SUCCESS,
+              image,
+              metadata,
             });
-          }, 500);
 
-          return () => {
-            clearTimeout(id);
-          };
+            return storage.saveImage(userId, id, image).resolve(() => {}, {
+              ERROR: () => {},
+            });
+          },
+          {
+            ERROR: () => {
+              send({ type: SYNC_ERROR });
+            },
+          }
+        ),
+      {
+        ERROR: () => {
+          send({ type: SYNC_ERROR });
         },
-        FOCUSED: ({ metadata }) =>
-          storage
-            .hasExcalidrawUpdated(userId, id, metadata.last_updated)
-            .resolve(
-              (hasUpdated) => {
-                if (hasUpdated) {
-                  send({ type: REFRESH });
-                } else {
-                  send({ type: CONTINUE });
-                }
-              },
-              {
-                ERROR: () => {
-                  send({ type: CONTINUE });
-                },
-              }
-            ),
-      }),
-    [excalidraw]
+      }
+    );
+  });
+
+  useEnterEffect(excalidraw, "DIRTY", () => {
+    const id = setTimeout(() => {
+      send({
+        type: SYNC,
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(id);
+    };
+  });
+
+  useEnterEffect(excalidraw, "FOCUSED", ({ metadata }) =>
+    storage.hasExcalidrawUpdated(userId, id, metadata.last_updated).resolve(
+      (hasUpdated) => {
+        if (hasUpdated) {
+          send({ type: REFRESH });
+        } else {
+          send({ type: CONTINUE });
+        }
+      },
+      {
+        ERROR: () => {
+          send({ type: CONTINUE });
+        },
+      }
+    )
   );
 };
