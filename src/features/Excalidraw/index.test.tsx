@@ -1,6 +1,6 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
-import { renderHook } from "react-states/cjs/test";
+import { renderHook } from "react-states/test";
 import {
   ExcalidrawFeature,
   useExcalidraw,
@@ -8,22 +8,21 @@ import {
   ExcalidrawElement,
 } from ".";
 import { Environment } from "../../environment";
-import { createOnVisibilityChange } from "../../environment/onVisibilityChange/test";
+import { createVisibility } from "../../environment/visibility/test";
 import { createStorage } from "../../environment/storage/test";
-import { createCreateExcalidrawImage } from "../../environment/createExcalidrawImage/test";
 
 describe("Excalidraw", () => {
-  test("Should go to UNFOCUSED when moving away from tab in EDIT state", async () => {
+  test.only("Should go to UNFOCUSED when moving away from tab in EDIT state", async () => {
     const userId = "123";
     const id = "456";
-    const onVisibilityChange = createOnVisibilityChange();
+    const visibility = createVisibility();
     const storage = createStorage();
     const [excalidraw] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
         <Environment
           environment={{
-            onVisibilityChange,
+            visibility,
             storage,
           }}
         >
@@ -53,7 +52,9 @@ describe("Excalidraw", () => {
     );
 
     act(() => {
-      onVisibilityChange.trigger(false);
+      visibility.events.emit({
+        type: "VISIBILITY:HIDDEN",
+      });
     });
 
     expect(excalidraw.state).toBe("UNFOCUSED");
@@ -71,7 +72,6 @@ describe("Excalidraw", () => {
           environment={{
             storage,
             onVisibilityChange,
-            createExcalidrawImage: createCreateExcalidrawImage(),
           }}
         >
           <ExcalidrawFeature
@@ -118,7 +118,6 @@ describe("Excalidraw", () => {
           environment={{
             onVisibilityChange,
             storage,
-            createExcalidrawImage: createCreateExcalidrawImage(),
           }}
         >
           <ExcalidrawFeature

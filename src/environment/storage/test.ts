@@ -23,10 +23,9 @@ export const createStorage = (): Storage => ({
   events: events(),
   createExcalidraw: jest.fn(),
   fetchExcalidraw: jest.fn(),
-  fetchPreviews: jest.fn,
+  fetchPreviews: jest.fn(),
   saveExcalidraw: jest.fn(),
-  saveImage: createResultMock<Storage["saveImage"]>(),
-  getImageSrc: createResultMock<Storage["getImageSrc"]>(),
+  getImageSrc: jest.fn(),
   hasExcalidrawUpdated: createResultMock<Storage["hasExcalidrawUpdated"]>(),
   subscribeToChanges: createSubscriptionMock(),
 });

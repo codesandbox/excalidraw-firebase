@@ -13,8 +13,8 @@ import { Pages } from "./pages";
 import { AuthFeature } from "./features/Auth";
 import { Environment } from "./environment";
 import { createStorage } from "./environment/storage/browser";
-import { createOnVisibilityChange } from "./environment/onVisibilityChange/browser";
-import { createAuth } from "./environment/auth/browser";
+import { createVisibility } from "./environment/visibility/browser";
+import { createAuthentication } from "./environment/authentication/browser";
 import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
 
 firebase.initializeApp(config);
@@ -22,8 +22,8 @@ firebase.initializeApp(config);
 const app = (
   <Environment
     environment={{
-      auth: createAuth(),
-      onVisibilityChange: createOnVisibilityChange(),
+      authentication: createAuthentication(),
+      visibility: createVisibility(),
       storage: createStorage(),
       copyImageToClipboard: createCopyImageToClipboard(),
     }}

@@ -1,10 +1,15 @@
 import React, { useReducer } from "react";
-import { createContext, createHook, createReducer } from "react-states";
-import { useEnterEffect } from "react-states/cjs";
+import {
+  useEnterEffect,
+  useEvents,
+  createContext,
+  createHook,
+  createReducer,
+} from "react-states";
 
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
-import { User } from "../../environment/auth";
+import { AuthenticationEvent, User } from "../../environment/authentication";
 
 export type AuthContext =
   | {
@@ -25,29 +30,19 @@ export type AuthContext =
       error: string;
     };
 
-const SIGN_IN_SUCCESS = Symbol("SIGN_IN_SUCCESS");
-const SIGN_IN_ERROR = Symbol("SIGN_IN_ERROR");
+export type PublicAuthEvent = {
+  type: "SIGN_IN";
+};
 
-export type AuthEvent =
-  | {
-      type: "SIGN_IN";
-    }
-  | {
-      type: typeof SIGN_IN_SUCCESS;
-      user: User;
-    }
-  | {
-      type: typeof SIGN_IN_ERROR;
-      error: string;
-    };
+export type AuthEvent = PublicAuthEvent | AuthenticationEvent;
 
 const authReducer = createReducer<AuthContext, AuthEvent>({
   CHECKING_AUTHENTICATION: {
-    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: (): AuthContext => ({
+    "AUTHENTICATION:UNAUTHENTICATED": (): AuthContext => ({
       state: "UNAUTHENTICATED",
     }),
   },
@@ -55,11 +50,11 @@ const authReducer = createReducer<AuthContext, AuthEvent>({
     SIGN_IN: (): AuthContext => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    [SIGN_IN_SUCCESS]: ({ user }): AuthContext => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user }): AuthContext => ({
       state: "AUTHENTICATED",
       user,
     }),
-    [SIGN_IN_ERROR]: ({ error }): AuthContext => ({
+    "AUTHENTICATION:SIGN_IN_ERROR": ({ error }): AuthContext => ({
       state: "ERROR",
       error,
     }),
@@ -81,7 +76,7 @@ export const AuthFeature = ({
   children: React.ReactNode;
   initialContext?: AuthContext;
 }) => {
-  const environment = useEnvironment();
+  const { authentication } = useEnvironment();
   const authStates = useReducer(authReducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
@@ -90,40 +85,9 @@ export const AuthFeature = ({
 
   const [auth, send] = authStates;
 
-  useEnterEffect(auth, "SIGNING_IN", () =>
-    environment.auth.signIn().resolve(
-      (user) => {
-        send({ type: SIGN_IN_SUCCESS, user });
-      },
-      {
-        NOT_SIGNED_IN: () => {
-          send({
-            type: SIGN_IN_ERROR,
-            error: "Authenticated, but no user",
-          });
-        },
-        ERROR: (error) => {
-          send({
-            type: SIGN_IN_ERROR,
-            error: error.message,
-          });
-        },
-      }
-    )
-  );
+  useEvents(authentication.events, send);
 
-  useEnterEffect(auth, "CHECKING_AUTHENTICATION", () =>
-    environment.auth.onAuthChange((user) => {
-      if (user) {
-        send({ type: SIGN_IN_SUCCESS, user });
-      } else {
-        send({
-          type: SIGN_IN_ERROR,
-          error: "Not authenticated",
-        });
-      }
-    })
-  );
+  useEnterEffect(auth, "SIGNING_IN", () => authentication.signIn());
 
   return (
     <authContext.Provider value={authStates}>{children}</authContext.Provider>

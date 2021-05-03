@@ -10,22 +10,6 @@ import { useEnvironment } from "../../environment";
 
 import { ExcalidrawEvent, ExcalidrawContext } from "./types";
 
-export const useVisibilityChangeEffect = (send: Send<ExcalidrawEvent>) => {
-  const { onVisibilityChange } = useEnvironment();
-
-  useEffect(
-    () =>
-      onVisibilityChange((visible) => {
-        if (visible) {
-          send({ type: "FOCUS" });
-        } else {
-          send({ type: "BLUR" });
-        }
-      }),
-    []
-  );
-};
-
 export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
   const { copyImageToClipboard } = useEnvironment();
 

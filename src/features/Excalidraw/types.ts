@@ -4,6 +4,7 @@ import {
   ExcalidrawMetadata,
   StorageEvent,
 } from "../../environment/storage";
+import { VisibilityEvent } from "../../environment/visibility";
 
 export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
 
@@ -77,12 +78,7 @@ export type PrivateExcalidrawEvent =
   | {
       type: "SYNC";
     }
-  | {
-      type: "FOCUS";
-    }
-  | {
-      type: "BLUR";
-    }
+
   /**
    *  When user focuses tab with a dirty change, go grab latest
    * from storage
@@ -105,4 +101,5 @@ export type PrivateExcalidrawEvent =
 export type ExcalidrawEvent =
   | PublicExcalidrawEvent
   | PrivateExcalidrawEvent
-  | StorageEvent;
+  | StorageEvent
+  | VisibilityEvent;

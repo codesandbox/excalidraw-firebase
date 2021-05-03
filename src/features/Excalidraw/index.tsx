@@ -6,7 +6,6 @@ import {
   useClipboardEffect,
   useStorageEffects,
   useSubscriptionEffect,
-  useVisibilityChangeEffect,
 } from "./effects";
 import { createContext, createHook, useEvents } from "react-states";
 import { useEnvironment } from "../../environment";
@@ -40,7 +39,7 @@ export const ExcalidrawFeature = ({
   children: React.ReactNode;
   initialContext?: ExcalidrawContext;
 }) => {
-  const { storage } = useEnvironment();
+  const { storage, visibility } = useEnvironment();
   const excalidrawStates = useReducer(excalidrawReducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
@@ -50,8 +49,8 @@ export const ExcalidrawFeature = ({
   const [excalidraw, send] = excalidrawStates;
 
   useEvents(storage.events, send);
+  useEvents(visibility.events, send);
 
-  useVisibilityChangeEffect(send);
   useClipboardEffect(excalidraw);
   useStorageEffects(userId, id, excalidrawStates);
   useSubscriptionEffect(userId, id, excalidrawStates);

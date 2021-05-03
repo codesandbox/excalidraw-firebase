@@ -66,7 +66,7 @@ export const excalidrawReducer = createReducer<
         state: "COPIED",
       },
     }),
-    BLUR: (_, currentContext): ExcalidrawContext => ({
+    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
@@ -85,7 +85,7 @@ export const excalidrawReducer = createReducer<
             data,
           }
         : currentContext,
-    BLUR: (_, currentContext): ExcalidrawContext => ({
+    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
@@ -113,7 +113,7 @@ export const excalidrawReducer = createReducer<
       state: "ERROR",
       error: "Unable to sync",
     }),
-    BLUR: (_, currentContext): ExcalidrawContext => ({
+    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
@@ -142,7 +142,7 @@ export const excalidrawReducer = createReducer<
       ...currentContext,
       state: "DIRTY",
     }),
-    BLUR: (_, currentContext): ExcalidrawContext => ({
+    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "UNFOCUSED",
     }),
@@ -150,7 +150,7 @@ export const excalidrawReducer = createReducer<
   },
   ERROR: {},
   UNFOCUSED: {
-    FOCUS: (_, currentContext): ExcalidrawContext => ({
+    "VISIBILITY:VISIBLE": (_, currentContext): ExcalidrawContext => ({
       ...currentContext,
       state: "FOCUSED",
     }),
