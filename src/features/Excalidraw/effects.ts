@@ -8,20 +8,7 @@ import {
 } from "react-states";
 import { useEnvironment } from "../../environment";
 
-import {
-  BLUR,
-  CONTINUE,
-  FOCUS,
-  LOADING_ERROR,
-  LOADING_SUCCESS,
-  REFRESH,
-  SYNC,
-  SYNC_ERROR,
-  SYNC_SUCCESS,
-  SUBSCRIPTION_UPDATE,
-  ExcalidrawEvent,
-  ExcalidrawContext,
-} from "./types";
+import { ExcalidrawEvent, ExcalidrawContext } from "./types";
 
 export const useVisibilityChangeEffect = (send: Send<ExcalidrawEvent>) => {
   const { onVisibilityChange } = useEnvironment();
@@ -30,9 +17,9 @@ export const useVisibilityChangeEffect = (send: Send<ExcalidrawEvent>) => {
     () =>
       onVisibilityChange((visible) => {
         if (visible) {
-          send({ type: FOCUS });
+          send({ type: "FOCUS" });
         } else {
-          send({ type: BLUR });
+          send({ type: "BLUR" });
         }
       }),
     []
@@ -106,7 +93,7 @@ export const useSubscriptionEffect = (
     () =>
       storage.subscribeToChanges(userId, id, (data) => {
         send({
-          type: SUBSCRIPTION_UPDATE,
+          type: "SUBSCRIPTION_UPDATE",
           data,
         });
       })
@@ -118,81 +105,24 @@ export const useStorageEffects = (
   id: string,
   [excalidraw, send]: States<ExcalidrawContext, ExcalidrawEvent>
 ) => {
-  const { createExcalidrawImage, storage } = useEnvironment();
+  const { storage } = useEnvironment();
 
-  const loadExcalidraw = () =>
-    storage.getExcalidraw(userId, id).resolve(
-      (response) =>
-        createExcalidrawImage(
-          response.data.elements,
-          response.data.appState
-        ).resolve(
-          (image) => {
-            send({
-              type: LOADING_SUCCESS,
-              metadata: response.metadata,
-              data: response.data,
-              image,
-            });
-          },
-          {
-            ERROR: (error) => {
-              send({
-                type: LOADING_ERROR,
-                error: error.message,
-              });
-            },
-          }
-        ),
-      {
-        ERROR: (error) => {
-          send({
-            type: LOADING_ERROR,
-            error,
-          });
-        },
-      }
-    );
+  useEnterEffect(excalidraw, "LOADING", () =>
+    storage.fetchExcalidraw(userId, id)
+  );
 
-  useEnterEffect(excalidraw, "LOADING", loadExcalidraw);
-
-  useEnterEffect(excalidraw, "UPDATING", loadExcalidraw);
+  useEnterEffect(excalidraw, "UPDATING", () =>
+    storage.fetchExcalidraw(userId, id)
+  );
 
   useEnterEffect(excalidraw, "SYNCING", ({ data }) => {
-    // We do not want to cancel this, as the sync should
-    // always go through, even moving to a new state
-    storage.saveExcalidraw(userId, id, data).resolve(
-      (metadata) =>
-        createExcalidrawImage(data.elements, data.appState).resolve(
-          (image) => {
-            send({
-              type: SYNC_SUCCESS,
-              image,
-              metadata,
-            });
-
-            return storage.saveImage(userId, id, image).resolve(() => {}, {
-              ERROR: () => {},
-            });
-          },
-          {
-            ERROR: () => {
-              send({ type: SYNC_ERROR });
-            },
-          }
-        ),
-      {
-        ERROR: () => {
-          send({ type: SYNC_ERROR });
-        },
-      }
-    );
+    storage.saveExcalidraw(userId, id, data);
   });
 
   useEnterEffect(excalidraw, "DIRTY", () => {
     const id = setTimeout(() => {
       send({
-        type: SYNC,
+        type: "SYNC",
       });
     }, 500);
 
@@ -205,14 +135,14 @@ export const useStorageEffects = (
     storage.hasExcalidrawUpdated(userId, id, metadata.last_updated).resolve(
       (hasUpdated) => {
         if (hasUpdated) {
-          send({ type: REFRESH });
+          send({ type: "REFRESH" });
         } else {
-          send({ type: CONTINUE });
+          send({ type: "CONTINUE" });
         }
       },
       {
         ERROR: () => {
-          send({ type: CONTINUE });
+          send({ type: "CONTINUE" });
         },
       }
     )

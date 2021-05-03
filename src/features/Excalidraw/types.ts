@@ -2,6 +2,7 @@ import {
   ExcalidrawData,
   ExcalidrawElement,
   ExcalidrawMetadata,
+  StorageEvent,
 } from "../../environment/storage";
 
 export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
@@ -60,18 +61,7 @@ export type ExcalidrawContext =
           }
       ));
 
-export const LOADING_SUCCESS = Symbol("LOADING_SUCCESS");
-export const LOADING_ERROR = Symbol("LOADING_ERROR");
-export const SYNC = Symbol("SYNC");
-export const SYNC_ERROR = Symbol("SYNC_ERROR");
-export const SYNC_SUCCESS = Symbol("SYNC_SUCCESS");
-export const FOCUS = Symbol("FOCUS");
-export const BLUR = Symbol("BLUR");
-export const REFRESH = Symbol("REFRESH");
-export const CONTINUE = Symbol("CONTINUE");
-export const SUBSCRIPTION_UPDATE = Symbol("SUBSCRIPTION_UPDATE");
-
-export type ExcalidrawEvent =
+export type PublicExcalidrawEvent =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
     }
@@ -81,53 +71,38 @@ export type ExcalidrawEvent =
   | {
       type: "EXCALIDRAW_CHANGE";
       data: ExcalidrawData;
+    };
+
+export type PrivateExcalidrawEvent =
+  | {
+      type: "SYNC";
     }
   | {
-      type: typeof LOADING_SUCCESS;
-      data: ExcalidrawData;
-      metadata: ExcalidrawMetadata;
-      image: Blob;
+      type: "FOCUS";
     }
   | {
-      type: typeof LOADING_ERROR;
-      error: string;
-    }
-  | {
-      type: typeof SYNC;
-    }
-  | {
-      type: typeof SYNC_ERROR;
-      error: string;
-    }
-  | {
-      type: typeof SYNC_SUCCESS;
-      image: Blob;
-      metadata: ExcalidrawMetadata;
-    }
-  | {
-      type: typeof SYNC_ERROR;
-    }
-  | {
-      type: typeof FOCUS;
-    }
-  | {
-      type: typeof BLUR;
+      type: "BLUR";
     }
   /**
    *  When user focuses tab with a dirty change, go grab latest
    * from storage
    */
   | {
-      type: typeof REFRESH;
+      type: "REFRESH";
     }
   /**
    * When user focuses tab with a dirty change, continue
    * with client version
    */
   | {
-      type: typeof CONTINUE;
+      type: "CONTINUE";
     }
   | {
-      type: typeof SUBSCRIPTION_UPDATE;
+      type: "SUBSCRIPTION_UPDATE";
       data: ExcalidrawData;
     };
+
+export type ExcalidrawEvent =
+  | PublicExcalidrawEvent
+  | PrivateExcalidrawEvent
+  | StorageEvent;

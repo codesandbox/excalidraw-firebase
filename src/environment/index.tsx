@@ -1,12 +1,10 @@
 import React, { createContext, useContext } from "react";
 import { Auth } from "./auth";
 import { CopyImageToClipboard } from "./copyImageToClipboard";
-import { CreateExcalidrawImage } from "./createExcalidrawImage";
 import { OnVisibilityChange } from "./onVisibilityChange";
 import { Storage } from "./storage";
 
 export interface Environment {
-  createExcalidrawImage: CreateExcalidrawImage;
   storage: Storage;
   auth: Auth;
   onVisibilityChange: OnVisibilityChange;

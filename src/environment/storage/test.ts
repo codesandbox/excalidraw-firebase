@@ -1,4 +1,4 @@
-import { createResultMock } from "react-states";
+import { createResultMock, events } from "react-states";
 import { ExcalidrawData, Storage } from ".";
 
 type CreateSubscriptionMock = Storage["subscribeToChanges"] & {
@@ -19,11 +19,12 @@ function createSubscriptionMock(): CreateSubscriptionMock {
   return subscriptionMock;
 }
 
-export const createStorage = () => ({
-  createExcalidraw: createResultMock<Storage["createExcalidraw"]>(),
-  getExcalidraw: createResultMock<Storage["getExcalidraw"]>(),
-  getPreviews: createResultMock<Storage["getPreviews"]>(),
-  saveExcalidraw: createResultMock<Storage["saveExcalidraw"]>(),
+export const createStorage = (): Storage => ({
+  events: events(),
+  createExcalidraw: jest.fn(),
+  fetchExcalidraw: jest.fn(),
+  fetchPreviews: jest.fn,
+  saveExcalidraw: jest.fn(),
   saveImage: createResultMock<Storage["saveImage"]>(),
   getImageSrc: createResultMock<Storage["getImageSrc"]>(),
   hasExcalidrawUpdated: createResultMock<Storage["hasExcalidrawUpdated"]>(),

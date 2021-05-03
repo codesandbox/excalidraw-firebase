@@ -1,6 +1,6 @@
 import * as React from "react";
-import { exec, match, createStatesReducer } from "react-states";
-import { ExcalidrawMetadata } from "../../environment/storage";
+import { match, createReducer, useEnterEffect, useEvents } from "react-states";
+import { ExcalidrawMetadata, StorageEvent } from "../../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { styled } from "../../stitches.config";
 import { Link } from "react-router-dom";
@@ -39,6 +39,7 @@ const WrapperLink = styled(Link, {
 type ExcalidrawPreviewContext =
   | {
       state: "LOADING_PREVIEW";
+      id: string;
     }
   | {
       state: "PREVIEW_LOADED";
@@ -49,29 +50,29 @@ type ExcalidrawPreviewContext =
       error: string;
     };
 
-type ExcalidrawPreviewAction =
-  | {
-      type: "LOADING_PREVIEW_SUCCESS";
-      src: string;
-    }
-  | {
-      type: "LOADING_PREVIEW_ERROR";
-      error: string;
-    };
+type ExcalidrawPreviewEvent = StorageEvent;
 
-const excalidrawPreviewReducer = createStatesReducer<
+const excalidrawPreviewReducer = createReducer<
   ExcalidrawPreviewContext,
-  ExcalidrawPreviewAction
+  ExcalidrawPreviewEvent
 >({
   LOADING_PREVIEW: {
-    LOADING_PREVIEW_SUCCESS: ({ src }) => ({
-      state: "PREVIEW_LOADED",
-      src,
-    }),
-    LOADING_PREVIEW_ERROR: ({ error }) => ({
-      state: "LOADING_ERROR",
-      error,
-    }),
+    "STORAGE:IMAGE_SRC_SUCCESS": ({ id, src }, context) =>
+      id === context.id
+        ? {
+            state: "PREVIEW_LOADED",
+            id,
+            src,
+          }
+        : context,
+    "STORAGE:IMAGE_SRC_ERROR": ({ id, error }, context) =>
+      context.id === id
+        ? {
+            state: "LOADING_ERROR",
+            id,
+            error,
+          }
+        : context,
   },
   PREVIEW_LOADED: {},
   LOADING_ERROR: {},
@@ -87,32 +88,14 @@ export const ExcalidrawPreview = ({
   const { storage } = useEnvironment();
   const [preview, send] = React.useReducer(excalidrawPreviewReducer, {
     state: "LOADING_PREVIEW",
+    id: metadata.id,
   });
 
-  React.useEffect(
-    () =>
-      exec(preview, {
-        LOADING_PREVIEW: () => {
-          storage.getImageSrc(userId, metadata.id).resolve(
-            (src) => {
-              send({
-                type: "LOADING_PREVIEW_SUCCESS",
-                src,
-              });
-            },
-            {
-              ERROR: (error) => {
-                send({
-                  type: "LOADING_PREVIEW_ERROR",
-                  error,
-                });
-              },
-            }
-          );
-        },
-      }),
-    [preview]
-  );
+  useEvents(storage.events, send);
+
+  useEnterEffect(preview, "LOADING_PREVIEW", () => {
+    storage.getImageSrc(userId, metadata.id);
+  });
 
   const renderPreview = (background: string) => (
     <Wrapper style={{ background, cursor: "pointer" }}>

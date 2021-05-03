@@ -1,4 +1,4 @@
-import { Result } from "react-states";
+import { Events, Result } from "react-states";
 
 export type StorageError = {
   type: "ERROR";
@@ -30,35 +30,65 @@ export type ExcalidrawsByUser = {
   };
 };
 
-export interface Storage {
-  createExcalidraw(userId: string): Result<string, StorageError>;
-  getExcalidraw(
-    userId: string,
-    id: string
-  ): Result<
-    {
+export type StorageEvent =
+  | {
+      type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS";
       metadata: ExcalidrawMetadata;
       data: ExcalidrawData;
-    },
-    StorageError
-  >;
-  getPreviews(): Result<ExcalidrawsByUser, StorageError>;
+      image: Blob;
+    }
+  | {
+      type: "STORAGE:FETCH_EXCALIDRAW_ERROR";
+      error: string;
+    }
+  | {
+      type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS";
+      id: string;
+    }
+  | {
+      type: "STORAGE:CREATE_EXCALIDRAW_ERROR";
+      error: string;
+    }
+  | {
+      type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS";
+      metadata: ExcalidrawMetadata;
+      image: Blob;
+    }
+  | {
+      type: "STORAGE:SAVE_EXCALIDRAW_ERROR";
+      error: string;
+    }
+  | {
+      type: "STORAGE:FETCH_PREVIEWS_SUCCESS";
+      excalidrawsByUser: ExcalidrawsByUser;
+    }
+  | {
+      type: "STORAGE:FETCH_PREVIEWS_ERROR";
+      error: string;
+    }
+  | {
+      type: "STORAGE:IMAGE_SRC_SUCCESS";
+      id: string;
+      src: string;
+    }
+  | {
+      type: "STORAGE:IMAGE_SRC_ERROR";
+      id: string;
+      error: string;
+    };
+
+export interface Storage {
+  events: Events<StorageEvent>;
+  createExcalidraw(userId: string): void;
+  fetchExcalidraw(userId: string, id: string): void;
+  fetchPreviews(): void;
   hasExcalidrawUpdated(
     userId: string,
     id: string,
     date: Date
   ): Result<boolean, StorageError>;
-  saveExcalidraw(
-    userId: string,
-    id: string,
-    data: ExcalidrawData
-  ): Result<ExcalidrawMetadata, StorageError>;
-  saveImage(
-    userId: string,
-    id: string,
-    image: Blob
-  ): Result<void, StorageError>;
-  getImageSrc(userId: string, id: string): Result<string, StorageError>;
+  saveExcalidraw(userId: string, id: string, data: ExcalidrawData): void;
+  getImageSrc(userId: string, id: string): void;
   subscribeToChanges(
     userId: string,
     id: string,

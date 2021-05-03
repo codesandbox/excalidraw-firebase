@@ -1,18 +1,23 @@
 import React, { useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { excalidrawReducer } from "./reducer";
-import { ExcalidrawEvent, ExcalidrawContext } from "./types";
+import { ExcalidrawContext, PublicExcalidrawEvent } from "./types";
 import {
   useClipboardEffect,
   useStorageEffects,
   useSubscriptionEffect,
   useVisibilityChangeEffect,
 } from "./effects";
-import { createContext, createHook } from "react-states";
+import { createContext, createHook, useEvents } from "react-states";
+import { useEnvironment } from "../../environment";
 
 export * from "./types";
 
-const excalidrawContext = createContext<ExcalidrawContext, ExcalidrawEvent>();
+const excalidrawContext = createContext<
+  ExcalidrawContext,
+  PublicExcalidrawEvent
+>();
+
 export const useExcalidraw = createHook(excalidrawContext);
 
 export type Props = {
@@ -35,6 +40,7 @@ export const ExcalidrawFeature = ({
   children: React.ReactNode;
   initialContext?: ExcalidrawContext;
 }) => {
+  const { storage } = useEnvironment();
   const excalidrawStates = useReducer(excalidrawReducer, initialContext);
 
   if (process.env.NODE_ENV === "development") {
@@ -42,6 +48,8 @@ export const ExcalidrawFeature = ({
   }
 
   const [excalidraw, send] = excalidrawStates;
+
+  useEvents(storage.events, send);
 
   useVisibilityChangeEffect(send);
   useClipboardEffect(excalidraw);
