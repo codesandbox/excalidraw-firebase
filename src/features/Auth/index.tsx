@@ -36,6 +36,10 @@ export type PublicAuthEvent = {
 
 export type AuthEvent = PublicAuthEvent | AuthenticationEvent;
 
+const authContext = createContext<AuthContext, PublicAuthEvent>();
+
+export const useAuth = createHook(authContext);
+
 const authReducer = createReducer<AuthContext, AuthEvent>({
   CHECKING_AUTHENTICATION: {
     "AUTHENTICATION:AUTHENTICATED": ({ user }): AuthContext => ({
@@ -62,10 +66,6 @@ const authReducer = createReducer<AuthContext, AuthEvent>({
   AUTHENTICATED: {},
   ERROR: {},
 });
-
-const authContext = createContext<AuthContext, AuthEvent>();
-
-export const useAuth = createHook(authContext);
 
 export const AuthFeature = ({
   children,

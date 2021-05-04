@@ -4,7 +4,6 @@ import {
   ExcalidrawMetadata,
   StorageEvent,
 } from "../../environment/storage";
-import { VisibilityEvent } from "../../environment/visibility";
 
 export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
 
@@ -48,18 +47,6 @@ export type ExcalidrawContext =
         | {
             state: "SYNCING_DIRTY";
           }
-        | {
-            state: "UNFOCUSED";
-          }
-        | {
-            state: "FOCUSED";
-          }
-        | {
-            state: "UPDATING";
-          }
-        | {
-            state: "UPDATING_FROM_PEER";
-          }
       ));
 
 export type PublicExcalidrawEvent =
@@ -74,32 +61,11 @@ export type PublicExcalidrawEvent =
       data: ExcalidrawData;
     };
 
-export type PrivateExcalidrawEvent =
-  | {
-      type: "SYNC";
-    }
-
-  /**
-   *  When user focuses tab with a dirty change, go grab latest
-   * from storage
-   */
-  | {
-      type: "REFRESH";
-    }
-  /**
-   * When user focuses tab with a dirty change, continue
-   * with client version
-   */
-  | {
-      type: "CONTINUE";
-    }
-  | {
-      type: "SUBSCRIPTION_UPDATE";
-      data: ExcalidrawData;
-    };
+export type PrivateExcalidrawEvent = {
+  type: "SYNC";
+};
 
 export type ExcalidrawEvent =
   | PublicExcalidrawEvent
   | PrivateExcalidrawEvent
-  | StorageEvent
-  | VisibilityEvent;
+  | StorageEvent;

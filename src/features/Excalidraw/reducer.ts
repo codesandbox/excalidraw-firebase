@@ -2,9 +2,9 @@ import { createReducer } from "react-states";
 import { ExcalidrawData } from "../../environment/storage";
 import { ExcalidrawContext, ExcalidrawEvent, BaseContext } from "./types";
 
-import { getChangedData, hasChangedExcalidraw } from "./utils";
+import { getChangedData, hasChangedExcalidraw } from "../../utils";
 
-const onSubscriptionUpdate = (
+const onDataUpdate = (
   { data }: { data: ExcalidrawData },
   currentContext: ExcalidrawContext & BaseContext
 ): ExcalidrawContext => {
@@ -13,7 +13,6 @@ const onSubscriptionUpdate = (
   return changedData
     ? {
         ...currentContext,
-        state: "UPDATING_FROM_PEER",
         data: changedData,
       }
     : currentContext;
@@ -66,11 +65,7 @@ export const excalidrawReducer = createReducer<
         state: "COPIED",
       },
     }),
-    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "UNFOCUSED",
-    }),
-    SUBSCRIPTION_UPDATE: onSubscriptionUpdate,
+    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   DIRTY: {
     SYNC: (_, currentContext): ExcalidrawContext => ({
@@ -85,11 +80,7 @@ export const excalidrawReducer = createReducer<
             data,
           }
         : currentContext,
-    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "UNFOCUSED",
-    }),
-    SUBSCRIPTION_UPDATE: onSubscriptionUpdate,
+    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING: {
     EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
@@ -109,15 +100,11 @@ export const excalidrawReducer = createReducer<
       metadata,
       image,
     }),
-    "STORAGE:SAVE_EXCALIDRAW_ERROR": (): ExcalidrawContext => ({
+    "STORAGE:SAVE_EXCALIDRAW_ERROR": ({ error }): ExcalidrawContext => ({
       state: "ERROR",
-      error: "Unable to sync",
+      error,
     }),
-    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "UNFOCUSED",
-    }),
-    SUBSCRIPTION_UPDATE: onSubscriptionUpdate,
+    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING_DIRTY: {
     EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext =>
@@ -129,10 +116,11 @@ export const excalidrawReducer = createReducer<
           }
         : currentContext,
     "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (
-      _,
+      { metadata },
       currentContext
     ): ExcalidrawContext => ({
       ...currentContext,
+      metadata,
       state: "DIRTY",
     }),
     "STORAGE:SAVE_EXCALIDRAW_ERROR": (
@@ -142,58 +130,7 @@ export const excalidrawReducer = createReducer<
       ...currentContext,
       state: "DIRTY",
     }),
-    "VISIBILITY:HIDDEN": (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "UNFOCUSED",
-    }),
-    SUBSCRIPTION_UPDATE: onSubscriptionUpdate,
+    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   ERROR: {},
-  UNFOCUSED: {
-    "VISIBILITY:VISIBLE": (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "FOCUSED",
-    }),
-    "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (
-      { image, metadata },
-      currentContext
-    ): ExcalidrawContext => ({
-      ...currentContext,
-      metadata,
-      image,
-    }),
-  },
-  FOCUSED: {
-    REFRESH: (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "UPDATING",
-    }),
-    CONTINUE: (_, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "EDIT",
-    }),
-  },
-  UPDATING: {
-    "STORAGE:FETCH_EXCALIDRAW_SUCCESS": (
-      { data, metadata, image },
-      currentContext
-    ): ExcalidrawContext => ({
-      ...currentContext,
-      state: "EDIT",
-      data,
-      metadata,
-      image,
-    }),
-    "STORAGE:FETCH_EXCALIDRAW_ERROR": ({ error }): ExcalidrawContext => ({
-      state: "ERROR",
-      error,
-    }),
-  },
-  UPDATING_FROM_PEER: {
-    EXCALIDRAW_CHANGE: ({ data }, currentContext): ExcalidrawContext => ({
-      ...currentContext,
-      state: "DIRTY",
-      data,
-    }),
-  },
 });

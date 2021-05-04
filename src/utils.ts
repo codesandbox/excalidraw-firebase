@@ -1,4 +1,4 @@
-import { ExcalidrawData, ExcalidrawElement } from "./types";
+import { ExcalidrawData, ExcalidrawElement } from "./features/Excalidraw/types";
 
 export const hasChangedExcalidraw = (
   oldData: ExcalidrawData,

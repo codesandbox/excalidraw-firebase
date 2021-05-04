@@ -42,6 +42,11 @@ export type StorageEvent =
       error: string;
     }
   | {
+      type: "STORAGE:EXCALIDRAW_DATA_UPDATE";
+      id: string;
+      data: ExcalidrawData;
+    }
+  | {
       type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS";
       id: string;
     }
@@ -82,16 +87,6 @@ export interface Storage {
   createExcalidraw(userId: string): void;
   fetchExcalidraw(userId: string, id: string): void;
   fetchPreviews(): void;
-  hasExcalidrawUpdated(
-    userId: string,
-    id: string,
-    date: Date
-  ): Result<boolean, StorageError>;
   saveExcalidraw(userId: string, id: string, data: ExcalidrawData): void;
   getImageSrc(userId: string, id: string): void;
-  subscribeToChanges(
-    userId: string,
-    id: string,
-    listener: (data: ExcalidrawData) => void
-  ): () => void;
 }

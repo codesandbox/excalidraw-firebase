@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import ExcalidrawComponent from "@excalidraw/excalidraw";
-import { ExcalidrawContext } from "../../features/Excalidraw";
+import ExcalidrawComponent, { getSceneVersion } from "@excalidraw/excalidraw";
+import {
+  ExcalidrawContext,
+  ExcalidrawData,
+  ExcalidrawElement,
+} from "../../features/Excalidraw";
+import { getChangedData } from "../../utils";
+import { match } from "react-states";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;
@@ -24,14 +30,10 @@ export const ExcalidrawCanvas = React.memo(
     data,
     onChange,
     onInitialized,
-    readOnly,
-    state,
   }: {
-    data: any;
-    onChange: (elements: any[], appState: any) => void;
+    data: ExcalidrawData;
+    onChange: (elements: ExcalidrawElement[], appState: any) => void;
     onInitialized: () => void;
-    readOnly: boolean;
-    state: ExcalidrawContext["state"];
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
@@ -67,10 +69,21 @@ export const ExcalidrawCanvas = React.memo(
     }, []);
 
     useEffect(() => {
-      if (state === "UPDATING_FROM_PEER") {
-        excalidrawRef.current.updateScene(data);
-      }
-    }, [state]);
+      excalidrawRef.current.readyPromise.then(
+        ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
+          const currentElements = getSceneElementsIncludingDeleted();
+          const changedData = getChangedData(data, {
+            appState: getAppState(),
+            elements: currentElements,
+            version: getSceneVersion(currentElements),
+          });
+
+          if (changedData) {
+            excalidrawRef.current.updateScene(changedData);
+          }
+        }
+      );
+    }, [data]);
 
     return (
       <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>
@@ -80,7 +93,6 @@ export const ExcalidrawCanvas = React.memo(
           height={dimensions.height}
           initialData={data}
           onChange={onChange}
-          viewModeEnabled={readOnly}
         />
       </div>
     );

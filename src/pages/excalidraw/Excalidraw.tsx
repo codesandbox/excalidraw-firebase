@@ -9,14 +9,7 @@ import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
 
 type RenderExcalidrawContext = PickContext<
   ExcalidrawContext,
-  | "LOADED"
-  | "EDIT"
-  | "SYNCING"
-  | "DIRTY"
-  | "SYNCING_DIRTY"
-  | "UNFOCUSED"
-  | "FOCUSED"
-  | "UPDATING_FROM_PEER"
+  "LOADED" | "EDIT" | "SYNCING" | "DIRTY" | "SYNCING_DIRTY"
 >;
 
 export const Excalidraw = () => {
@@ -69,25 +62,11 @@ export const Excalidraw = () => {
       LOADED: variants.loading,
       SYNCING: variants.loading,
       SYNCING_DIRTY: variants.loading,
-      FOCUSED: variants.loading,
-      UNFOCUSED: variants.loading,
-      UPDATING_FROM_PEER: variants.active,
       EDIT: () =>
         match(context.clipboard, {
           COPIED: variants.active,
           NOT_COPIED: variants.default,
         }),
-    });
-
-    const readOnly = match(context, {
-      FOCUSED: () => true,
-      UNFOCUSED: () => true,
-      LOADED: () => false,
-      SYNCING: () => false,
-      SYNCING_DIRTY: () => false,
-      DIRTY: () => false,
-      EDIT: () => false,
-      UPDATING_FROM_PEER: () => false,
     });
 
     return (
@@ -98,8 +77,6 @@ export const Excalidraw = () => {
           onInitialized={() => {
             send({ type: "INITIALIZE_CANVAS_SUCCESS" });
           }}
-          readOnly={readOnly}
-          state={context.state}
         />
         <div className="edit" style={variant.style} onClick={variant.onClick}>
           {variant.content}
@@ -119,18 +96,10 @@ export const Excalidraw = () => {
         <h1>OMG, error, {error}</h1>
       </div>
     ),
-    UPDATING: () => (
-      <div className="center-wrapper">
-        <div className="lds-dual-ring"></div>
-      </div>
-    ),
     LOADED: renderExcalidraw,
-    FOCUSED: renderExcalidraw,
     EDIT: renderExcalidraw,
     SYNCING: renderExcalidraw,
     DIRTY: renderExcalidraw,
     SYNCING_DIRTY: renderExcalidraw,
-    UNFOCUSED: renderExcalidraw,
-    UPDATING_FROM_PEER: renderExcalidraw,
   });
 };

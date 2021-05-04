@@ -1,13 +1,11 @@
 import React, { createContext, useContext } from "react";
 import { Authentication } from "./authentication";
 import { CopyImageToClipboard } from "./copyImageToClipboard";
-import { Visibility } from "./visibility";
 import { Storage } from "./storage";
 
 export interface Environment {
   storage: Storage;
   authentication: Authentication;
-  visibility: Visibility;
   copyImageToClipboard: CopyImageToClipboard;
 }
 

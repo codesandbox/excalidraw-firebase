@@ -13,7 +13,6 @@ import { Pages } from "./pages";
 import { AuthFeature } from "./features/Auth";
 import { Environment } from "./environment";
 import { createStorage } from "./environment/storage/browser";
-import { createVisibility } from "./environment/visibility/browser";
 import { createAuthentication } from "./environment/authentication/browser";
 import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
 
@@ -23,7 +22,6 @@ const app = (
   <Environment
     environment={{
       authentication: createAuthentication(),
-      visibility: createVisibility(),
       storage: createStorage(),
       copyImageToClipboard: createCopyImageToClipboard(),
     }}
