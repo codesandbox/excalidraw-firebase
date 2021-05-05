@@ -115,15 +115,13 @@ export const Dashboard = () => {
                 <UserName>{user.name}</UserName>
               </UserWrapper>
               <List key={uid}>
-                {user.excalidraws
-                  .slice(0, context.showCount)
-                  .map((excalidraw) => (
-                    <ExcalidrawPreview
-                      key={excalidraw.id}
-                      userId={uid}
-                      metadata={excalidraw}
-                    />
-                  ))}
+                {user.excalidraws.map((excalidraw) => (
+                  <ExcalidrawPreview
+                    key={excalidraw.id}
+                    userId={uid}
+                    metadata={excalidraw}
+                  />
+                ))}
               </List>
             </div>
           );
