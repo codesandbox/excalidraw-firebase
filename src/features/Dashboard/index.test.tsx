@@ -65,7 +65,7 @@ describe("Dashboard", () => {
 
     expect(context).toEqual<DashboardContext>({
       state: "PREVIEWS_LOADED",
-      showCount: 10,
+
       excalidraws: {
         "123": mockedPreviews,
       },
@@ -141,7 +141,6 @@ describe("Dashboard", () => {
                 initialContext={{
                   state: "PREVIEWS_LOADED",
                   excalidraws: {},
-                  showCount: 10,
                 }}
               >
                 <UseDashboard />
@@ -159,7 +158,6 @@ describe("Dashboard", () => {
     expect(context).toEqual<DashboardContext>({
       state: "CREATING_EXCALIDRAW",
       excalidraws: {},
-      showCount: 10,
     });
 
     expect(storage.createExcalidraw).toBeCalled();
@@ -203,7 +201,6 @@ describe("Dashboard", () => {
               initialContext={{
                 state: "PREVIEWS_LOADED",
                 excalidraws: {},
-                showCount: 10,
               }}
             >
               <UseDashboard />
@@ -220,7 +217,6 @@ describe("Dashboard", () => {
     expect(context).toEqual<DashboardContext>({
       state: "CREATING_EXCALIDRAW",
       excalidraws: {},
-      showCount: 10,
     });
 
     expect(storage.createExcalidraw).toBeCalled();
@@ -236,7 +232,6 @@ describe("Dashboard", () => {
       state: "CREATE_EXCALIDRAW_ERROR",
       error: "Could not create Excalidraw",
       excalidraws: {},
-      showCount: 10,
     });
   });
 });

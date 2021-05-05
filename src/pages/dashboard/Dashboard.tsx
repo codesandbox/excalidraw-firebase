@@ -91,15 +91,13 @@ export const Dashboard = () => {
     <div style={{ paddingBottom: "5rem" }}>
       <List>
         {createExcalidraw}
-        {context.excalidraws[auth.user.uid].excalidraws
-          .slice(0, context.showCount)
-          .map((excalidraw) => (
-            <ExcalidrawPreview
-              key={excalidraw.id}
-              userId={auth.user.uid}
-              metadata={excalidraw}
-            />
-          ))}
+        {context.excalidraws[auth.user.uid].excalidraws.map((excalidraw) => (
+          <ExcalidrawPreview
+            key={excalidraw.id}
+            userId={auth.user.uid}
+            metadata={excalidraw}
+          />
+        ))}
       </List>
       {Object.keys(context.excalidraws)
         .filter((uid) => uid !== auth.user.uid)

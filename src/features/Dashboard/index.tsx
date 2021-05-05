@@ -19,12 +19,10 @@ export type DashboardContext =
   | {
       state: "PREVIEWS_LOADED";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
     }
   | {
       state: "CREATING_EXCALIDRAW";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
     }
   | {
       state: "EXCALIDRAW_CREATED";
@@ -37,7 +35,6 @@ export type DashboardContext =
   | {
       state: "CREATE_EXCALIDRAW_ERROR";
       excalidraws: ExcalidrawsByUser;
-      showCount: number;
       error: string;
     };
 
@@ -54,7 +51,6 @@ const dashboardReducer = createReducer<DashboardContext, DashboardEvent>({
     }): DashboardContext => ({
       state: "PREVIEWS_LOADED",
       excalidraws: excalidrawsByUser,
-      showCount: 10,
     }),
     "STORAGE:FETCH_PREVIEWS_ERROR": ({ error }): DashboardContext => ({
       state: "PREVIEWS_ERROR",
@@ -62,10 +58,9 @@ const dashboardReducer = createReducer<DashboardContext, DashboardEvent>({
     }),
   },
   PREVIEWS_LOADED: {
-    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }): DashboardContext => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
-      showCount,
     }),
   },
   CREATING_EXCALIDRAW: {
@@ -75,26 +70,23 @@ const dashboardReducer = createReducer<DashboardContext, DashboardEvent>({
     }),
     "STORAGE:CREATE_EXCALIDRAW_ERROR": (
       { error },
-      { excalidraws, showCount }
+      { excalidraws }
     ): DashboardContext => ({
       state: "CREATE_EXCALIDRAW_ERROR",
       error,
       excalidraws,
-      showCount,
     }),
   },
   PREVIEWS_ERROR: {
     CREATE_EXCALIDRAW: (): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws: {},
-      showCount: 0,
     }),
   },
   CREATE_EXCALIDRAW_ERROR: {
-    CREATE_EXCALIDRAW: (_, { excalidraws, showCount }): DashboardContext => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }): DashboardContext => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
-      showCount,
     }),
   },
   EXCALIDRAW_CREATED: {},

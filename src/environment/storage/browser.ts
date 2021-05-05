@@ -5,7 +5,7 @@ import {
   ExcalidrawsByUser,
   Storage,
 } from ".";
-import { events, result } from "react-states";
+import { events } from "react-states";
 import { exportToCanvas } from "./excalidraw-src/scene/export";
 import { getChangedData } from "../../utils";
 
@@ -274,7 +274,6 @@ export const createStorage = (): Storage => {
                 .doc(userDoc.id)
                 .collection(EXCALIDRAWS_COLLECTION)
                 .orderBy("last_updated", "desc")
-                .limit(10)
                 .get()
                 .then((collection) => {
                   return {

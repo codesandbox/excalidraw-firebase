@@ -1,6 +1,6 @@
 import React from "react";
 import { renderHook } from "react-states/test";
-import { act, waitFor } from "@testing-library/react";
+import { act } from "@testing-library/react";
 import { Environment } from "../../environment";
 import { useAuth, AuthFeature, AuthContext } from ".";
 import { createAuthentication } from "../../environment/authentication/test";
@@ -34,7 +34,7 @@ describe("Auth", () => {
       });
     });
 
-    expect(context).toEqual({
+    expect(context).toEqual<AuthContext>({
       state: "AUTHENTICATED",
       user: {
         avatarUrl: "",
@@ -99,7 +99,9 @@ describe("Auth", () => {
       });
     });
 
-    expect(context.state).toBe("SIGNING_IN");
+    expect(context.state).toEqual<AuthContext>({
+      state: "SIGNING_IN",
+    });
     expect(authentication.signIn).toBeCalled();
 
     act(() => {
