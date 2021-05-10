@@ -1,3 +1,4 @@
+import { States } from "react-states";
 import {
   ExcalidrawData,
   ExcalidrawElement,
@@ -22,7 +23,7 @@ export type BaseContext = {
   clipboard: ClipboardContext;
 };
 
-export type ExcalidrawContext =
+export type Context =
   | {
       state: "LOADING";
     }
@@ -49,7 +50,7 @@ export type ExcalidrawContext =
           }
       ));
 
-export type PublicExcalidrawEvent =
+export type UIEvent =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
     }
@@ -61,11 +62,10 @@ export type PublicExcalidrawEvent =
       data: ExcalidrawData;
     };
 
-export type PrivateExcalidrawEvent = {
+export type FeatureEvent = {
   type: "SYNC";
 };
 
-export type ExcalidrawEvent =
-  | PublicExcalidrawEvent
-  | PrivateExcalidrawEvent
-  | StorageEvent;
+export type Event = UIEvent | FeatureEvent | StorageEvent;
+
+export type Feature = States<Context, Event>;

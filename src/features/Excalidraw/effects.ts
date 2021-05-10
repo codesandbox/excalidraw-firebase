@@ -1,13 +1,13 @@
-import { match, States, useEnterEffect, useMatchEffect } from "react-states";
+import { match, useEnterEffect, useMatchEffect } from "react-states";
 import { useEnvironment } from "../../environment";
 
-import { ExcalidrawEvent, ExcalidrawContext } from "./types";
+import { Context, Feature } from "./types";
 
-export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
+export const useClipboardEffect = (context: Context) => {
   const { copyImageToClipboard } = useEnvironment();
 
   useMatchEffect(
-    excalidraw,
+    context,
     {
       DIRTY: () => true,
       EDIT: () => true,
@@ -35,19 +35,17 @@ export const useClipboardEffect = (excalidraw: ExcalidrawContext) => {
 export const useStorageEffects = (
   userId: string,
   id: string,
-  [excalidraw, send]: States<ExcalidrawContext, ExcalidrawEvent>
+  [context, send]: Feature
 ) => {
   const { storage } = useEnvironment();
 
-  useEnterEffect(excalidraw, "LOADING", () =>
-    storage.fetchExcalidraw(userId, id)
-  );
+  useEnterEffect(context, "LOADING", () => storage.fetchExcalidraw(userId, id));
 
-  useEnterEffect(excalidraw, "SYNCING", ({ data }) => {
+  useEnterEffect(context, "SYNCING", ({ data }) => {
     storage.saveExcalidraw(userId, id, data);
   });
 
-  useEnterEffect(excalidraw, "DIRTY", () => {
+  useEnterEffect(context, "DIRTY", () => {
     const id = setTimeout(() => {
       send({
         type: "SYNC",
