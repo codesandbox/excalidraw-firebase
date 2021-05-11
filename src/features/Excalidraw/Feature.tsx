@@ -1,17 +1,14 @@
 import React, { useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { reducer } from "./reducer";
-import { ExcalidrawContext, PublicExcalidrawEvent } from "./types";
+import { Context, UIEvent } from "./types";
 import { useClipboardEffect, useStorageEffects } from "./effects";
 import { createContext, createHook, useEvents } from "react-states";
 import { useEnvironment } from "../../environment";
 
 export * from "./types";
 
-const featureContext = createContext<
-  ExcalidrawContext,
-  PublicExcalidrawEvent
->();
+const featureContext = createContext<Context, UIEvent>();
 
 export const useFeature = createHook(featureContext);
 
@@ -19,7 +16,7 @@ export type Props = {
   id: string;
   userId: string;
   children: React.ReactNode;
-  initialContext?: ExcalidrawContext;
+  initialContext?: Context;
 };
 
 export const FeatureProvider = ({
@@ -33,7 +30,7 @@ export const FeatureProvider = ({
   id: string;
   userId: string;
   children: React.ReactNode;
-  initialContext?: ExcalidrawContext;
+  initialContext?: Context;
 }) => {
   const { storage } = useEnvironment();
   const feature = useReducer(reducer, initialContext);
