@@ -42,23 +42,23 @@ export const useFeature = createHook(featureContext);
 
 const reducer = createReducer<Context, Event>({
   CHECKING_AUTHENTICATION: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user }): Context => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user }) => ({
       state: "AUTHENTICATED",
       user,
     }),
-    "AUTHENTICATION:UNAUTHENTICATED": (): Context => ({
+    "AUTHENTICATION:UNAUTHENTICATED": () => ({
       state: "UNAUTHENTICATED",
     }),
   },
   UNAUTHENTICATED: {
-    SIGN_IN: (): Context => ({ state: "SIGNING_IN" }),
+    SIGN_IN: () => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user }): Context => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user }) => ({
       state: "AUTHENTICATED",
       user,
     }),
-    "AUTHENTICATION:SIGN_IN_ERROR": ({ error }): Context => ({
+    "AUTHENTICATION:SIGN_IN_ERROR": ({ error }) => ({
       state: "ERROR",
       error,
     }),

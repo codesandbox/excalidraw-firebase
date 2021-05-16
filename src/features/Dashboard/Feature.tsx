@@ -46,43 +46,40 @@ export type Event = UIEvent | StorageEvent;
 
 const reducer = createReducer<Context, Event>({
   LOADING_PREVIEWS: {
-    "STORAGE:FETCH_PREVIEWS_SUCCESS": ({ excalidrawsByUser }): Context => ({
+    "STORAGE:FETCH_PREVIEWS_SUCCESS": ({ excalidrawsByUser }) => ({
       state: "PREVIEWS_LOADED",
       excalidraws: excalidrawsByUser,
     }),
-    "STORAGE:FETCH_PREVIEWS_ERROR": ({ error }): Context => ({
+    "STORAGE:FETCH_PREVIEWS_ERROR": ({ error }) => ({
       state: "PREVIEWS_ERROR",
       error,
     }),
   },
   PREVIEWS_LOADED: {
-    CREATE_EXCALIDRAW: (_, { excalidraws }): Context => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
     }),
   },
   CREATING_EXCALIDRAW: {
-    "STORAGE:CREATE_EXCALIDRAW_SUCCESS": ({ id }): Context => ({
+    "STORAGE:CREATE_EXCALIDRAW_SUCCESS": ({ id }) => ({
       state: "EXCALIDRAW_CREATED",
       id,
     }),
-    "STORAGE:CREATE_EXCALIDRAW_ERROR": (
-      { error },
-      { excalidraws }
-    ): Context => ({
+    "STORAGE:CREATE_EXCALIDRAW_ERROR": ({ error }, { excalidraws }) => ({
       state: "CREATE_EXCALIDRAW_ERROR",
       error,
       excalidraws,
     }),
   },
   PREVIEWS_ERROR: {
-    CREATE_EXCALIDRAW: (): Context => ({
+    CREATE_EXCALIDRAW: () => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws: {},
     }),
   },
   CREATE_EXCALIDRAW_ERROR: {
-    CREATE_EXCALIDRAW: (_, { excalidraws }): Context => ({
+    CREATE_EXCALIDRAW: (_, { excalidraws }) => ({
       state: "CREATING_EXCALIDRAW",
       excalidraws,
     }),

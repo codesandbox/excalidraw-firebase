@@ -23,11 +23,7 @@ const onDataUpdate = (
 
 export const reducer = createReducer<Context, Event>({
   LOADING: {
-    "STORAGE:FETCH_EXCALIDRAW_SUCCESS": ({
-      data,
-      metadata,
-      image,
-    }): Context => ({
+    "STORAGE:FETCH_EXCALIDRAW_SUCCESS": ({ data, metadata, image }) => ({
       state: "LOADED",
       data,
       metadata,
@@ -36,19 +32,19 @@ export const reducer = createReducer<Context, Event>({
         state: "NOT_COPIED",
       },
     }),
-    "STORAGE:FETCH_EXCALIDRAW_ERROR": ({ error }): Context => ({
+    "STORAGE:FETCH_EXCALIDRAW_ERROR": ({ error }) => ({
       state: "ERROR",
       error,
     }),
   },
   LOADED: {
-    INITIALIZE_CANVAS_SUCCESS: (_, context): Context => ({
+    INITIALIZE_CANVAS_SUCCESS: (_, context) => ({
       ...context,
       state: "EDIT",
     }),
   },
   EDIT: {
-    EXCALIDRAW_CHANGE: ({ data }, context): Context =>
+    EXCALIDRAW_CHANGE: ({ data }, context) =>
       hasChangedExcalidraw(context.data, data)
         ? {
             ...context,
@@ -59,7 +55,7 @@ export const reducer = createReducer<Context, Event>({
             data,
           }
         : context,
-    COPY_TO_CLIPBOARD: (_, context): Context => ({
+    COPY_TO_CLIPBOARD: (_, context) => ({
       ...context,
       clipboard: {
         state: "COPIED",
@@ -68,11 +64,11 @@ export const reducer = createReducer<Context, Event>({
     "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   DIRTY: {
-    SYNC: (_, context): Context => ({
+    SYNC: (_, context) => ({
       ...context,
       state: "SYNCING",
     }),
-    EXCALIDRAW_CHANGE: ({ data }, context): Context =>
+    EXCALIDRAW_CHANGE: ({ data }, context) =>
       hasChangedExcalidraw(context.data, data)
         ? {
             ...context,
@@ -83,7 +79,7 @@ export const reducer = createReducer<Context, Event>({
     "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING: {
-    EXCALIDRAW_CHANGE: ({ data }, context): Context =>
+    EXCALIDRAW_CHANGE: ({ data }, context) =>
       hasChangedExcalidraw(context.data, data)
         ? {
             ...context,
@@ -91,23 +87,20 @@ export const reducer = createReducer<Context, Event>({
             data,
           }
         : context,
-    "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (
-      { image, metadata },
-      context
-    ): Context => ({
+    "STORAGE:SAVE_EXCALIDRAW_SUCCESS": ({ image, metadata }, context) => ({
       ...context,
       state: "EDIT",
       metadata,
       image,
     }),
-    "STORAGE:SAVE_EXCALIDRAW_ERROR": ({ error }): Context => ({
+    "STORAGE:SAVE_EXCALIDRAW_ERROR": ({ error }) => ({
       state: "ERROR",
       error,
     }),
     "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING_DIRTY: {
-    EXCALIDRAW_CHANGE: ({ data }, context): Context =>
+    EXCALIDRAW_CHANGE: ({ data }, context) =>
       hasChangedExcalidraw(context.data, data)
         ? {
             ...context,
@@ -115,12 +108,12 @@ export const reducer = createReducer<Context, Event>({
             data,
           }
         : context,
-    "STORAGE:SAVE_EXCALIDRAW_SUCCESS": ({ metadata }, context): Context => ({
+    "STORAGE:SAVE_EXCALIDRAW_SUCCESS": ({ metadata }, context) => ({
       ...context,
       metadata,
       state: "DIRTY",
     }),
-    "STORAGE:SAVE_EXCALIDRAW_ERROR": (_, context): Context => ({
+    "STORAGE:SAVE_EXCALIDRAW_ERROR": (_, context) => ({
       ...context,
       state: "DIRTY",
     }),
