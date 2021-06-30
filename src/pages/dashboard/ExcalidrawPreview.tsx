@@ -75,11 +75,23 @@ export const ExcalidrawPreview = ({
   return (
     <Link to={`/${user.uid}/${metadata.id}`}>
       <div className="relative rounded-lg group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-cyan-500">
-        <div className="mb-2">
+        <div className="mb-2 flex items-center">
+          {user.avatarUrl ? (
+            <img
+              className="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0 shadow-sm mr-3"
+              src={user.avatarUrl}
+              alt=""
+            />
+          ) : null}
           <h3 className="text-lg font-medium">
             <span className="absolute inset-0" aria-hidden="true" />
             {metadata.title || "No Title"}
           </h3>
+          <div className="ml-auto flex justify-between items-center">
+            <span className="ml-auto bg-gray-200 text-gray-500 px-2 py-1 rounded-md z-10 h-8 flex items-center text-sm shadow-sm">
+              {formatDistanceToNow(metadata.last_updated)} ago
+            </span>
+          </div>
         </div>
         <div className="relative h-32">
           {match(preview, {
@@ -88,18 +100,6 @@ export const ExcalidrawPreview = ({
               renderPreview(`center / contain no-repeat url(${src})`),
             LOADING_ERROR: () => renderPreview("#FFF"),
           })}
-        </div>
-        <div className="absolute bottom-6 left-6 right-6 z-10 flex justify-between items-center">
-          {user.avatarUrl ? (
-            <img
-              className="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"
-              src={user.avatarUrl}
-              alt=""
-            />
-          ) : null}
-          <span className="ml-auto bg-gray-200 text-gray-500 px-2 py-1 rounded-md z-10 h-8 flex items-center text-sm">
-            {formatDistanceToNow(metadata.last_updated)} ago
-          </span>
         </div>
       </div>
     </Link>
