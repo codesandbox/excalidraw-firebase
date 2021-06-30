@@ -18,6 +18,11 @@ import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/b
 
 firebase.initializeApp(config);
 
+// Polyfill for Loom
+if (typeof (window as any).global === "undefined") {
+  (window as any).global = window;
+}
+
 const app = (
   <Environment
     environment={{

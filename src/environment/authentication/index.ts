@@ -10,6 +10,7 @@ export type AuthenticationEvent =
   | {
       type: "AUTHENTICATION:AUTHENTICATED";
       user: User;
+      loomApiKey: string | null;
     }
   | {
       type: "AUTHENTICATION:UNAUTHENTICATED";

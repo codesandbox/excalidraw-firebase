@@ -1,35 +1,14 @@
 import { match, useEnterEffect, useMatchEffect } from "react-states";
 import { useEnvironment } from "../../environment";
 
-import { Context, Feature } from "./types";
+import { Context, Feature, TransientContext } from "./types";
 
-export const useClipboardEffect = (context: Context) => {
+export const useClipboardEffect = (context: Context | TransientContext) => {
   const { copyImageToClipboard } = useEnvironment();
 
-  useMatchEffect(
-    context,
-    {
-      DIRTY: () => true,
-      EDIT: () => true,
-      FOCUSED: () => true,
-      SYNCING: () => true,
-      SYNCING_DIRTY: () => true,
-
-      ERROR: () => false,
-      LOADED: () => false,
-      LOADING: () => false,
-      UNFOCUSED: () => false,
-      UPDATING: () => false,
-      UPDATING_FROM_PEER: () => false,
-    },
-    ({ image, clipboard }) =>
-      match(clipboard, {
-        COPIED: () => {
-          copyImageToClipboard(image);
-        },
-        NOT_COPIED: () => {},
-      })
-  );
+  useEnterEffect(context, "COPYING_TO_CLIPBOARD", ({ image }) => {
+    copyImageToClipboard(image);
+  });
 };
 
 export const useStorageEffects = (

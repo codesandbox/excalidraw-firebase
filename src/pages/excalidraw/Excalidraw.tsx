@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickContext, match } from "react-states";
@@ -6,6 +6,8 @@ import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
+import { isSupported, setup } from "@loomhq/loom-sdk";
+import { useAuth } from "../../features/Auth";
 
 type RenderExcalidrawContext = PickContext<
   ExcalidrawContext,
@@ -13,7 +15,9 @@ type RenderExcalidrawContext = PickContext<
 >;
 
 export const Excalidraw = () => {
+  const [auth] = useAuth("AUTHENTICATED");
   const [excalidraw, send] = useExcalidraw();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const onChange = useMemo(
     () =>
@@ -29,6 +33,32 @@ export const Excalidraw = () => {
       }, 100),
     []
   );
+
+  useEffect(() => {
+    if (auth.loomApiKey) {
+      let dispose = () => {};
+      setup({
+        apiKey: auth.loomApiKey,
+      }).then(({ configureButton, teardown }) => {
+        dispose = teardown;
+
+        configureButton({
+          element: buttonRef.current!,
+          hooks: {
+            onInsertClicked: (shareLink) => {
+              console.log("clicked insert");
+              console.log(shareLink);
+            },
+            onStart: () => console.log("start"),
+            onCancel: () => console.log("cancelled"),
+            onComplete: () => console.log("complete"),
+          },
+        });
+      });
+
+      return dispose;
+    }
+  }, []);
 
   const renderExcalidraw = (context: RenderExcalidrawContext) => {
     const copyToClipboard = () => {
@@ -81,6 +111,18 @@ export const Excalidraw = () => {
         <div className="edit" style={variant.style} onClick={variant.onClick}>
           {variant.content}
         </div>
+        <button
+          ref={buttonRef}
+          style={{
+            position: "absolute",
+            zIndex: 9999999,
+            right: "8rem",
+            top: "1rem",
+          }}
+          onClick={() => {}}
+        >
+          Test Loom
+        </button>
       </div>
     );
   };

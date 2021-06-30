@@ -50,6 +50,11 @@ export type Context =
           }
       ));
 
+export type TransientContext = {
+  state: "COPYING_TO_CLIPBOARD";
+  image: Blob;
+};
+
 export type UIEvent =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
@@ -68,4 +73,4 @@ export type FeatureEvent = {
 
 export type Event = UIEvent | FeatureEvent | StorageEvent;
 
-export type Feature = States<Context, Event>;
+export type Feature = States<Context | TransientContext, Event>;

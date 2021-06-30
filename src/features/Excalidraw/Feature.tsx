@@ -1,14 +1,14 @@
 import React, { useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { reducer } from "./reducer";
-import { Context, UIEvent } from "./types";
+import { Context, UIEvent, TransientContext } from "./types";
 import { useClipboardEffect, useStorageEffects } from "./effects";
 import { createContext, createHook, useEvents } from "react-states";
 import { useEnvironment } from "../../environment";
 
 export * from "./types";
 
-const featureContext = createContext<Context, UIEvent>();
+const featureContext = createContext<Context, UIEvent, TransientContext>();
 
 export const useFeature = createHook(featureContext);
 

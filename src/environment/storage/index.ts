@@ -1,4 +1,4 @@
-import { Events, Result } from "react-states";
+import { Events } from "react-states";
 
 export type StorageError = {
   type: "ERROR";
@@ -14,6 +14,7 @@ export type ExcalidrawMetadata = {
   id: string;
   author: string;
   last_updated: Date;
+  title: string;
 };
 
 export type ExcalidrawData = {
@@ -22,13 +23,16 @@ export type ExcalidrawData = {
   version: number;
 };
 
-export type ExcalidrawsByUser = {
-  [userId: string]: {
+export type ExcalidrawPreview = {
+  metadata: ExcalidrawMetadata;
+  user: {
+    uid: string;
     name: string;
     avatarUrl: string | null;
-    excalidraws: ExcalidrawMetadata[];
   };
 };
+
+export type ExcalidrawPreviews = ExcalidrawPreview[];
 
 export type StorageEvent =
   | {
@@ -65,7 +69,7 @@ export type StorageEvent =
     }
   | {
       type: "STORAGE:FETCH_PREVIEWS_SUCCESS";
-      excalidrawsByUser: ExcalidrawsByUser;
+      excalidraws: ExcalidrawPreviews;
     }
   | {
       type: "STORAGE:FETCH_PREVIEWS_ERROR";

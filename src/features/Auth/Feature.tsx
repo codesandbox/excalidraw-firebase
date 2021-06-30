@@ -24,6 +24,7 @@ export type Context =
   | {
       state: "AUTHENTICATED";
       user: User;
+      loomApiKey: string | null;
     }
   | {
       state: "ERROR";
@@ -42,9 +43,10 @@ export const useFeature = createHook(featureContext);
 
 const reducer = createReducer<Context, Event>({
   CHECKING_AUTHENTICATION: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user }) => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user, loomApiKey }) => ({
       state: "AUTHENTICATED",
       user,
+      loomApiKey,
     }),
     "AUTHENTICATION:UNAUTHENTICATED": () => ({
       state: "UNAUTHENTICATED",
@@ -54,9 +56,10 @@ const reducer = createReducer<Context, Event>({
     SIGN_IN: () => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user }) => ({
+    "AUTHENTICATION:AUTHENTICATED": ({ user, loomApiKey }) => ({
       state: "AUTHENTICATED",
       user,
+      loomApiKey,
     }),
     "AUTHENTICATION:SIGN_IN_ERROR": ({ error }) => ({
       state: "ERROR",

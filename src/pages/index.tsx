@@ -9,15 +9,15 @@ export const Pages = () => {
   const [auth, send] = useAuth();
 
   return (
-    <div className="App">
+    <div className="p-6 bg-gray-100">
       {match(auth, {
         UNAUTHENTICATED: () => (
-          <div className="center-wrapper">
+          <div>
             <button onClick={() => send({ type: "SIGN_IN" })}>Sign In</button>
           </div>
         ),
         CHECKING_AUTHENTICATION: () => (
-          <div className="center-wrapper">
+          <div>
             <div className="lds-dual-ring"></div>
           </div>
         ),

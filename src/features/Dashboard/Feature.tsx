@@ -6,7 +6,7 @@ import {
   useEnterEffect,
   useEvents,
 } from "react-states";
-import { ExcalidrawsByUser, StorageEvent } from "../../environment/storage";
+import { ExcalidrawPreviews, StorageEvent } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
 import { useHistory } from "react-router";
@@ -18,11 +18,11 @@ export type Context =
     }
   | {
       state: "PREVIEWS_LOADED";
-      excalidraws: ExcalidrawsByUser;
+      excalidraws: ExcalidrawPreviews;
     }
   | {
       state: "CREATING_EXCALIDRAW";
-      excalidraws: ExcalidrawsByUser;
+      excalidraws: ExcalidrawPreviews;
     }
   | {
       state: "EXCALIDRAW_CREATED";
@@ -34,7 +34,7 @@ export type Context =
     }
   | {
       state: "CREATE_EXCALIDRAW_ERROR";
-      excalidraws: ExcalidrawsByUser;
+      excalidraws: ExcalidrawPreviews;
       error: string;
     };
 
@@ -46,9 +46,9 @@ export type Event = UIEvent | StorageEvent;
 
 const reducer = createReducer<Context, Event>({
   LOADING_PREVIEWS: {
-    "STORAGE:FETCH_PREVIEWS_SUCCESS": ({ excalidrawsByUser }) => ({
+    "STORAGE:FETCH_PREVIEWS_SUCCESS": ({ excalidraws }) => ({
       state: "PREVIEWS_LOADED",
-      excalidraws: excalidrawsByUser,
+      excalidraws,
     }),
     "STORAGE:FETCH_PREVIEWS_ERROR": ({ error }) => ({
       state: "PREVIEWS_ERROR",
@@ -75,7 +75,7 @@ const reducer = createReducer<Context, Event>({
   PREVIEWS_ERROR: {
     CREATE_EXCALIDRAW: () => ({
       state: "CREATING_EXCALIDRAW",
-      excalidraws: {},
+      excalidraws: [],
     }),
   },
   CREATE_EXCALIDRAW_ERROR: {

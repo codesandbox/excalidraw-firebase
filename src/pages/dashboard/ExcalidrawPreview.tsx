@@ -2,39 +2,10 @@ import * as React from "react";
 import { match, createReducer, useEnterEffect, useEvents } from "react-states";
 import { ExcalidrawMetadata, StorageEvent } from "../../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { styled } from "../../stitches.config";
+
 import { Link } from "react-router-dom";
 import { useEnvironment } from "../../environment";
-
-const Wrapper = styled("li", {
-  position: "relative",
-  borderRadius: "3px",
-  border: "1px solid #eaeaea",
-  display: "flex",
-  margin: "1rem 1rem 0 0",
-  padding: "1rem",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "200px",
-  fontSize: "11px",
-  height: "200px",
-  backgroundSize: "contain",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "center",
-  boxSizing: "border-box",
-  cursor: "pointer",
-  "&:hover": {
-    backgroundColor: "#fafafa ",
-  },
-});
-
-const WrapperLink = styled(Link, {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-});
+import { User } from "../../environment/authentication";
 
 type ExcalidrawPreviewContext =
   | {
@@ -79,10 +50,10 @@ const excalidrawPreviewReducer = createReducer<
 });
 
 export const ExcalidrawPreview = ({
-  userId,
+  user,
   metadata,
 }: {
-  userId: string;
+  user: User;
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
@@ -94,33 +65,43 @@ export const ExcalidrawPreview = ({
   useEvents(storage.events, send);
 
   useEnterEffect(preview, "LOADING_PREVIEW", () => {
-    storage.getImageSrc(userId, metadata.id);
+    storage.getImageSrc(user.uid, metadata.id);
   });
 
   const renderPreview = (background: string) => (
-    <Wrapper style={{ background, cursor: "pointer" }}>
-      <WrapperLink to={`/${userId}/${metadata.id}`} />
-      <span
-        style={{
-          backgroundColor: "#333",
-          color: "#EAEAEA",
-          padding: "0.25rem 0.5rem",
-          borderRadius: "3px",
-        }}
-      >
-        {formatDistanceToNow(metadata.last_updated)} ago
-      </span>
-    </Wrapper>
+    <div className="w-full h-full" style={{ background }}></div>
   );
 
-  return match(preview, {
-    LOADING_PREVIEW: () => (
-      <Wrapper>
-        <div className="lds-dual-ring"></div>
-      </Wrapper>
-    ),
-    PREVIEW_LOADED: ({ src }) =>
-      renderPreview(`center / contain no-repeat url(${src})`),
-    LOADING_ERROR: () => renderPreview("#FFF"),
-  });
+  return (
+    <Link to={`/${user.uid}/${metadata.id}`}>
+      <div className="relative rounded-lg group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-cyan-500">
+        <div className="mb-2">
+          <h3 className="text-lg font-medium">
+            <span className="absolute inset-0" aria-hidden="true" />
+            {metadata.title || "No Title"}
+          </h3>
+        </div>
+        <div className="relative h-32">
+          {match(preview, {
+            LOADING_PREVIEW: () => <div className="lds-dual-ring"></div>,
+            PREVIEW_LOADED: ({ src }) =>
+              renderPreview(`center / contain no-repeat url(${src})`),
+            LOADING_ERROR: () => renderPreview("#FFF"),
+          })}
+        </div>
+        <div className="absolute bottom-6 left-6 right-6 z-10 flex justify-between items-center">
+          {user.avatarUrl ? (
+            <img
+              className="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"
+              src={user.avatarUrl}
+              alt=""
+            />
+          ) : null}
+          <span className="ml-auto bg-gray-200 text-gray-500 px-2 py-1 rounded-md z-10 h-8 flex items-center text-sm">
+            {formatDistanceToNow(metadata.last_updated)} ago
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
 };

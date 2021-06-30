@@ -2,12 +2,14 @@ import firebase from "firebase/app";
 import {
   ExcalidrawData,
   ExcalidrawMetadata,
-  ExcalidrawsByUser,
+  ExcalidrawPreview,
+  ExcalidrawPreviews,
   Storage,
 } from ".";
 import { events } from "react-states";
 import { exportToCanvas } from "./excalidraw-src/scene/export";
 import { getChangedData } from "../../utils";
+import { subMonths } from "date-fns";
 
 export const canvasToBlob = async (
   canvas: HTMLCanvasElement
@@ -273,42 +275,56 @@ export const createStorage = (): Storage => {
                 .collection(USERS_COLLECTION)
                 .doc(userDoc.id)
                 .collection(EXCALIDRAWS_COLLECTION)
+                .where("last_updated", ">", subMonths(new Date(), 2))
                 .orderBy("last_updated", "desc")
                 .get()
-                .then((collection) => {
-                  return {
-                    id: userDoc.id,
-                    name: userDoc.data().name,
-                    avatarUrl: userDoc.data().avatarUrl,
-                    excalidraws: collection.docs.map(
-                      (doc) =>
-                        ({
-                          id: doc.id,
-                          author: userDoc.id,
-                          last_updated: doc.data().last_updated.toDate(),
-                        } as ExcalidrawMetadata)
-                    ),
-                  };
+                .then((collection): ExcalidrawPreview[] => {
+                  return collection.docs.map((doc) => {
+                    const data = doc.data();
+
+                    return {
+                      user: {
+                        uid: userDoc.id,
+                        name: userDoc.data().name,
+                        avatarUrl: userDoc.data().avatarUrl,
+                      },
+                      metadata: {
+                        id: doc.id,
+                        title: data.title,
+                        last_updated: data.last_updated.toDate(),
+                        author: userDoc.id,
+                      },
+                    };
+                  });
                 })
             )
           )
         )
-        .then((users) => {
-          const excalidrawsByUser = users.reduce<ExcalidrawsByUser>(
-            (aggr, user) => {
-              aggr[user.id] = {
-                name: user.name,
-                avatarUrl: user.avatarUrl,
-                excalidraws: user.excalidraws,
-              };
+        .then((excalidraws) => {
+          const flattenedAndSortedExcalidraws = excalidraws
+            .reduce<ExcalidrawPreview[]>(
+              (aggr, userExcalidraws) => aggr.concat(userExcalidraws),
+              []
+            )
+            .sort((a, b) => {
+              if (
+                a.metadata.last_updated.getTime() >
+                b.metadata.last_updated.getTime()
+              ) {
+                return -1;
+              } else if (
+                a.metadata.last_updated.getTime() <
+                b.metadata.last_updated.getTime()
+              ) {
+                return 1;
+              }
 
-              return aggr;
-            },
-            {}
-          );
+              return 0;
+            });
+
           this.events.emit({
             type: "STORAGE:FETCH_PREVIEWS_SUCCESS",
-            excalidrawsByUser,
+            excalidraws: flattenedAndSortedExcalidraws,
           });
         })
         .catch((error: Error) => {

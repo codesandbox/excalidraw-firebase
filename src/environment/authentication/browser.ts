@@ -1,8 +1,10 @@
-import { events, result } from "react-states";
+import { events } from "react-states";
 import firebase from "firebase/app";
 import { Authentication, AuthenticationEvent, User } from ".";
 
 const USERS_COLLECTION = "users";
+const CONFIG_COLLECTION = "config";
+const API_KEYS_DOCUMENT = "apiKeys";
 
 const getUser = (firebaseUser: firebase.User): User => ({
   uid: firebaseUser.uid,
@@ -33,10 +35,19 @@ export const createAuthentication = (): Authentication => {
     if (firebaseUser) {
       const user = getUser(firebaseUser);
       updateUserData(user);
-      authEvents.emit({
-        type: "AUTHENTICATION:AUTHENTICATED",
-        user,
-      });
+      firebase
+        .firestore()
+        .collection(CONFIG_COLLECTION)
+        .doc(API_KEYS_DOCUMENT)
+        .get()
+        .then((doc) => {
+          const data = doc.data();
+          authEvents.emit({
+            type: "AUTHENTICATION:AUTHENTICATED",
+            user,
+            loomApiKey: data?.loom ?? null,
+          });
+        });
     } else {
       authEvents.emit({
         type: "AUTHENTICATION:UNAUTHENTICATED",
