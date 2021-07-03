@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import ExcalidrawComponent, { getSceneVersion } from "@excalidraw/excalidraw";
+import { getSceneVersion } from "@excalidraw/excalidraw";
 import {
-  ExcalidrawContext,
   ExcalidrawData,
   ExcalidrawElement,
 } from "../../features/Excalidraw";
@@ -32,38 +31,22 @@ export const ExcalidrawCanvas = React.memo(
     readOnly,
   }: {
     data: ExcalidrawData;
-    onChange: (elements: ExcalidrawElement[], appState: any) => void;
+    onChange: (elements: readonly ExcalidrawElement[], appState: any) => void;
     onInitialized: () => void;
     readOnly: boolean;
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
     });
-    const excalidrawWrapperRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState<{
-      width: number | undefined;
-      height: number | undefined;
-    }>({
-      width: undefined,
-      height: undefined,
-    });
-
+    const [Comp, setComp] = useState(null);
+    
     useEffect(() => {
-      setDimensions({
-        width: excalidrawWrapperRef.current?.getBoundingClientRect().width,
-        height: excalidrawWrapperRef.current?.getBoundingClientRect().height,
+      import("@excalidraw/excalidraw").then((comp) => {
+        setComp(comp.default.default)
       });
-      const onResize = () => {
-        setDimensions({
-          width: excalidrawWrapperRef.current?.getBoundingClientRect().width,
-          height: excalidrawWrapperRef.current?.getBoundingClientRect().height,
-        });
-      };
-
-      window.addEventListener("resize", onResize);
-
-      return () => window.removeEventListener("resize", onResize);
-    }, [excalidrawWrapperRef]);
+    }, [Comp]);
+    
+    const excalidrawWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       excalidrawRef.current.readyPromise.then(onInitialized);
@@ -88,14 +71,12 @@ export const ExcalidrawCanvas = React.memo(
 
     return (
       <div className="h-screen m-0" ref={excalidrawWrapperRef}>
-        <ExcalidrawComponent
+        {Comp ? <Comp
           ref={excalidrawRef}
-          width={dimensions.width}
-          height={dimensions.height}
           initialData={data}
           onChange={onChange}
           viewModeEnabled={readOnly}
-        />
+        /> : null}
       </div>
     );
   }

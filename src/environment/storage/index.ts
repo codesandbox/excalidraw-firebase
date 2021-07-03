@@ -1,4 +1,6 @@
+
 import { Events } from "react-states";
+
 
 export type StorageError = {
   type: "ERROR";
@@ -8,7 +10,7 @@ export type StorageError = {
 export type ExcalidrawElement = {
   id: string;
   version: number;
-};
+} & any
 
 export type ExcalidrawMetadata = {
   id: string;
@@ -17,8 +19,9 @@ export type ExcalidrawMetadata = {
   title: string;
 };
 
+
 export type ExcalidrawData = {
-  elements: ExcalidrawElement[];
+  elements: readonly ExcalidrawElement[];
   appState: { viewBackgroundColor: string };
   version: number;
 };
