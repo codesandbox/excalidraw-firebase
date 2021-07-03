@@ -61,6 +61,17 @@ export const reducer = createReducer<Context, Event, TransientContext>(
         image: context.image,
       }),
       "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
+      "STORAGE:SAVE_TITLE_SUCCESS": ({ title }, context) => ({
+        ...context,
+        metadata: {
+          ...context.metadata,
+          title,
+        },
+      }),
+      SAVE_TITLE: ({ title }) => ({
+        state: "SAVING_TITLE",
+        title,
+      }),
     },
     DIRTY: {
       SYNC: (_, context) => ({
@@ -127,5 +138,6 @@ export const reducer = createReducer<Context, Event, TransientContext>(
         state: "COPIED",
       },
     }),
+    SAVING_TITLE: (_, prevContext) => prevContext,
   }
 );

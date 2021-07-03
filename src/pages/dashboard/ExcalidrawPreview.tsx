@@ -85,13 +85,8 @@ export const ExcalidrawPreview = ({
           ) : null}
           <h3 className="text-lg font-medium">
             <span className="absolute inset-0" aria-hidden="true" />
-            {metadata.title || "No Title"}
+            {metadata.title || ""}
           </h3>
-          <div className="ml-auto flex justify-between items-center">
-            <span className="ml-auto bg-gray-200 text-gray-500 px-2 py-1 rounded-md z-10 h-8 flex items-center text-sm shadow-sm">
-              {formatDistanceToNow(metadata.last_updated)} ago
-            </span>
-          </div>
         </div>
         <div className="relative h-32">
           {match(preview, {
@@ -100,6 +95,11 @@ export const ExcalidrawPreview = ({
               renderPreview(`center / contain no-repeat url(${src})`),
             LOADING_ERROR: () => renderPreview("#FFF"),
           })}
+        </div>
+        <div className="absolute bottom-6 right-6 flex justify-between items-center">
+          <span className="ml-auto bg-gray-200 text-gray-500 px-2 py-1 rounded-md z-10 h-8 flex items-center text-sm shadow-sm">
+            {formatDistanceToNow(metadata.last_updated)} ago
+          </span>
         </div>
       </div>
     </Link>

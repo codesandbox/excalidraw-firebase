@@ -57,7 +57,7 @@ describe("Dashboard", () => {
     act(() => {
       storage.events.emit({
         type: "STORAGE:FETCH_PREVIEWS_SUCCESS",
-        excalidrawsByUser: {
+        excalidraws: {
           "123": mockedPreviews,
         },
       });

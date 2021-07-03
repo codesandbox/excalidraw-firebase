@@ -50,10 +50,15 @@ export type Context =
           }
       ));
 
-export type TransientContext = {
-  state: "COPYING_TO_CLIPBOARD";
-  image: Blob;
-};
+export type TransientContext =
+  | {
+      state: "COPYING_TO_CLIPBOARD";
+      image: Blob;
+    }
+  | {
+      state: "SAVING_TITLE";
+      title: string;
+    };
 
 export type UIEvent =
   | {
@@ -65,6 +70,10 @@ export type UIEvent =
   | {
       type: "EXCALIDRAW_CHANGE";
       data: ExcalidrawData;
+    }
+  | {
+      type: "SAVE_TITLE";
+      title: string;
     };
 
 export type FeatureEvent = {

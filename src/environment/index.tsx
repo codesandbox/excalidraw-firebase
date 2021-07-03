@@ -2,11 +2,13 @@ import React, { createContext, useContext } from "react";
 import { Authentication } from "./authentication";
 import { CopyImageToClipboard } from "./copyImageToClipboard";
 import { Storage } from "./storage";
+import { Loom } from "./loom";
 
 export interface Environment {
   storage: Storage;
   authentication: Authentication;
   copyImageToClipboard: CopyImageToClipboard;
+  loom: Loom;
 }
 
 const environmentContext = createContext({} as Environment);

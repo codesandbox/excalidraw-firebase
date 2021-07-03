@@ -9,7 +9,7 @@ export const Pages = () => {
   const [auth, send] = useAuth();
 
   return (
-    <div className="p-6 bg-gray-100">
+    <div className="bg-gray-100">
       {match(auth, {
         UNAUTHENTICATED: () => (
           <div>

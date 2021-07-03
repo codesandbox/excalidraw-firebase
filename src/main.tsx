@@ -15,6 +15,7 @@ import { Environment } from "./environment";
 import { createStorage } from "./environment/storage/browser";
 import { createAuthentication } from "./environment/authentication/browser";
 import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
+import { createLoom } from "./environment/loom/browser";
 
 firebase.initializeApp(config);
 
@@ -29,6 +30,7 @@ const app = (
       authentication: createAuthentication(),
       storage: createStorage(),
       copyImageToClipboard: createCopyImageToClipboard(),
+      loom: createLoom(),
     }}
   >
     <AuthFeature>

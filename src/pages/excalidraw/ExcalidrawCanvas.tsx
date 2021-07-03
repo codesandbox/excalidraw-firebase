@@ -6,7 +6,6 @@ import {
   ExcalidrawElement,
 } from "../../features/Excalidraw";
 import { getChangedData } from "../../utils";
-import { match } from "react-states";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;
@@ -30,10 +29,12 @@ export const ExcalidrawCanvas = React.memo(
     data,
     onChange,
     onInitialized,
+    readOnly,
   }: {
     data: ExcalidrawData;
     onChange: (elements: ExcalidrawElement[], appState: any) => void;
     onInitialized: () => void;
+    readOnly: boolean;
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
@@ -86,13 +87,14 @@ export const ExcalidrawCanvas = React.memo(
     }, [data]);
 
     return (
-      <div className="excalidraw-wrapper" ref={excalidrawWrapperRef}>
+      <div className="h-screen m-0" ref={excalidrawWrapperRef}>
         <ExcalidrawComponent
           ref={excalidrawRef}
           width={dimensions.width}
           height={dimensions.height}
           initialData={data}
           onChange={onChange}
+          viewModeEnabled={readOnly}
         />
       </div>
     );

@@ -6,4 +6,6 @@ export {
 export type {
   Context as ExcalidrawContext,
   Event as ExcalidrawEvent,
+  ExcalidrawElement,
+  ExcalidrawData,
 } from "./types";

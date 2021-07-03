@@ -24,6 +24,10 @@ export const useStorageEffects = (
     storage.saveExcalidraw(userId, id, data);
   });
 
+  useEnterEffect(context, "SAVING_TITLE", ({ title }) => {
+    storage.saveTitle(userId, id, title);
+  });
+
   useEnterEffect(context, "DIRTY", () => {
     const id = setTimeout(() => {
       send({

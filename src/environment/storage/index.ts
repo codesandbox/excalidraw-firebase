@@ -84,6 +84,17 @@ export type StorageEvent =
       type: "STORAGE:IMAGE_SRC_ERROR";
       id: string;
       error: string;
+    }
+  | {
+      type: "STORAGE:SAVE_TITLE_SUCCESS";
+      id: string;
+      title: string;
+    }
+  | {
+      type: "STORAGE:SAVE_TITLE_ERROR";
+      id: string;
+      title: string;
+      error: string;
     };
 
 export interface Storage {
@@ -93,4 +104,5 @@ export interface Storage {
   fetchPreviews(): void;
   saveExcalidraw(userId: string, id: string, data: ExcalidrawData): void;
   getImageSrc(userId: string, id: string): void;
+  saveTitle(userId: string, id: string, title: string): void;
 }

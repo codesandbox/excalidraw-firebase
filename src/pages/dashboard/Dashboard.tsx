@@ -72,7 +72,7 @@ export const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-6">
       {match(dashboard, {
         CREATING_EXCALIDRAW: () => <div className="lds-dual-ring"></div>,
         PREVIEWS_ERROR: ({ error }) => (

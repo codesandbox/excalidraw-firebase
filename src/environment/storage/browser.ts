@@ -3,46 +3,18 @@ import {
   ExcalidrawData,
   ExcalidrawMetadata,
   ExcalidrawPreview,
-  ExcalidrawPreviews,
   Storage,
 } from ".";
 import { events } from "react-states";
-import { exportToCanvas } from "./excalidraw-src/scene/export";
+import { exportToBlob } from "@excalidraw/excalidraw";
 import { getChangedData } from "../../utils";
 import { subMonths } from "date-fns";
 
-export const canvasToBlob = async (
-  canvas: HTMLCanvasElement
-): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
-    try {
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          return reject(new Error("Unable to create blob"));
-        }
-        resolve(blob);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-export const createExcalidrawImage = (elements: any[], appState: any) => {
-  const canvas = exportToCanvas(
-    elements.filter((element) => !element.isDeleted),
+export const createExcalidrawImage = (elements: any[], appState: any) =>
+  exportToBlob({
+    elements: elements.filter((element) => !element.isDeleted),
     appState,
-    {
-      exportBackground: true,
-      shouldAddWatermark: false,
-      viewBackgroundColor: "#FFF",
-      exportPadding: 10,
-      scale: 1,
-    }
-  );
-
-  return canvasToBlob(canvas);
-};
+  });
 
 const EXCALIDRAWS_COLLECTION = "excalidraws";
 const EXCALIDRAWS_DATA_COLLECTION = "excalidrawsData";
@@ -120,11 +92,14 @@ export const createStorage = (): Storage => {
         })
         .then(({ metadata, data }) => {
           return createExcalidrawImage(data.elements, data.appState).then(
-            (image) => ({
-              image,
-              metadata,
-              data,
-            })
+            (image) =>
+              image
+                ? {
+                    image,
+                    metadata,
+                    data,
+                  }
+                : Promise.reject("No image")
           );
         })
         .then(({ data, image, metadata }) => {
@@ -236,10 +211,13 @@ export const createStorage = (): Storage => {
               const metadata = doc.data()!;
 
               return createExcalidrawImage(data.elements, data.appState).then(
-                (image) => ({
-                  metadata,
-                  image,
-                })
+                (image) =>
+                  image
+                    ? {
+                        metadata,
+                        image,
+                      }
+                    : Promise.reject("No image")
               );
             })
         )
@@ -351,6 +329,37 @@ export const createStorage = (): Storage => {
           this.events.emit({
             type: "STORAGE:IMAGE_SRC_ERROR",
             id,
+            error: error.message,
+          });
+        });
+    },
+    saveTitle(userId, id, title) {
+      this.events.emit({
+        type: "STORAGE:SAVE_TITLE_SUCCESS",
+        id,
+        title,
+      });
+
+      firebase
+        .firestore()
+        .collection(USERS_COLLECTION)
+        .doc(userId)
+        .collection(EXCALIDRAWS_COLLECTION)
+        .doc(id)
+        .set(
+          {
+            last_updated: firebase.firestore.FieldValue.serverTimestamp(),
+            title,
+          },
+          {
+            merge: true,
+          }
+        )
+        .catch((error) => {
+          this.events.emit({
+            type: "STORAGE:SAVE_TITLE_ERROR",
+            id,
+            title,
             error: error.message,
           });
         });

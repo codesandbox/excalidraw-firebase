@@ -1,23 +1,28 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickContext, match } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboard } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faClipboard,
+  faEdit,
+  faVideo,
+} from "@fortawesome/free-solid-svg-icons";
 import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
-import { isSupported, setup } from "@loomhq/loom-sdk";
-import { useAuth } from "../../features/Auth";
 
-type RenderExcalidrawContext = PickContext<
+import { useRecording } from "../../features/Recording";
+
+type EditExcalidrawContext = PickContext<
   ExcalidrawContext,
   "LOADED" | "EDIT" | "SYNCING" | "DIRTY" | "SYNCING_DIRTY"
 >;
 
-export const Excalidraw = () => {
-  const [auth] = useAuth("AUTHENTICATED");
-  const [excalidraw, send] = useExcalidraw();
-  const buttonRef = useRef<HTMLButtonElement>(null);
+const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
+  const [_, send] = useExcalidraw();
+  const [recording, sendRecording] = useRecording();
+  const [title, setTitle] = useState(context.metadata.title || "");
 
   const onChange = useMemo(
     () =>
@@ -34,98 +39,124 @@ export const Excalidraw = () => {
     []
   );
 
-  useEffect(() => {
-    if (auth.loomApiKey) {
-      let dispose = () => {};
-      setup({
-        apiKey: auth.loomApiKey,
-      }).then(({ configureButton, teardown }) => {
-        dispose = teardown;
+  const copyToClipboard = () => {
+    send({ type: "COPY_TO_CLIPBOARD" });
+  };
 
-        configureButton({
-          element: buttonRef.current!,
-          hooks: {
-            onInsertClicked: (shareLink) => {
-              console.log("clicked insert");
-              console.log(shareLink);
-            },
-            onStart: () => console.log("start"),
-            onCancel: () => console.log("cancelled"),
-            onComplete: () => console.log("complete"),
-          },
-        });
-      });
+  const variants = {
+    default: () => ({
+      className:
+        "text-gray-500 bg-gray-50 hover:bg-gray-100 focus:ring-gray-50",
+      content: <FontAwesomeIcon icon={faClipboard} size="lg" />,
+      onClick: copyToClipboard,
+    }),
+    active: () => ({
+      className:
+        "text-green-500 bg-green-50 hover:bg-green-100 focus:ring-green-50",
+      content: <FontAwesomeIcon icon={faClipboard} size="lg" />,
+      onClick: undefined,
+    }),
+    loading: () => ({
+      className:
+        "opacity-50 text-gray-500 bg-gray-50 hover:bg-gray-100 focus:ring-gray-50",
+      content: <div className="lds-dual-ring"></div>,
+      onClick: undefined,
+    }),
+  };
 
-      return dispose;
-    }
-  }, []);
-
-  const renderExcalidraw = (context: RenderExcalidrawContext) => {
-    const copyToClipboard = () => {
-      send({ type: "COPY_TO_CLIPBOARD" });
-    };
-    const variants = {
-      default: () => ({
-        style: undefined,
-        content: <FontAwesomeIcon icon={faClipboard} />,
-        onClick: copyToClipboard,
+  const variant = match(context, {
+    DIRTY: variants.loading,
+    LOADED: variants.loading,
+    SYNCING: variants.loading,
+    SYNCING_DIRTY: variants.loading,
+    EDIT: () =>
+      match(context.clipboard, {
+        COPIED: variants.active,
+        NOT_COPIED: variants.default,
       }),
-      active: () => ({
-        style: {
-          backgroundColor: "yellowgreen",
-          color: "darkgreen",
-        },
-        content: <FontAwesomeIcon icon={faClipboard} />,
-        onClick: undefined,
-      }),
-      loading: () => ({
-        style: {
-          opacity: 0.5,
-        },
-        content: <div className="lds-dual-ring"></div>,
-        onClick: undefined,
-      }),
-    };
+  });
 
-    const variant = match(context, {
-      DIRTY: variants.loading,
-      LOADED: variants.loading,
-      SYNCING: variants.loading,
-      SYNCING_DIRTY: variants.loading,
-      EDIT: () =>
-        match(context.clipboard, {
-          COPIED: variants.active,
-          NOT_COPIED: variants.default,
-        }),
-    });
+  const isRecordingDisabled = match(recording, {
+    DISABLED: () => true,
+    RECORDING: () => true,
+    NOT_CONFIGURED: () => false,
+    READY: () => false,
+  });
 
-    return (
-      <div>
-        <ExcalidrawCanvas
-          data={context.data}
-          onChange={onChange}
-          onInitialized={() => {
-            send({ type: "INITIALIZE_CANVAS_SUCCESS" });
-          }}
-        />
-        <div className="edit" style={variant.style} onClick={variant.onClick}>
-          {variant.content}
+  return (
+    <div>
+      <ExcalidrawCanvas
+        data={context.data}
+        onChange={onChange}
+        readOnly={match(recording, {
+          RECORDING: () => true,
+          DISABLED: () => false,
+          NOT_CONFIGURED: () => false,
+          READY: () => false,
+        })}
+        onInitialized={() => {
+          send({ type: "INITIALIZE_CANVAS_SUCCESS" });
+        }}
+      />
+      <div className="fixed z-50 right-16 top-2 flex items-center">
+        <div className="relative rounded-md shadow-sm mr-3 w-64">
+          <input
+            autoComplete="off"
+            autoCorrect="off"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+            }}
+            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-3 sm:text-sm border-gray-300 rounded-md h-10"
+            placeholder="Title..."
+          />
+          {!title || title === context.metadata.title ? null : (
+            <div
+              className="absolute z-50 inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+              onClick={() => {
+                send({
+                  type: "SAVE_TITLE",
+                  title,
+                });
+              }}
+            >
+              <FontAwesomeIcon icon={faCheck} size="sm" />
+            </div>
+          )}
         </div>
         <button
-          ref={buttonRef}
-          style={{
-            position: "absolute",
-            zIndex: 9999999,
-            right: "8rem",
-            top: "1rem",
+          id="loom-record"
+          disabled={isRecordingDisabled}
+          onClick={() => {
+            sendRecording({
+              type: "RECORD",
+            });
           }}
-          onClick={() => {}}
+          className={`${
+            isRecordingDisabled
+              ? "text-gray-500 bg-gray-200 hover:bg-red-100 focus:ring-red-100"
+              : "text-white bg-red-500 hover:bg-red-400 focus:ring-red-400"
+          } mr-3  ginline-flex items-center justify-center w-12 h-10 p-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
         >
-          Test Loom
+          <FontAwesomeIcon icon={faVideo} size="lg" />
+        </button>
+        <button
+          onClick={variant.onClick}
+          className={`${variant.className} relative inline-flex items-center justify-center w-12 h-10 p-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
+        >
+          {variant.content}
         </button>
       </div>
-    );
-  };
+    </div>
+  );
+};
+
+export const Excalidraw = () => {
+  const [excalidraw] = useExcalidraw();
+
+  const renderExcalidraw = (context: EditExcalidrawContext) => (
+    <EditExcalidraw context={context} />
+  );
 
   return match(excalidraw, {
     LOADING: () => (
