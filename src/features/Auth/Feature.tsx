@@ -1,17 +1,17 @@
-import React, { useReducer } from "react";
+import React, { createContext, useReducer } from "react";
 import {
-  useEnterEffect,
-  useEvents,
-  createContext,
-  createHook,
   createReducer,
+  States,
+  StatesTransition,
+  useStateEffect,
+  useSubsription,
 } from "react-states";
 
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
-import { AuthenticationEvent, User } from "../../environment/authentication";
+import { AuthenticationAction, User } from "../../environment/authentication";
 
-export type Context =
+export type State =
   | {
       state: "CHECKING_AUTHENTICATION";
     }
@@ -31,37 +31,41 @@ export type Context =
       error: string;
     };
 
-export type UIEvent = {
+export type PublicAction = {
   type: "SIGN_IN";
 };
 
-export type Event = UIEvent | AuthenticationEvent;
+export type PublicFeature = States<State, PublicAction>;
 
-const featureContext = createContext<Context, UIEvent>();
+export type Feature = States<State, PublicAction | AuthenticationAction>;
 
-export const useFeature = createHook(featureContext);
+export type Transition = StatesTransition<Feature>;
 
-const reducer = createReducer<Context, Event>({
+const featureContext = createContext({} as Feature);
+
+export const useFeature = () => React.useContext(featureContext);
+
+const reducer = createReducer<Feature>({
   CHECKING_AUTHENTICATION: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user, loomApiKey }) => ({
+    "AUTHENTICATION:AUTHENTICATED": (_, { user, loomApiKey }): Transition => ({
       state: "AUTHENTICATED",
       user,
       loomApiKey,
     }),
-    "AUTHENTICATION:UNAUTHENTICATED": () => ({
+    "AUTHENTICATION:UNAUTHENTICATED": (): Transition => ({
       state: "UNAUTHENTICATED",
     }),
   },
   UNAUTHENTICATED: {
-    SIGN_IN: () => ({ state: "SIGNING_IN" }),
+    SIGN_IN: (): Transition => ({ state: "SIGNING_IN" }),
   },
   SIGNING_IN: {
-    "AUTHENTICATION:AUTHENTICATED": ({ user, loomApiKey }) => ({
+    "AUTHENTICATION:AUTHENTICATED": (_, { user, loomApiKey }): Transition => ({
       state: "AUTHENTICATED",
       user,
       loomApiKey,
     }),
-    "AUTHENTICATION:SIGN_IN_ERROR": ({ error }) => ({
+    "AUTHENTICATION:SIGN_IN_ERROR": (_, { error }): Transition => ({
       state: "ERROR",
       error,
     }),
@@ -72,25 +76,25 @@ const reducer = createReducer<Context, Event>({
 
 export const FeatureProvider = ({
   children,
-  initialContext = {
+  initialState = {
     state: "CHECKING_AUTHENTICATION",
   },
 }: {
   children: React.ReactNode;
-  initialContext?: Context;
+  initialState?: State;
 }) => {
   const { authentication } = useEnvironment();
-  const feature = useReducer(reducer, initialContext);
+  const feature = useReducer(reducer, initialState);
 
   if (process.env.NODE_ENV === "development") {
     useDevtools("auth", feature);
   }
 
-  const [context, send] = feature;
+  const [state, dispatch] = feature;
 
-  useEvents(authentication.events, send);
+  useSubsription(authentication.subscription, dispatch);
 
-  useEnterEffect(context, "SIGNING_IN", () => authentication.signIn());
+  useStateEffect(state, "SIGNING_IN", () => authentication.signIn());
 
   return (
     <featureContext.Provider value={feature}>

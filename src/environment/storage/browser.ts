@@ -5,12 +5,15 @@ import {
   ExcalidrawPreview,
   Storage,
 } from ".";
-import { events } from "react-states";
+import { createSubscription } from "react-states";
 import { exportToBlob } from "@excalidraw/excalidraw";
 import { getChangedData } from "../../utils";
 import { subMonths } from "date-fns";
 
-export const createExcalidrawImage = (elements: any[], appState: any) =>
+export const createExcalidrawImage = (
+  elements: readonly any[],
+  appState: any
+) =>
   exportToBlob({
     elements: elements.filter((element) => !element.isDeleted),
     appState,
@@ -24,8 +27,62 @@ export const createStorage = (): Storage => {
   const excalidrawSnapshotSubscriptions: {
     [id: string]: () => void;
   } = {};
+
+  function getUserExcalidraws(
+    {
+      id,
+      name,
+      avatarUrl,
+    }: {
+      id: string;
+      name: string;
+      avatarUrl: string;
+    },
+    since: Date
+  ) {
+    return firebase
+      .firestore()
+      .collection(USERS_COLLECTION)
+      .doc(id)
+      .collection(EXCALIDRAWS_COLLECTION)
+      .where("last_updated", ">", since)
+      .orderBy("last_updated", "desc")
+      .get()
+      .then((collection): ExcalidrawPreview[] => {
+        return collection.docs.map((doc) => {
+          const data = doc.data();
+
+          return {
+            user: {
+              uid: id,
+              name,
+              avatarUrl,
+            },
+            metadata: {
+              id: doc.id,
+              title: data.title,
+              last_updated: data.last_updated.toDate(),
+              author: id,
+            },
+          };
+        });
+      });
+  }
+
+  function sortExcalidrawPreviews(a: ExcalidrawPreview, b: ExcalidrawPreview) {
+    if (a.metadata.last_updated.getTime() > b.metadata.last_updated.getTime()) {
+      return -1;
+    } else if (
+      a.metadata.last_updated.getTime() < b.metadata.last_updated.getTime()
+    ) {
+      return 1;
+    }
+
+    return 0;
+  }
+
   return {
-    events: events(),
+    subscription: createSubscription(),
     createExcalidraw(userId) {
       firebase
         .firestore()
@@ -36,13 +93,13 @@ export const createStorage = (): Storage => {
           last_updated: firebase.firestore.FieldValue.serverTimestamp(),
         })
         .then((ref) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS",
             id: ref.id,
           });
         })
         .catch((error: Error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:CREATE_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -103,7 +160,7 @@ export const createStorage = (): Storage => {
           );
         })
         .then(({ data, image, metadata }) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS",
             metadata,
             data,
@@ -126,7 +183,7 @@ export const createStorage = (): Storage => {
                   return;
                 }
 
-                this.events.emit({
+                this.subscription.emit({
                   type: "STORAGE:EXCALIDRAW_DATA_UPDATE",
                   id,
                   data: {
@@ -139,7 +196,7 @@ export const createStorage = (): Storage => {
           }
         })
         .catch((error: Error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:FETCH_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -222,7 +279,7 @@ export const createStorage = (): Storage => {
             })
         )
         .then(({ metadata, image }) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS",
             metadata: {
               ...(metadata as ExcalidrawMetadata),
@@ -234,7 +291,7 @@ export const createStorage = (): Storage => {
           firebase.storage().ref().child(`previews/${userId}/${id}`).put(image);
         })
         .catch((error: Error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:SAVE_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -248,33 +305,14 @@ export const createStorage = (): Storage => {
         .then((collection) =>
           Promise.all(
             collection.docs.map((userDoc) =>
-              firebase
-                .firestore()
-                .collection(USERS_COLLECTION)
-                .doc(userDoc.id)
-                .collection(EXCALIDRAWS_COLLECTION)
-                .where("last_updated", ">", subMonths(new Date(), 2))
-                .orderBy("last_updated", "desc")
-                .get()
-                .then((collection): ExcalidrawPreview[] => {
-                  return collection.docs.map((doc) => {
-                    const data = doc.data();
-
-                    return {
-                      user: {
-                        uid: userDoc.id,
-                        name: userDoc.data().name,
-                        avatarUrl: userDoc.data().avatarUrl,
-                      },
-                      metadata: {
-                        id: doc.id,
-                        title: data.title,
-                        last_updated: data.last_updated.toDate(),
-                        author: userDoc.id,
-                      },
-                    };
-                  });
-                })
+              getUserExcalidraws(
+                {
+                  id: userDoc.id,
+                  avatarUrl: userDoc.data().avatarUrl,
+                  name: userDoc.data().name,
+                },
+                subMonths(new Date(), 2)
+              )
             )
           )
         )
@@ -284,30 +322,53 @@ export const createStorage = (): Storage => {
               (aggr, userExcalidraws) => aggr.concat(userExcalidraws),
               []
             )
-            .sort((a, b) => {
-              if (
-                a.metadata.last_updated.getTime() >
-                b.metadata.last_updated.getTime()
-              ) {
-                return -1;
-              } else if (
-                a.metadata.last_updated.getTime() <
-                b.metadata.last_updated.getTime()
-              ) {
-                return 1;
-              }
+            .sort(sortExcalidrawPreviews);
 
-              return 0;
-            });
-
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:FETCH_PREVIEWS_SUCCESS",
             excalidraws: flattenedAndSortedExcalidraws,
           });
         })
         .catch((error: Error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:FETCH_PREVIEWS_ERROR",
+            error: error.message,
+          });
+        });
+    },
+    fetchUserPreviews(uid) {
+      firebase
+        .firestore()
+        .collection(USERS_COLLECTION)
+        .doc(uid)
+        .get()
+        .then((userDoc) => {
+          const data = userDoc.data();
+
+          if (data) {
+            return getUserExcalidraws(
+              {
+                id: uid,
+                avatarUrl: data.avatarUrl,
+                name: data.name,
+              },
+              subMonths(new Date(), 6)
+            );
+          }
+
+          throw new Error("Invalid user");
+        })
+        .then((excalidraws) => {
+          const sortedExcalidraws = excalidraws.sort(sortExcalidrawPreviews);
+
+          this.subscription.emit({
+            type: "STORAGE:FETCH_USER_PREVIEWS_SUCCESS",
+            excalidraws: sortedExcalidraws,
+          });
+        })
+        .catch((error: Error) => {
+          this.subscription.emit({
+            type: "STORAGE:FETCH_USER_PREVIEWS_ERROR",
             error: error.message,
           });
         });
@@ -319,14 +380,14 @@ export const createStorage = (): Storage => {
         .child(`previews/${userId}/${id}`)
         .getDownloadURL()
         .then((src) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:IMAGE_SRC_SUCCESS",
             id,
             src,
           });
         })
         .catch((error: Error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:IMAGE_SRC_ERROR",
             id,
             error: error.message,
@@ -334,7 +395,7 @@ export const createStorage = (): Storage => {
         });
     },
     saveTitle(userId, id, title) {
-      this.events.emit({
+      this.subscription.emit({
         type: "STORAGE:SAVE_TITLE_SUCCESS",
         id,
         title,
@@ -356,7 +417,7 @@ export const createStorage = (): Storage => {
           }
         )
         .catch((error) => {
-          this.events.emit({
+          this.subscription.emit({
             type: "STORAGE:SAVE_TITLE_ERROR",
             id,
             title,

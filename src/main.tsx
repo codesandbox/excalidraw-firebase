@@ -10,8 +10,8 @@ import "./index.css";
 
 import config from "./firebase.config.json";
 import { Pages } from "./pages";
-import { AuthFeature } from "./features/Auth";
-import { Environment } from "./environment";
+import { AuthProvider } from "./features/Auth";
+import { EnvironmentProvider } from "./environment";
 import { createStorage } from "./environment/storage/browser";
 import { createAuthentication } from "./environment/authentication/browser";
 import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
@@ -25,7 +25,7 @@ if (typeof (window as any).global === "undefined") {
 }
 
 const app = (
-  <Environment
+  <EnvironmentProvider
     environment={{
       authentication: createAuthentication(),
       storage: createStorage(),
@@ -33,10 +33,10 @@ const app = (
       loom: createLoom(),
     }}
   >
-    <AuthFeature>
+    <AuthProvider>
       <Pages />
-    </AuthFeature>
-  </Environment>
+    </AuthProvider>
+  </EnvironmentProvider>
 );
 
 ReactDOM.render(

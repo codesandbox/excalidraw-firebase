@@ -4,8 +4,8 @@ export {
 } from "./Feature";
 
 export type {
-  Context as ExcalidrawContext,
-  Event as ExcalidrawEvent,
+  PublicFeature as Excalidraw,
+  State as ExcalidrawState,
   ExcalidrawElement,
   ExcalidrawData,
 } from "./types";

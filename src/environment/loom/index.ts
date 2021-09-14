@@ -1,4 +1,4 @@
-import { Events } from "react-states";
+import { Subscription } from "react-states";
 
 export interface LoomVideo {
   id: string;
@@ -14,7 +14,7 @@ export interface LoomVideo {
   providerUrl: string;
 }
 
-export type LoomEvent =
+export type LoomAction =
   | {
       type: "LOOM:CONFIGURED";
     }
@@ -37,7 +37,7 @@ export type LoomEvent =
     };
 
 export interface Loom {
-  events: Events<LoomEvent>;
+  subscription: Subscription<LoomAction>;
   configure(apiKey: string, buttonId: string): void;
   openVideo(video: LoomVideo): void;
 }

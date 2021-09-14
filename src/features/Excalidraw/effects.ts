@@ -1,12 +1,12 @@
-import { match, useEnterEffect, useMatchEffect } from "react-states";
+import { useCommandEffect, useStateEffect } from "react-states";
 import { useEnvironment } from "../../environment";
 
-import { Context, Feature, TransientContext } from "./types";
+import { Feature } from "./types";
 
-export const useClipboardEffect = (context: Context | TransientContext) => {
+export const useClipboardEffect = ([state]: Feature) => {
   const { copyImageToClipboard } = useEnvironment();
 
-  useEnterEffect(context, "COPYING_TO_CLIPBOARD", ({ image }) => {
+  useCommandEffect(state, "COPY_TO_CLIPBOARD", ({ image }) => {
     copyImageToClipboard(image);
   });
 };
@@ -14,23 +14,23 @@ export const useClipboardEffect = (context: Context | TransientContext) => {
 export const useStorageEffects = (
   userId: string,
   id: string,
-  [context, send]: Feature
+  [state, dispatch]: Feature
 ) => {
   const { storage } = useEnvironment();
 
-  useEnterEffect(context, "LOADING", () => storage.fetchExcalidraw(userId, id));
+  useStateEffect(state, "LOADING", () => storage.fetchExcalidraw(userId, id));
 
-  useEnterEffect(context, "SYNCING", ({ data }) => {
+  useStateEffect(state, "SYNCING", ({ data }) => {
     storage.saveExcalidraw(userId, id, data);
   });
 
-  useEnterEffect(context, "SAVING_TITLE", ({ title }) => {
+  useCommandEffect(state, "SAVE_TITLE", ({ title }) => {
     storage.saveTitle(userId, id, title);
   });
 
-  useEnterEffect(context, "DIRTY", () => {
+  useStateEffect(state, "DIRTY", () => {
     const id = setTimeout(() => {
-      send({
+      dispatch({
         type: "SYNC",
       });
     }, 500);

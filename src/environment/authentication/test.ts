@@ -1,7 +1,7 @@
-import { events } from "react-states";
+import { createSubscription } from "react-states";
 import { Authentication } from ".";
 
 export const createAuthentication = (): Authentication => ({
-  events: events(),
+  subscription: createSubscription(),
   signIn: jest.fn(),
 });

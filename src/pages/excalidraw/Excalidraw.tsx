@@ -1,33 +1,35 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import { PickContext, match } from "react-states";
+import { PickState, match } from "react-states";
 import { ExcalidrawCanvas } from "./ExcalidrawCanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
   faClipboard,
-  faEdit,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
-import { ExcalidrawContext, useExcalidraw } from "../../features/Excalidraw";
+import {
+  Excalidraw as ExcalidrawFeature,
+  useExcalidraw,
+} from "../../features/Excalidraw";
 
 import { useRecording } from "../../features/Recording";
 
-type EditExcalidrawContext = PickContext<
-  ExcalidrawContext,
+type EditExcalidrawState = PickState<
+  ExcalidrawFeature,
   "LOADED" | "EDIT" | "SYNCING" | "DIRTY" | "SYNCING_DIRTY"
 >;
 
-const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
-  const [_, send] = useExcalidraw();
-  const [recording, sendRecording] = useRecording();
-  const [title, setTitle] = useState(context.metadata.title || "");
+const EditExcalidraw = ({ state }: { state: EditExcalidrawState }) => {
+  const [_, dispatch] = useExcalidraw();
+  const [recording, dispatchRecording] = useRecording();
+  const [title, setTitle] = useState(state.metadata.title || "");
 
   const onChange = useMemo(
     () =>
       debounce((elements, appState) => {
-        send({
+        dispatch({
           type: "EXCALIDRAW_CHANGE",
           data: {
             elements,
@@ -40,7 +42,7 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
   );
 
   const copyToClipboard = () => {
-    send({ type: "COPY_TO_CLIPBOARD" });
+    dispatch({ type: "COPY_TO_CLIPBOARD" });
   };
 
   const variants = {
@@ -64,13 +66,13 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
     }),
   };
 
-  const variant = match(context, {
+  const variant = match(state, {
     DIRTY: variants.loading,
     LOADED: variants.loading,
     SYNCING: variants.loading,
     SYNCING_DIRTY: variants.loading,
     EDIT: () =>
-      match(context.clipboard, {
+      match(state.clipboard, {
         COPIED: variants.active,
         NOT_COPIED: variants.default,
       }),
@@ -86,7 +88,7 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
   return (
     <div>
       <ExcalidrawCanvas
-        data={context.data}
+        data={state.data}
         onChange={onChange}
         readOnly={match(recording, {
           RECORDING: () => true,
@@ -95,7 +97,7 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
           READY: () => false,
         })}
         onInitialized={() => {
-          send({ type: "INITIALIZE_CANVAS_SUCCESS" });
+          dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
         }}
       />
       <div className="fixed z-50 right-16 top-2 flex items-center">
@@ -110,11 +112,11 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
             className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-3 sm:text-sm border-gray-300 rounded-md h-10"
             placeholder="Title..."
           />
-          {!title || title === context.metadata.title ? null : (
+          {!title || title === state.metadata.title ? null : (
             <div
               className="absolute z-50 inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
               onClick={() => {
-                send({
+                dispatch({
                   type: "SAVE_TITLE",
                   title,
                 });
@@ -128,7 +130,7 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
           id="loom-record"
           disabled={isRecordingDisabled}
           onClick={() => {
-            sendRecording({
+            dispatchRecording({
               type: "RECORD",
             });
           }}
@@ -154,8 +156,8 @@ const EditExcalidraw = ({ context }: { context: EditExcalidrawContext }) => {
 export const Excalidraw = () => {
   const [excalidraw] = useExcalidraw();
 
-  const renderExcalidraw = (context: EditExcalidrawContext) => (
-    <EditExcalidraw context={context} />
+  const renderExcalidraw = (state: EditExcalidrawState) => (
+    <EditExcalidraw state={state} />
   );
 
   return match(excalidraw, {

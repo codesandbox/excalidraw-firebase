@@ -1,49 +1,42 @@
-import React, { useReducer } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { useDevtools } from "react-states/devtools";
 import { reducer } from "./reducer";
-import { Context, UIEvent, TransientContext } from "./types";
+import { State, Feature } from "./types";
 import { useClipboardEffect, useStorageEffects } from "./effects";
-import { createContext, createHook, useEvents } from "react-states";
+import { useSubsription } from "react-states";
 import { useEnvironment } from "../../environment";
 
 export * from "./types";
 
-const featureContext = createContext<Context, UIEvent, TransientContext>();
+const featureContext = createContext({} as Feature);
 
-export const useFeature = createHook(featureContext);
-
-export type Props = {
-  id: string;
-  userId: string;
-  children: React.ReactNode;
-  initialContext?: Context;
-};
+export const useFeature = () => useContext(featureContext);
 
 export const FeatureProvider = ({
   id,
   userId,
   children,
-  initialContext = {
+  initialState = {
     state: "LOADING",
   },
 }: {
   id: string;
   userId: string;
   children: React.ReactNode;
-  initialContext?: Context;
+  initialState?: State;
 }) => {
   const { storage } = useEnvironment();
-  const feature = useReducer(reducer, initialContext);
+  const feature = useReducer(reducer, initialState);
 
   if (process.env.NODE_ENV === "development") {
     useDevtools("excalidraw", feature);
   }
 
-  const [context, send] = feature;
+  const [, dispatch] = feature;
 
-  useEvents(storage.events, send);
+  useSubsription(storage.subscription, dispatch);
 
-  useClipboardEffect(context);
+  useClipboardEffect(feature);
   useStorageEffects(userId, id, feature);
 
   return (

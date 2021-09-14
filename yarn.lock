@@ -4942,10 +4942,10 @@ react-shallow-renderer@^16.13.1:
     object-assign "^4.1.1"
     react-is "^16.12.0 || ^17.0.0"
 
-react-states@^6.26.2-next:
-  version "6.26.2-next"
-  resolved "https://registry.yarnpkg.com/react-states/-/react-states-6.26.2-next.tgz#f4c0d8452c6d7760f0960bf7f8895323eb429adb"
-  integrity sha512-P/lzHK3Cu++HVMylI5bJqG3DJVwQQN6IFLSPovMCnw5yQEDng3CQJmFSZd40S56nhhfIe9j6+vtw/uJFUf/JVQ==
+react-states@^9.7.0-next:
+  version "9.7.0-next"
+  resolved "https://registry.yarnpkg.com/react-states/-/react-states-9.7.0-next.tgz#d8f1b959ff73b8256fae6b7f40cb8ef23dd24935"
+  integrity sha512-HTjKobNDdKrS9yKhFE3pyu4T4gSWWRACXjiOB9jhFS7pVpZmnKGeMfQHwFea8aDzOvGij0HxuyF+x2ifzhj95g==
 
 react-test-renderer@^17.0.1:
   version "17.0.1"

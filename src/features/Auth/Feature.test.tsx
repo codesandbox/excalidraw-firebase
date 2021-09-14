@@ -1,95 +1,97 @@
 import React from "react";
 import { renderHook } from "react-states/test";
 import { act } from "@testing-library/react";
-import { Environment } from "../../environment";
-import { useAuth, AuthFeature, AuthContext } from ".";
+import { EnvironmentProvider } from "../../environment";
+import { useAuth, AuthProvider, AuthState } from ".";
 import { createAuthentication } from "../../environment/authentication/test";
 
 describe("Auth", () => {
   test("Should go to AUTHENTICATED when mounted and is logged in", () => {
     const authentication = createAuthentication();
-    const [context] = renderHook(
+    const [state] = renderHook(
       () => useAuth(),
       (UseAuth) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             authentication,
           }}
         >
-          <AuthFeature>
+          <AuthProvider>
             <UseAuth />
-          </AuthFeature>
-        </Environment>
+          </AuthProvider>
+        </EnvironmentProvider>
       )
     );
 
     act(() => {
-      authentication.events.emit({
+      authentication.subscription.emit({
         type: "AUTHENTICATION:AUTHENTICATED",
         user: {
           avatarUrl: "",
           name: "Karen",
           uid: "123",
         },
+        loomApiKey: "",
       });
     });
 
-    expect(context).toEqual<AuthContext>({
+    expect(state).toEqual<AuthState>({
       state: "AUTHENTICATED",
       user: {
         avatarUrl: "",
         name: "Karen",
         uid: "123",
       },
+      loomApiKey: "",
     });
   });
   test("Should go to UNAUTHENTICATED when mounted and is not logged in", () => {
     const authentication = createAuthentication();
 
-    const [context] = renderHook(
+    const [state] = renderHook(
       () => useAuth(),
       (UseAuth) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             authentication,
           }}
         >
-          <AuthFeature>
+          <AuthProvider>
             <UseAuth />
-          </AuthFeature>
-        </Environment>
+          </AuthProvider>
+        </EnvironmentProvider>
       )
     );
 
     act(() => {
-      authentication.events.emit({
+      authentication.subscription.emit({
         type: "AUTHENTICATION:UNAUTHENTICATED",
       });
     });
 
-    expect(context).toEqual<AuthContext>({
+    expect(state).toEqual<AuthState>({
       state: "UNAUTHENTICATED",
     });
   });
   test("Should go to AUTHENTICATED when signing in successfully", () => {
     const authentication = createAuthentication();
 
-    const [context, dispatch] = renderHook(
+    const [state, dispatch] = renderHook(
       () => useAuth(),
       (UseAuth) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             authentication,
           }}
         >
-          <AuthFeature
-            initialContext={{
+          <AuthProvider
+            initialState={{
               state: "UNAUTHENTICATED",
             }}
           >
             <UseAuth />
-          </AuthFeature>
-        </Environment>
+          </AuthProvider>
+        </EnvironmentProvider>
       )
     );
 
@@ -99,49 +101,51 @@ describe("Auth", () => {
       });
     });
 
-    expect(context.state).toEqual<AuthContext>({
+    expect(state.state).toEqual<AuthState>({
       state: "SIGNING_IN",
     });
     expect(authentication.signIn).toBeCalled();
 
     act(() => {
-      authentication.events.emit({
+      authentication.subscription.emit({
         type: "AUTHENTICATION:AUTHENTICATED",
         user: {
           avatarUrl: "",
           name: "Karen",
           uid: "123",
         },
+        loomApiKey: "",
       });
     });
 
-    expect(context).toEqual<AuthContext>({
+    expect(state).toEqual<AuthState>({
       state: "AUTHENTICATED",
       user: {
         avatarUrl: "",
         name: "Karen",
         uid: "123",
       },
+      loomApiKey: "",
     });
   });
   test("Should go to ERROR when signing in unsuccsessfully", () => {
     const authentication = createAuthentication();
-    const [context, dispatch] = renderHook(
+    const [state, dispatch] = renderHook(
       () => useAuth(),
       (UseAuth) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             authentication,
           }}
         >
-          <AuthFeature
-            initialContext={{
+          <AuthProvider
+            initialState={{
               state: "UNAUTHENTICATED",
             }}
           >
             <UseAuth />
-          </AuthFeature>
-        </Environment>
+          </AuthProvider>
+        </EnvironmentProvider>
       )
     );
 
@@ -151,17 +155,17 @@ describe("Auth", () => {
       });
     });
 
-    expect(context.state).toBe("SIGNING_IN");
+    expect(state.state).toBe("SIGNING_IN");
     expect(authentication.signIn).toBeCalled();
 
     act(() => {
-      authentication.events.emit({
+      authentication.subscription.emit({
         type: "AUTHENTICATION:SIGN_IN_ERROR",
         error: "Something bad happened",
       });
     });
 
-    expect(context).toEqual<AuthContext>({
+    expect(state).toEqual<AuthState>({
       state: "ERROR",
       error: "Something bad happened",
     });

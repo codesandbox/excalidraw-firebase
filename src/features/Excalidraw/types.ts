@@ -1,14 +1,14 @@
-import { States } from "react-states";
+import { States, StatesTransition } from "react-states";
 import {
   ExcalidrawData,
   ExcalidrawElement,
   ExcalidrawMetadata,
-  StorageEvent,
+  StorageAction,
 } from "../../environment/storage";
 
 export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
 
-export type ClipboardContext =
+export type ClipboardState =
   | {
       state: "COPIED";
     }
@@ -16,14 +16,14 @@ export type ClipboardContext =
       state: "NOT_COPIED";
     };
 
-export type BaseContext = {
+export type BaseState = {
   data: ExcalidrawData;
   metadata: ExcalidrawMetadata;
   image: Blob;
-  clipboard: ClipboardContext;
+  clipboard: ClipboardState;
 };
 
-export type Context =
+export type State =
   | {
       state: "LOADING";
     }
@@ -31,7 +31,7 @@ export type Context =
       state: "ERROR";
       error: string;
     }
-  | (BaseContext &
+  | (BaseState &
       (
         | {
             state: "LOADED";
@@ -50,17 +50,17 @@ export type Context =
           }
       ));
 
-export type TransientContext =
+export type Command =
   | {
-      state: "COPYING_TO_CLIPBOARD";
+      cmd: "COPY_TO_CLIPBOARD";
       image: Blob;
     }
   | {
-      state: "SAVING_TITLE";
+      cmd: "SAVE_TITLE";
       title: string;
     };
 
-export type UIEvent =
+export type PublicAction =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
     }
@@ -76,10 +76,16 @@ export type UIEvent =
       title: string;
     };
 
-export type FeatureEvent = {
+export type PrivateAction = {
   type: "SYNC";
 };
 
-export type Event = UIEvent | FeatureEvent | StorageEvent;
+export type PublicFeature = States<State, PublicAction>;
 
-export type Feature = States<Context | TransientContext, Event>;
+export type Feature = States<
+  State,
+  PublicAction | PrivateAction | StorageAction,
+  Command
+>;
+
+export type Transition = StatesTransition<Feature>;

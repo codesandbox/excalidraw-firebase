@@ -1,13 +1,20 @@
 import * as React from "react";
-import { match, createReducer, useEnterEffect, useEvents } from "react-states";
-import { ExcalidrawMetadata, StorageEvent } from "../../environment/storage";
+import {
+  match,
+  createReducer,
+  StatesTransition,
+  useSubsription,
+  useStateEffect,
+  States,
+} from "react-states";
+import { ExcalidrawMetadata, StorageAction } from "../../environment/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 import { Link } from "react-router-dom";
 import { useEnvironment } from "../../environment";
 import { User } from "../../environment/authentication";
 
-type ExcalidrawPreviewContext =
+type State =
   | {
       state: "LOADING_PREVIEW";
       id: string;
@@ -21,29 +28,26 @@ type ExcalidrawPreviewContext =
       error: string;
     };
 
-type ExcalidrawPreviewEvent = StorageEvent;
+type ExcalidrawPreview = States<State, StorageAction>;
 
-const excalidrawPreviewReducer = createReducer<
-  ExcalidrawPreviewContext,
-  ExcalidrawPreviewEvent
->({
+type Transition = StatesTransition<ExcalidrawPreview>;
+
+const excalidrawPreviewReducer = createReducer<ExcalidrawPreview>({
   LOADING_PREVIEW: {
-    "STORAGE:IMAGE_SRC_SUCCESS": ({ id, src }, context) =>
-      id === context.id
+    "STORAGE:IMAGE_SRC_SUCCESS": (state, { id, src }): Transition =>
+      id === state.id
         ? {
             state: "PREVIEW_LOADED",
-            id,
             src,
           }
-        : context,
-    "STORAGE:IMAGE_SRC_ERROR": ({ id, error }, context) =>
-      context.id === id
+        : state,
+    "STORAGE:IMAGE_SRC_ERROR": (state, { id, error }): Transition =>
+      state.id === id
         ? {
             state: "LOADING_ERROR",
-            id,
             error,
           }
-        : context,
+        : state,
   },
   PREVIEW_LOADED: {},
   LOADING_ERROR: {},
@@ -57,14 +61,14 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, send] = React.useReducer(excalidrawPreviewReducer, {
+  const [preview, dispatch] = React.useReducer(excalidrawPreviewReducer, {
     state: "LOADING_PREVIEW",
     id: metadata.id,
   });
 
-  useEvents(storage.events, send);
+  useSubsription(storage.subscription, dispatch);
 
-  useEnterEffect(preview, "LOADING_PREVIEW", () => {
+  useStateEffect(preview, "LOADING_PREVIEW", () => {
     storage.getImageSrc(user.uid, metadata.id);
   });
 

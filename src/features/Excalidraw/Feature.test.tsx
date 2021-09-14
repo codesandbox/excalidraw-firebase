@@ -1,10 +1,11 @@
 import React from "react";
 import { act, waitFor } from "@testing-library/react";
 import { renderHook } from "react-states/test";
-import { ExcalidrawFeature, useExcalidraw, ExcalidrawContext } from ".";
-import { Environment } from "../../environment";
+import { ExcalidrawFeature, useExcalidraw, ExcalidrawState } from ".";
+import { EnvironmentProvider } from "../../environment";
 import { createStorage } from "../../environment/storage/test";
 import { ExcalidrawData } from "./types";
+import { ExcalidrawMetadata } from "../../environment/storage";
 
 describe("Excalidraw", () => {
   test("Should go to EDIT when loaded excalidraw and canvas is ready", () => {
@@ -12,10 +13,10 @@ describe("Excalidraw", () => {
     const id = "456";
     const storage = createStorage();
 
-    const [excalidraw, send] = renderHook(
+    const [state, dispatch] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             storage,
           }}
@@ -23,7 +24,7 @@ describe("Excalidraw", () => {
           <ExcalidrawFeature userId={userId} id={id}>
             <UseExcalidraw />
           </ExcalidrawFeature>
-        </Environment>
+        </EnvironmentProvider>
       )
     );
 
@@ -33,14 +34,15 @@ describe("Excalidraw", () => {
       version: 0,
     };
     const image = {} as Blob;
-    const metadata = {
+    const metadata: ExcalidrawMetadata = {
       author: "123",
       id: "456",
       last_updated: new Date(),
+      title: "Test",
     };
 
     act(() => {
-      storage.events.emit({
+      storage.subscription.emit({
         type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS",
         data,
         image,
@@ -48,7 +50,7 @@ describe("Excalidraw", () => {
       });
     });
 
-    expect(excalidraw).toEqual<ExcalidrawContext>({
+    expect(state).toEqual<ExcalidrawState>({
       state: "LOADED",
       data,
       metadata,
@@ -59,12 +61,12 @@ describe("Excalidraw", () => {
     });
 
     act(() => {
-      send({
+      dispatch({
         type: "INITIALIZE_CANVAS_SUCCESS",
       });
     });
 
-    expect(excalidraw).toEqual<ExcalidrawContext>({
+    expect(state).toEqual<ExcalidrawState>({
       state: "EDIT",
       data,
       metadata,
@@ -84,11 +86,12 @@ describe("Excalidraw", () => {
       author: "123",
       id: "456",
       last_updated: new Date(),
+      title: "Test",
     };
     const [excalidraw, send] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             storage,
           }}
@@ -96,7 +99,7 @@ describe("Excalidraw", () => {
           <ExcalidrawFeature
             userId={userId}
             id={id}
-            initialContext={{
+            initialState={{
               state: "EDIT",
               data: {
                 appState: { viewBackgroundColor: "#FFF" },
@@ -112,7 +115,7 @@ describe("Excalidraw", () => {
           >
             <UseExcalidraw />
           </ExcalidrawFeature>
-        </Environment>
+        </EnvironmentProvider>
       )
     );
 
@@ -126,7 +129,7 @@ describe("Excalidraw", () => {
       send({ type: "EXCALIDRAW_CHANGE", data: newData });
     });
 
-    expect(excalidraw).toEqual<ExcalidrawContext>({
+    expect(excalidraw).toEqual<ExcalidrawState>({
       state: "DIRTY",
       data: newData,
       metadata,
@@ -137,7 +140,7 @@ describe("Excalidraw", () => {
     });
 
     await waitFor(() =>
-      expect(excalidraw).toEqual<ExcalidrawContext>({
+      expect(excalidraw).toEqual<ExcalidrawState>({
         state: "SYNCING",
         data: newData,
         metadata,
@@ -158,11 +161,12 @@ describe("Excalidraw", () => {
       author: "123",
       id: "456",
       last_updated: new Date(),
+      title: "Test",
     };
     const [excalidraw, send] = renderHook(
       () => useExcalidraw(),
       (UseExcalidraw) => (
-        <Environment
+        <EnvironmentProvider
           environment={{
             storage,
           }}
@@ -170,7 +174,7 @@ describe("Excalidraw", () => {
           <ExcalidrawFeature
             userId={userId}
             id={id}
-            initialContext={{
+            initialState={{
               state: "SYNCING",
               data: {
                 appState: { viewBackgroundColor: "#FFF" },
@@ -186,7 +190,7 @@ describe("Excalidraw", () => {
           >
             <UseExcalidraw />
           </ExcalidrawFeature>
-        </Environment>
+        </EnvironmentProvider>
       )
     );
 
@@ -200,7 +204,7 @@ describe("Excalidraw", () => {
       send({ type: "EXCALIDRAW_CHANGE", data: newData });
     });
 
-    expect(excalidraw).toEqual<ExcalidrawContext>({
+    expect(excalidraw).toEqual<ExcalidrawState>({
       state: "SYNCING_DIRTY",
       data: newData,
       metadata,
@@ -215,17 +219,18 @@ describe("Excalidraw", () => {
       author: "123",
       id: "456",
       last_updated: new Date(),
+      title: "Test",
     };
 
     act(() => {
-      storage.events.emit({
+      storage.subscription.emit({
         type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS",
         image: newImage,
         metadata: newMetadata,
       });
     });
 
-    expect(excalidraw).toEqual<ExcalidrawContext>({
+    expect(excalidraw).toEqual<ExcalidrawState>({
       state: "DIRTY",
       data: newData,
       metadata: newMetadata,

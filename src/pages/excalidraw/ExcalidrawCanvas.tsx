@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getSceneVersion } from "@excalidraw/excalidraw";
-import {
-  ExcalidrawData,
-  ExcalidrawElement,
-} from "../../features/Excalidraw";
+import { ExcalidrawData, ExcalidrawElement } from "../../features/Excalidraw";
 import { getChangedData } from "../../utils";
 
 export type ResolvablePromise<T> = Promise<T> & {
@@ -38,14 +35,15 @@ export const ExcalidrawCanvas = React.memo(
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
     });
-    const [Comp, setComp] = useState(null);
-    
+    const [Comp, setComp] = useState<React.FC<any> | null>(null);
+
     useEffect(() => {
       import("@excalidraw/excalidraw").then((comp) => {
-        setComp(comp.default.default)
+        // @ts-ignore
+        setComp(comp.default.default);
       });
     }, [Comp]);
-    
+
     const excalidrawWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -71,12 +69,14 @@ export const ExcalidrawCanvas = React.memo(
 
     return (
       <div className="h-screen m-0" ref={excalidrawWrapperRef}>
-        {Comp ? <Comp
-          ref={excalidrawRef}
-          initialData={data}
-          onChange={onChange}
-          viewModeEnabled={readOnly}
-        /> : null}
+        {Comp ? (
+          <Comp
+            ref={excalidrawRef}
+            initialData={data}
+            onChange={onChange}
+            viewModeEnabled={readOnly}
+          />
+        ) : null}
       </div>
     );
   }

@@ -1,6 +1,4 @@
-
-import { Events } from "react-states";
-
+import { Subscription } from "react-states";
 
 export type StorageError = {
   type: "ERROR";
@@ -10,7 +8,7 @@ export type StorageError = {
 export type ExcalidrawElement = {
   id: string;
   version: number;
-} & any
+} & any;
 
 export type ExcalidrawMetadata = {
   id: string;
@@ -18,7 +16,6 @@ export type ExcalidrawMetadata = {
   last_updated: Date;
   title: string;
 };
-
 
 export type ExcalidrawData = {
   elements: readonly ExcalidrawElement[];
@@ -37,7 +34,7 @@ export type ExcalidrawPreview = {
 
 export type ExcalidrawPreviews = ExcalidrawPreview[];
 
-export type StorageEvent =
+export type StorageAction =
   | {
       type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS";
       metadata: ExcalidrawMetadata;
@@ -79,6 +76,14 @@ export type StorageEvent =
       error: string;
     }
   | {
+      type: "STORAGE:FETCH_USER_PREVIEWS_SUCCESS";
+      excalidraws: ExcalidrawPreviews;
+    }
+  | {
+      type: "STORAGE:FETCH_USER_PREVIEWS_ERROR";
+      error: string;
+    }
+  | {
       type: "STORAGE:IMAGE_SRC_SUCCESS";
       id: string;
       src: string;
@@ -101,10 +106,11 @@ export type StorageEvent =
     };
 
 export interface Storage {
-  events: Events<StorageEvent>;
+  subscription: Subscription<StorageAction>;
   createExcalidraw(userId: string): void;
   fetchExcalidraw(userId: string, id: string): void;
   fetchPreviews(): void;
+  fetchUserPreviews(uid: string): void;
   saveExcalidraw(userId: string, id: string, data: ExcalidrawData): void;
   getImageSrc(userId: string, id: string): void;
   saveTitle(userId: string, id: string, title: string): void;

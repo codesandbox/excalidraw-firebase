@@ -1,11 +1,13 @@
-import { events } from "react-states";
+import { createSubscription } from "react-states";
 import { Storage } from ".";
 
 export const createStorage = (): Storage => ({
-  events: events(),
+  subscription: createSubscription(),
   createExcalidraw: jest.fn(),
   fetchExcalidraw: jest.fn(),
   fetchPreviews: jest.fn(),
+  fetchUserPreviews: jest.fn(),
   saveExcalidraw: jest.fn(),
   getImageSrc: jest.fn(),
+  saveTitle: jest.fn(),
 });

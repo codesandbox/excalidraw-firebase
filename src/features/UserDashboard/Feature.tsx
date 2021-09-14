@@ -1,6 +1,7 @@
 import React, { createContext, useReducer } from "react";
 import {
   createReducer,
+  PickState,
   States,
   StatesTransition,
   useStateEffect,
@@ -23,21 +24,26 @@ export type State =
       error: string;
     };
 
-export type PublicFeature = States<State, any>;
+export type PublicAction = {
+  type: "CREATE_EXCALIDRAW";
+};
 
-export type Feature = States<State, StorageAction>;
+export type PublicFeature = States<State, PublicAction>;
+
+export type Feature = States<State, PublicAction | StorageAction>;
 
 type Transition = StatesTransition<Feature>;
 
-const featureContext = createContext({} as PublicFeature);
-
 const reducer = createReducer<Feature>({
   LOADING_PREVIEWS: {
-    "STORAGE:FETCH_PREVIEWS_SUCCESS": (_, { excalidraws }): Transition => ({
+    "STORAGE:FETCH_USER_PREVIEWS_SUCCESS": (
+      _,
+      { excalidraws }
+    ): Transition => ({
       state: "PREVIEWS_LOADED",
       excalidraws,
     }),
-    "STORAGE:FETCH_PREVIEWS_ERROR": (_, { error }): Transition => ({
+    "STORAGE:FETCH_USER_PREVIEWS_ERROR": (_, { error }): Transition => ({
       state: "PREVIEWS_ERROR",
       error,
     }),
@@ -46,15 +52,19 @@ const reducer = createReducer<Feature>({
   PREVIEWS_ERROR: {},
 });
 
+const featureContext = createContext({} as PublicFeature);
+
 export const useFeature = () => React.useContext(featureContext);
 
 export const FeatureProvider = ({
   children,
+  uid,
   initialState = {
     state: "LOADING_PREVIEWS",
   },
 }: {
   children: React.ReactNode;
+  uid: string;
   initialState?: State;
 }) => {
   const { storage } = useEnvironment();
@@ -68,7 +78,9 @@ export const FeatureProvider = ({
 
   useSubsription(storage.subscription, dispatch);
 
-  useStateEffect(state, "LOADING_PREVIEWS", () => storage.fetchPreviews());
+  useStateEffect(state, "LOADING_PREVIEWS", () =>
+    storage.fetchUserPreviews(uid)
+  );
 
   return (
     <featureContext.Provider value={feature}>

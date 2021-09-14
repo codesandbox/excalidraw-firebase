@@ -4,6 +4,6 @@ export {
 } from "./Feature";
 
 export type {
-  Context as DashboardContext,
-  Event as DashboardEvent,
+  State as DashboardState,
+  PublicFeature as Dashboard,
 } from "./Feature";

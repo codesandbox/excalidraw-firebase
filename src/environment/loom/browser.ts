@@ -1,6 +1,6 @@
 import { isSupported, setup } from "@loomhq/loom-sdk";
-import { events } from "react-states";
-import { Loom, LoomEvent } from ".";
+import { createSubscription } from "react-states";
+import { Loom, LoomAction } from ".";
 
 type ButtonFn = ReturnType<typeof setup> extends Promise<infer R>
   ? R extends { configureButton: any }
@@ -9,7 +9,7 @@ type ButtonFn = ReturnType<typeof setup> extends Promise<infer R>
   : never;
 
 export const createLoom = (): Loom => {
-  const loomEvents = events<LoomEvent>();
+  const subscription = createSubscription<LoomAction>();
 
   let configureButton: ButtonFn | undefined;
 
@@ -17,7 +17,7 @@ export const createLoom = (): Loom => {
     const element = document.querySelector(`#${buttonId}`);
 
     if (!element) {
-      loomEvents.emit({
+      subscription.emit({
         type: "LOOM:ERROR",
         error: "No button",
       });
@@ -29,28 +29,28 @@ export const createLoom = (): Loom => {
       hooks: {
         onInsertClicked: (video) => {
           if (video) {
-            loomEvents.emit({
+            subscription.emit({
               type: "LOOM:INSERT",
               video,
             });
           } else {
-            loomEvents.emit({
+            subscription.emit({
               type: "LOOM:CANCEL",
             });
           }
         },
         onStart: () => {
-          loomEvents.emit({
+          subscription.emit({
             type: "LOOM:START",
           });
         },
         onCancel: () => {
-          loomEvents.emit({
+          subscription.emit({
             type: "LOOM:CANCEL",
           });
         },
         onComplete: () => {
-          loomEvents.emit({
+          subscription.emit({
             type: "LOOM:COMPLETE",
           });
         },
@@ -59,7 +59,7 @@ export const createLoom = (): Loom => {
   }
 
   return {
-    events: loomEvents,
+    subscription,
     configure(apiKey, buttonId) {
       if (configureButton) {
         initialize(configureButton, buttonId);
@@ -67,7 +67,7 @@ export const createLoom = (): Loom => {
         setup({
           apiKey,
         }).then((result) => {
-          loomEvents.emit({
+          subscription.emit({
             type: "LOOM:CONFIGURED",
           });
           configureButton = result.configureButton;

@@ -1,16 +1,17 @@
-import React, { useReducer } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import {
-  createContext,
-  createHook,
   createReducer,
-  useEnterEffect,
-  useEvents,
+  States,
+  StatesTransition,
+  useCommandEffect,
+  useStateEffect,
+  useSubsription,
 } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { useEnvironment } from "../../environment";
-import { LoomEvent, LoomVideo } from "../../environment/loom";
+import { LoomAction, LoomVideo } from "../../environment/loom";
 
-export type Context =
+export type State =
   | {
       state: "DISABLED";
     }
@@ -26,59 +27,59 @@ export type Context =
       state: "RECORDING";
     };
 
-type TransientContext = {
-  state: "OPEN_VIDEO";
+type Command = {
+  cmd: "OPEN_VIDEO";
   video: LoomVideo;
 };
 
-type UIEvent = {
+type PublicAction = {
   type: "RECORD";
 };
 
-export type Event = UIEvent | LoomEvent;
+export type PublicFeature = States<State, PublicAction>;
 
-const featureContext = createContext<Context, UIEvent, TransientContext>();
+export type Feature = States<State, PublicAction | LoomAction, Command>;
 
-const reducer = createReducer<Context, Event, TransientContext>(
-  {
-    DISABLED: {},
-    NOT_CONFIGURED: {
-      "LOOM:CONFIGURED": (_, context) => ({
-        ...context,
-        state: "READY",
-      }),
-    },
-    READY: {
-      "LOOM:INSERT": ({ video }) => ({
-        state: "OPEN_VIDEO",
-        video,
-      }),
-      "LOOM:START": () => ({
-        state: "RECORDING",
-      }),
-    },
-    RECORDING: {
-      "LOOM:CANCEL": () => ({
-        state: "READY",
-      }),
-      "LOOM:COMPLETE": () => ({
-        state: "READY",
-      }),
-    },
-  },
-  {
-    OPEN_VIDEO: () => ({
+type Transition = StatesTransition<Feature>;
+
+const featureContext = createContext({} as PublicFeature);
+
+const reducer = createReducer<Feature>({
+  DISABLED: {},
+  NOT_CONFIGURED: {
+    "LOOM:CONFIGURED": (state): Transition => ({
+      ...state,
       state: "READY",
     }),
-  }
-);
+  },
+  READY: {
+    "LOOM:INSERT": (state, { video }): Transition => [
+      state,
+      {
+        cmd: "OPEN_VIDEO",
+        video,
+      },
+    ],
+    "LOOM:START": (): Transition => ({
+      state: "RECORDING",
+    }),
+  },
+  RECORDING: {
+    "LOOM:CANCEL": (): Transition => ({
+      state: "READY",
+    }),
+    "LOOM:COMPLETE": (): Transition => ({
+      state: "READY",
+    }),
+  },
+});
 
-export const useFeature = createHook(featureContext);
+export const useFeature = () => useContext(featureContext);
 
 export const Feature = ({
   children,
   apiKey,
-  initialContext = apiKey
+  initialState = apiKey
     ? {
         state: "NOT_CONFIGURED",
         apiKey,
@@ -90,24 +91,24 @@ export const Feature = ({
 }: {
   children: React.ReactNode;
   apiKey: string | null;
-  initialContext?: Context;
+  initialState?: State;
 }) => {
   const { loom } = useEnvironment();
-  const feature = useReducer(reducer, initialContext);
+  const feature = useReducer(reducer, initialState);
 
   if (process.env.NODE_ENV === "development") {
     useDevtools("recording", feature);
   }
 
-  const [context, send] = feature;
+  const [state, dispatch] = feature;
 
-  useEvents(loom.events, send);
+  useSubsription(loom.subscription, dispatch);
 
-  useEnterEffect(context, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
+  useStateEffect(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
     loom.configure(apiKey, buttonId);
   });
 
-  useEnterEffect(context, "OPEN_VIDEO", ({ video }) => {
+  useCommandEffect(state, "OPEN_VIDEO", ({ video }) => {
     loom.openVideo(video);
   });
 

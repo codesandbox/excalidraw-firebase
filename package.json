@@ -38,7 +38,7 @@
     "react-dom": "^17.0.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-states": "^6.26.2-next",
+    "react-states": "^9.7.0-next",
     "roughjs": "^4.4.1",
     "sass": "^1.32.8",
     "tailwindcss": "^2.2.4"
