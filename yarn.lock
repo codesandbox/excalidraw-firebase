@@ -949,10 +949,12 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@excalidraw/excalidraw@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@excalidraw/excalidraw/-/excalidraw-0.8.0.tgz#b95210581ffafb5f2e433c8a9fe1b64328d5ecbf"
-  integrity sha512-QSCorwl2NVZr1kv6+pSfMgxwb85v7qmjW37p0n+LMWrW+VgGWQxa3LtQqTIJ8OvdLNLNfO3kN7nHXNC4Z1h3ug==
+"@excalidraw/excalidraw@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@excalidraw/excalidraw/-/excalidraw-0.11.0.tgz#bc246de2a64d7037a21a85664b6f0dd14894cf93"
+  integrity sha512-wY0UdnN9JAcBKLzkGlVXiPSKgTO06YeeBhoIy/ezIiMJtfFtWBPjRjJROkdIGqnUmBz5L16MkuXE7b8j1b1ouw==
+  dependencies:
+    dotenv "10.0.0"
 
 "@firebase/analytics-types@0.4.0":
   version "0.4.0"
@@ -2634,6 +2636,11 @@ domexception@^2.0.1:
   integrity sha512-yxJ2mFy/sibVQlu5qHjOkf9J3K6zgmCxgJ94u2EdvDOV09H+32LtRswEcUsmUWN72pVLOEnTSRaIVVzVQgS0dg==
   dependencies:
     webidl-conversions "^5.0.0"
+
+dotenv@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
+  integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"

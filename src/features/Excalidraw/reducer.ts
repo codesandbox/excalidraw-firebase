@@ -11,6 +11,7 @@ const onDataUpdate = (
   if (id !== state.metadata.id) {
     return state;
   }
+
   const changedData = getChangedData(data, state.data);
 
   return changedData

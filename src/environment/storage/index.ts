@@ -1,3 +1,5 @@
+import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
+import { AppState } from "@excalidraw/excalidraw/types/types";
 import { Subscription } from "react-states";
 
 export type StorageError = {
@@ -5,10 +7,8 @@ export type StorageError = {
   data: string;
 };
 
-export type ExcalidrawElement = {
-  id: string;
-  version: number;
-} & any;
+export type { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types'
+
 
 export type ExcalidrawMetadata = {
   id: string;
@@ -19,7 +19,7 @@ export type ExcalidrawMetadata = {
 
 export type ExcalidrawData = {
   elements: readonly ExcalidrawElement[];
-  appState: { viewBackgroundColor: string };
+  appState: AppState;
   version: number;
 };
 

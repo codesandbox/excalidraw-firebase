@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-const fs = require("fs");
 
 import reactRefresh from "@vitejs/plugin-react-refresh";
 
@@ -7,10 +6,8 @@ import reactRefresh from "@vitejs/plugin-react-refresh";
 export default defineConfig({
   plugins: [reactRefresh()],
   server: {
-    open: true,
-    https: {
-      key: fs.readFileSync("ssl.key"),
-      cert: fs.readFileSync("ssl.crt"),
+    hmr: {
+      port: 443,
     },
   },
 });
