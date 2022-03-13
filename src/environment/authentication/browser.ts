@@ -1,5 +1,5 @@
 import { createSubscription } from "react-states";
-import firebase from "firebase/app";
+import firebase from "firebase/compat/app";
 import { Authentication, AuthenticationAction, User } from ".";
 
 const USERS_COLLECTION = "users";

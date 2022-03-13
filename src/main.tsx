@@ -1,9 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import firebase from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/storage";
+import firebase from "firebase/compat/app";
 import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
 
 import "./index.css";

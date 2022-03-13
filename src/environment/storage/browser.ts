@@ -1,4 +1,4 @@
-import firebase from "firebase/app";
+import firebase from "firebase/compat/app";
 import {
   ExcalidrawData,
   ExcalidrawMetadata,
@@ -17,6 +17,7 @@ export const createExcalidrawImage = (
   exportToBlob({
     elements: elements.filter((element) => !element.isDeleted),
     appState,
+    files: null,
   });
 
 const EXCALIDRAWS_COLLECTION = "excalidraws";
@@ -126,7 +127,7 @@ export const createStorage = (): Storage => {
           const metadata = {
             ...metadataDoc.data(),
             id,
-          };
+          } as any;
           const data = dataDoc.exists
             ? dataDoc.data()!
             : {
