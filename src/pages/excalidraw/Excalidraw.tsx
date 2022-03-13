@@ -101,7 +101,7 @@ const EditExcalidraw = ({ state }: { state: EditExcalidrawState }) => {
         }}
       />
       <div className="fixed z-50 right-16 top-2 flex items-center">
-        <div className="relative rounded-md shadow-sm mr-3 w-64">
+        <div className="relative rounded-md shadow-sm mr-3 w-48">
           <input
             autoComplete="off"
             autoCorrect="off"

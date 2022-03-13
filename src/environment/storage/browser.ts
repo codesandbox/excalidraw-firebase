@@ -123,7 +123,10 @@ export const createStorage = (): Storage => {
           .get(),
       ])
         .then(([metadataDoc, dataDoc]) => {
-          const metadata = metadataDoc.data()!;
+          const metadata = {
+            ...metadataDoc.data(),
+            id,
+          };
           const data = dataDoc.exists
             ? dataDoc.data()!
             : {
