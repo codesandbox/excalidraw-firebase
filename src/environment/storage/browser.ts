@@ -6,7 +6,7 @@ import {
   Storage,
 } from ".";
 import { createSubscription } from "react-states";
-import { exportToBlob } from "@excalidraw/excalidraw";
+import { exportToBlob, getSceneVersion } from "@excalidraw/excalidraw";
 import { getChangedData } from "../../utils";
 import { subMonths } from "date-fns";
 
@@ -141,6 +141,7 @@ export const createStorage = (): Storage => {
           return {
             metadata: {
               ...(metadata as ExcalidrawMetadata),
+              id,
               last_updated: metadata.last_updated.toDate() as Date,
             },
             data: {
@@ -213,8 +214,9 @@ export const createStorage = (): Storage => {
         .collection(EXCALIDRAWS_DATA_COLLECTION)
         .doc(id);
 
-      Promise.all([
-        firebase.firestore().runTransaction((transaction) => {
+      firebase
+        .firestore()
+        .runTransaction((transaction) => {
           return transaction.get(dataDoc).then((existingDoc) => {
             if (existingDoc.exists) {
               const existingData = existingDoc.data()!;
@@ -224,15 +226,20 @@ export const createStorage = (): Storage => {
                 version: existingData.version,
               };
 
-              const changedData = getChangedData(data, parsedData) || data;
+              const newSceneVersion = getSceneVersion(data.elements);
+              const currentSceneVersion = parsedData.version;
 
-              transaction.update(dataDoc, {
-                elements: JSON.stringify(changedData.elements),
-                appState: JSON.stringify({
-                  viewBackgroundColor: changedData.appState.viewBackgroundColor,
-                }),
-                version: changedData.version,
-              });
+              if (newSceneVersion > currentSceneVersion) {
+                transaction.update(dataDoc, {
+                  elements: JSON.stringify(data.elements),
+                  appState: JSON.stringify({
+                    viewBackgroundColor: data.appState.viewBackgroundColor,
+                  }),
+                  version: data.version,
+                });
+              } else {
+                return Promise.reject("Can not override newer version");
+              }
             } else {
               transaction.set(dataDoc, {
                 elements: JSON.stringify(data.elements),
@@ -243,22 +250,23 @@ export const createStorage = (): Storage => {
               });
             }
           });
-        }),
-        firebase
-          .firestore()
-          .collection(USERS_COLLECTION)
-          .doc(userId)
-          .collection(EXCALIDRAWS_COLLECTION)
-          .doc(id)
-          .set(
-            {
-              last_updated: firebase.firestore.FieldValue.serverTimestamp(),
-            },
-            {
-              merge: true,
-            }
-          ),
-      ])
+        })
+        .then(() =>
+          firebase
+            .firestore()
+            .collection(USERS_COLLECTION)
+            .doc(userId)
+            .collection(EXCALIDRAWS_COLLECTION)
+            .doc(id)
+            .set(
+              {
+                last_updated: firebase.firestore.FieldValue.serverTimestamp(),
+              },
+              {
+                merge: true,
+              }
+            )
+        )
         .then(() =>
           firebase
             .firestore()
@@ -286,6 +294,7 @@ export const createStorage = (): Storage => {
             type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS",
             metadata: {
               ...(metadata as ExcalidrawMetadata),
+              id,
               last_updated: metadata.last_updated.toDate() as Date,
             },
             image,
