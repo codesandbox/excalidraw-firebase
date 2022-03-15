@@ -23,14 +23,18 @@ function resolvablePromise<T>() {
 export const ExcalidrawCanvas = React.memo(
   ({
     data,
+    remoteData,
     onChange,
     onInitialized,
     readOnly,
+    isSyncing,
   }: {
     data: ExcalidrawData;
+    remoteData?: ExcalidrawData;
     onChange: (elements: readonly ExcalidrawElement[], appState: any) => void;
     onInitialized: () => void;
     readOnly: boolean;
+    isSyncing: boolean;
   }) => {
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
@@ -40,7 +44,7 @@ export const ExcalidrawCanvas = React.memo(
     useEffect(() => {
       import("@excalidraw/excalidraw").then((comp) => {
         // @ts-ignore
-        setComp(comp.default.default);
+        setComp(comp.default);
       });
     }, [Comp]);
 
@@ -51,10 +55,15 @@ export const ExcalidrawCanvas = React.memo(
     }, []);
 
     useEffect(() => {
+      if (!remoteData || isSyncing) {
+        return;
+      }
+
       excalidrawRef.current.readyPromise.then(
         ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
+          console.log("UPDATING DATA");
           const currentElements = getSceneElementsIncludingDeleted();
-          const changedData = getChangedData(data, {
+          const changedData = getChangedData(remoteData, {
             appState: getAppState(),
             elements: currentElements,
             version: getSceneVersion(currentElements),
@@ -65,7 +74,7 @@ export const ExcalidrawCanvas = React.memo(
           }
         }
       );
-    }, [data]);
+    }, [isSyncing, remoteData]);
 
     return (
       <div className="h-screen m-0" ref={excalidrawWrapperRef}>

@@ -1,6 +1,6 @@
 import { createReducer } from "react-states";
-import { ExcalidrawData, StorageAction } from "../../environment/storage";
-import { State, BaseState, Command, Transition, Feature } from "./types";
+import { ExcalidrawData } from "../../environment/storage";
+import { State, BaseState, Transition, Feature } from "./types";
 
 import { getChangedData, hasChangedExcalidraw } from "../../utils";
 
@@ -14,12 +14,13 @@ const onDataUpdate = (
 
   const changedData = getChangedData(data, state.data);
 
-  return changedData
-    ? {
+  return changedData === state.remoteData
+    ? state
+    : {
         ...state,
         data: changedData,
-      }
-    : state;
+        remoteData: changedData,
+      };
 };
 
 export const reducer = createReducer<Feature>({
@@ -57,6 +58,8 @@ export const reducer = createReducer<Feature>({
             },
             state: "DIRTY",
             data,
+            remoteData:
+              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     COPY_TO_CLIPBOARD: (state): Transition => [
@@ -98,6 +101,8 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "DIRTY",
             data,
+            remoteData:
+              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
@@ -109,6 +114,8 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "SYNCING_DIRTY",
             data,
+            remoteData:
+              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (
@@ -133,6 +140,8 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "SYNCING_DIRTY",
             data,
+            remoteData:
+              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (state, { metadata }): Transition => ({
