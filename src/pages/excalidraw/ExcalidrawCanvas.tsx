@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { ExcalidrawData, ExcalidrawElement } from "../../features/Excalidraw";
 import { getChangedData } from "../../utils";
+import { useSubsription } from "react-states";
+import { useEnvironment } from "../../environment";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;
@@ -23,19 +25,16 @@ function resolvablePromise<T>() {
 export const ExcalidrawCanvas = React.memo(
   ({
     data,
-    remoteData,
     onChange,
     onInitialized,
     readOnly,
-    isSyncing,
   }: {
     data: ExcalidrawData;
-    remoteData?: ExcalidrawData;
     onChange: (elements: readonly ExcalidrawElement[], appState: any) => void;
     onInitialized: () => void;
     readOnly: boolean;
-    isSyncing: boolean;
   }) => {
+    const { storage } = useEnvironment();
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
     });
@@ -54,27 +53,24 @@ export const ExcalidrawCanvas = React.memo(
       excalidrawRef.current.readyPromise.then(onInitialized);
     }, []);
 
-    useEffect(() => {
-      if (!remoteData || isSyncing) {
-        return;
-      }
+    useSubsription(storage.subscription, (event) => {
+      if (event.type === "STORAGE:EXCALIDRAW_DATA_UPDATE") {
+        excalidrawRef.current.readyPromise.then(
+          ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
+            const currentElements = getSceneElementsIncludingDeleted();
+            const changedData = getChangedData(event.data, {
+              appState: getAppState(),
+              elements: currentElements,
+              version: getSceneVersion(currentElements),
+            });
 
-      excalidrawRef.current.readyPromise.then(
-        ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
-          console.log("UPDATING DATA");
-          const currentElements = getSceneElementsIncludingDeleted();
-          const changedData = getChangedData(remoteData, {
-            appState: getAppState(),
-            elements: currentElements,
-            version: getSceneVersion(currentElements),
-          });
-
-          if (changedData) {
-            excalidrawRef.current.updateScene(changedData);
+            if (changedData) {
+              excalidrawRef.current.updateScene(changedData);
+            }
           }
-        }
-      );
-    }, [isSyncing, remoteData]);
+        );
+      }
+    });
 
     return (
       <div className="h-screen m-0" ref={excalidrawWrapperRef}>
