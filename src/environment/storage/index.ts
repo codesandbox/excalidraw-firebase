@@ -7,8 +7,7 @@ export type StorageError = {
   data: string;
 };
 
-export type { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types'
-
+export type { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 
 export type ExcalidrawMetadata = {
   id: string;
@@ -66,6 +65,9 @@ export type StorageAction =
   | {
       type: "STORAGE:SAVE_EXCALIDRAW_ERROR";
       error: string;
+    }
+  | {
+      type: "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION";
     }
   | {
       type: "STORAGE:FETCH_PREVIEWS_SUCCESS";

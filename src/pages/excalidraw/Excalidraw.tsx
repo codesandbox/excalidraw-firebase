@@ -89,14 +89,6 @@ const EditExcalidraw = ({ state }: { state: EditExcalidrawState }) => {
     <div>
       <ExcalidrawCanvas
         data={state.data}
-        remoteData={state.remoteData}
-        isSyncing={match(state, {
-          DIRTY: () => true,
-          EDIT: () => false,
-          LOADED: () => false,
-          SYNCING: () => true,
-          SYNCING_DIRTY: () => true,
-        })}
         onChange={onChange}
         readOnly={match(recording, {
           RECORDING: () => true,

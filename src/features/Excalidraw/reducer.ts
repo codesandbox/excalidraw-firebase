@@ -4,25 +4,6 @@ import { State, BaseState, Transition, Feature } from "./types";
 
 import { getChangedData, hasChangedExcalidraw } from "../../utils";
 
-const onDataUpdate = (
-  state: State & BaseState,
-  { data, id }: { data: ExcalidrawData; id: string }
-): Transition => {
-  if (id !== state.metadata.id) {
-    return state;
-  }
-
-  const changedData = getChangedData(data, state.data);
-
-  return changedData === state.remoteData
-    ? state
-    : {
-        ...state,
-        data: changedData,
-        remoteData: changedData,
-      };
-};
-
 export const reducer = createReducer<Feature>({
   LOADING: {
     "STORAGE:FETCH_EXCALIDRAW_SUCCESS": (
@@ -58,8 +39,6 @@ export const reducer = createReducer<Feature>({
             },
             state: "DIRTY",
             data,
-            remoteData:
-              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     COPY_TO_CLIPBOARD: (state): Transition => [
@@ -74,7 +53,6 @@ export const reducer = createReducer<Feature>({
         image: state.image,
       },
     ],
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
     "STORAGE:SAVE_TITLE_SUCCESS": (state, { title }): Transition => ({
       ...state,
       metadata: {
@@ -101,11 +79,8 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "DIRTY",
             data,
-            remoteData:
-              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING: {
     EXCALIDRAW_CHANGE: (state, { data }): Transition =>
@@ -114,8 +89,6 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "SYNCING_DIRTY",
             data,
-            remoteData:
-              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (
@@ -131,7 +104,10 @@ export const reducer = createReducer<Feature>({
       state: "ERROR",
       error,
     }),
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
+    "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION": (state): Transition => ({
+      ...state,
+      state: "EDIT",
+    }),
   },
   SYNCING_DIRTY: {
     EXCALIDRAW_CHANGE: (state, { data }): Transition =>
@@ -140,8 +116,6 @@ export const reducer = createReducer<Feature>({
             ...state,
             state: "SYNCING_DIRTY",
             data,
-            remoteData:
-              state.remoteData && getChangedData(data, state.remoteData),
           }
         : state,
     "STORAGE:SAVE_EXCALIDRAW_SUCCESS": (state, { metadata }): Transition => ({
@@ -153,7 +127,10 @@ export const reducer = createReducer<Feature>({
       ...state,
       state: "DIRTY",
     }),
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
+    "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION": (state): Transition => ({
+      ...state,
+      state: "DIRTY",
+    }),
   },
   ERROR: {},
 });
