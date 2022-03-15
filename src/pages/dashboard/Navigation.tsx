@@ -17,7 +17,11 @@ export const Navigation = () => {
             width="50px"
             height="50px"
             viewBox="0 0 452 452"
-            style={{ verticalAlign: "middle", marginTop: "-20px", marginLeft: "-20px" }}
+            style={{
+              verticalAlign: "middle",
+              marginTop: "-21px",
+              marginLeft: "-21px",
+            }}
           >
             <path
               clipRule="evenodd"
