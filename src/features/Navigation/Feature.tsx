@@ -10,7 +10,8 @@ import {
 import { StorageAction } from "../../environment/storage";
 import { useEnvironment } from "../../environment";
 import { useDevtools } from "react-states/devtools";
-import { Auth, AuthState } from "../Auth";
+import { Auth } from "../Auth";
+import confetti from "canvas-confetti";
 
 export type State =
   | {
@@ -121,7 +122,12 @@ export const FeatureProvider = ({
   );
 
   useStateEffect(state, "EXCALIDRAW_CREATED", ({ id }) => {
-    navigate(`/${auth.user.uid}/${id}`);
+    confetti({
+      particleCount: 150,
+    });
+    setTimeout(() => {
+      navigate(`/${auth.user.uid}/${id}`);
+    }, 500);
   });
 
   useStateEffect(state, "ALL_EXCALIDRAWS", () => {

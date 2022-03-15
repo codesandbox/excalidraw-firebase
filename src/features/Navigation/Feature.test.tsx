@@ -3,15 +3,12 @@ import { act } from "@testing-library/react";
 import { EnvironmentProvider } from "../../environment";
 import { createStorage } from "../../environment/storage/test";
 import { createAuthentication } from "../../environment/authentication/test";
-import { createMemoryHistory } from "history";
-import { Router } from "react-router-dom";
 import { NavigationState, NavigationFeature, useNavigation } from ".";
 import { renderHook } from "react-states/test";
 
 describe("Dashboard", () => {
-  test("Should go to EXCALIDRAW_CREATED when creating a new Excalidraw successfully", () => {
+  test("Should go to EXCALIDRAW_CREATED when creating a new Excalidraw successfully", async () => {
     const storage = createStorage();
-    const history = createMemoryHistory();
     const navigate = jest.fn();
     const [state, dispatch] = renderHook(
       () => useNavigation(),
@@ -22,22 +19,20 @@ describe("Dashboard", () => {
             storage,
           }}
         >
-          <Router history={history}>
-            <NavigationFeature
-              auth={{
-                state: "AUTHENTICATED",
-                user: {
-                  avatarUrl: "",
-                  name: "Kate",
-                  uid: "123",
-                },
-                loomApiKey: "",
-              }}
-              navigate={navigate}
-            >
-              <UseNavigation />
-            </NavigationFeature>
-          </Router>
+          <NavigationFeature
+            auth={{
+              state: "AUTHENTICATED",
+              user: {
+                avatarUrl: "",
+                name: "Kate",
+                uid: "123",
+              },
+              loomApiKey: "",
+            }}
+            navigate={navigate}
+          >
+            <UseNavigation />
+          </NavigationFeature>
         </EnvironmentProvider>
       )
     );
@@ -62,8 +57,9 @@ describe("Dashboard", () => {
     expect(state).toEqual<NavigationState>({
       state: "EXCALIDRAW_CREATED",
       id: "456",
-    });
-    expect(history.entries[1].pathname).toBe("/123/456");
+    })
+
+    expect(navigate).toBeCalledWith("/123/456");
   });
   test("Should go to CREATE_EXCALIDRAW_ERROR when creating a new Excalidraw unsuccessfully", () => {
     const storage = createStorage();

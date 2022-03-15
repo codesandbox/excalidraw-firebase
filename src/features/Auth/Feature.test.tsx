@@ -101,7 +101,7 @@ describe("Auth", () => {
       });
     });
 
-    expect(state.state).toEqual<AuthState>({
+    expect(state).toEqual<AuthState>({
       state: "SIGNING_IN",
     });
     expect(authentication.signIn).toBeCalled();
