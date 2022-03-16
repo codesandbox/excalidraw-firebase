@@ -1,4 +1,4 @@
-import * as React from "react";
+;import * as React from "react";
 import { act } from "@testing-library/react";
 import { EnvironmentProvider } from "../../environment";
 import { createStorage } from "../../environment/storage/test";
@@ -57,7 +57,9 @@ describe("Dashboard", () => {
     expect(state).toEqual<NavigationState>({
       state: "EXCALIDRAW_CREATED",
       id: "456",
-    })
+    });
+    
+    await new Promise((resolve) => setTimeout(resolve, 600))
 
     expect(navigate).toBeCalledWith("/123/456");
   });
