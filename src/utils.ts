@@ -15,9 +15,9 @@ export const hasChangedExcalidraw = (
 export const getChangedData = (
   newData: ExcalidrawData,
   oldData: ExcalidrawData
-): ExcalidrawData | undefined => {
+): ExcalidrawData => {
   if (newData.version === oldData.version) {
-    return;
+    return oldData;
   }
 
   return {

@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { ExcalidrawData, ExcalidrawElement } from "../../features/Excalidraw";
 import { getChangedData } from "../../utils";
+import { useSubsription } from "react-states";
+import { useEnvironment } from "../../environment";
 
 export type ResolvablePromise<T> = Promise<T> & {
   resolve: [T] extends [undefined] ? (value?: T) => void : (value: T) => void;
@@ -32,6 +34,7 @@ export const ExcalidrawCanvas = React.memo(
     onInitialized: () => void;
     readOnly: boolean;
   }) => {
+    const { storage } = useEnvironment();
     const excalidrawRef = useRef<any>({
       readyPromise: resolvablePromise(),
     });
@@ -40,7 +43,7 @@ export const ExcalidrawCanvas = React.memo(
     useEffect(() => {
       import("@excalidraw/excalidraw").then((comp) => {
         // @ts-ignore
-        setComp(comp.default.default);
+        setComp(comp.default);
       });
     }, [Comp]);
 
@@ -50,22 +53,24 @@ export const ExcalidrawCanvas = React.memo(
       excalidrawRef.current.readyPromise.then(onInitialized);
     }, []);
 
-    useEffect(() => {
-      excalidrawRef.current.readyPromise.then(
-        ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
-          const currentElements = getSceneElementsIncludingDeleted();
-          const changedData = getChangedData(data, {
-            appState: getAppState(),
-            elements: currentElements,
-            version: getSceneVersion(currentElements),
-          });
+    useSubsription(storage.subscription, (event) => {
+      if (event.type === "STORAGE:EXCALIDRAW_DATA_UPDATE") {
+        excalidrawRef.current.readyPromise.then(
+          ({ getSceneElementsIncludingDeleted, getAppState }: any) => {
+            const currentElements = getSceneElementsIncludingDeleted();
+            const changedData = getChangedData(event.data, {
+              appState: getAppState(),
+              elements: currentElements,
+              version: getSceneVersion(currentElements),
+            });
 
-          if (changedData) {
-            excalidrawRef.current.updateScene(changedData);
+            if (changedData) {
+              excalidrawRef.current.updateScene(changedData);
+            }
           }
-        }
-      );
-    }, [data]);
+        );
+      }
+    });
 
     return (
       <div className="h-screen m-0" ref={excalidrawWrapperRef}>

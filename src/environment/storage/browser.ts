@@ -29,6 +29,10 @@ export const createStorage = (): Storage => {
     [id: string]: () => void;
   } = {};
 
+  const lastSavedVersions: {
+    [id: string]: number;
+  } = {};
+
   function getUserExcalidraws(
     {
       id,
@@ -188,15 +192,18 @@ export const createStorage = (): Storage => {
                   return;
                 }
 
-                this.subscription.emit({
-                  type: "STORAGE:EXCALIDRAW_DATA_UPDATE",
-                  id,
-                  data: {
-                    appState: JSON.parse(data.appState),
-                    elements: JSON.parse(data.elements),
-                    version: data.version,
-                  },
-                });
+                if (lastSavedVersions[id] !== data.version) {
+                  lastSavedVersions[id] = data.version;
+                  this.subscription.emit({
+                    type: "STORAGE:EXCALIDRAW_DATA_UPDATE",
+                    id,
+                    data: {
+                      appState: JSON.parse(data.appState),
+                      elements: JSON.parse(data.elements),
+                      version: data.version,
+                    },
+                  });
+                }
               });
           }
         })
@@ -238,8 +245,9 @@ export const createStorage = (): Storage => {
                   }),
                   version: data.version,
                 });
+                lastSavedVersions[id] = data.version;
               } else {
-                return Promise.reject("Can not override newer version");
+                return Promise.reject("NEWER_VERSION");
               }
             } else {
               transaction.set(dataDoc, {
@@ -249,6 +257,7 @@ export const createStorage = (): Storage => {
                 }),
                 version: data.version,
               });
+              lastSavedVersions[id] = data.version;
             }
           });
         })
@@ -303,7 +312,15 @@ export const createStorage = (): Storage => {
 
           firebase.storage().ref().child(`previews/${userId}/${id}`).put(image);
         })
-        .catch((error: Error) => {
+        .catch((error) => {
+          if (error === "NEWER_VERSION") {
+            this.subscription.emit({
+              type: "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION",
+            });
+
+            return;
+          }
+
           this.subscription.emit({
             type: "STORAGE:SAVE_EXCALIDRAW_ERROR",
             error: error.message,

@@ -18,6 +18,7 @@ export type ClipboardState =
 
 export type BaseState = {
   data: ExcalidrawData;
+  remoteData?: ExcalidrawData;
   metadata: ExcalidrawMetadata;
   image: Blob;
   clipboard: ClipboardState;

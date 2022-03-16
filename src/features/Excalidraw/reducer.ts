@@ -1,26 +1,8 @@
 import { createReducer } from "react-states";
-import { ExcalidrawData, StorageAction } from "../../environment/storage";
-import { State, BaseState, Command, Transition, Feature } from "./types";
+import { ExcalidrawData } from "../../environment/storage";
+import { State, BaseState, Transition, Feature } from "./types";
 
 import { getChangedData, hasChangedExcalidraw } from "../../utils";
-
-const onDataUpdate = (
-  state: State & BaseState,
-  { data, id }: { data: ExcalidrawData; id: string }
-): Transition => {
-  if (id !== state.metadata.id) {
-    return state;
-  }
-
-  const changedData = getChangedData(data, state.data);
-
-  return changedData
-    ? {
-        ...state,
-        data: changedData,
-      }
-    : state;
-};
 
 export const reducer = createReducer<Feature>({
   LOADING: {
@@ -71,7 +53,6 @@ export const reducer = createReducer<Feature>({
         image: state.image,
       },
     ],
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
     "STORAGE:SAVE_TITLE_SUCCESS": (state, { title }): Transition => ({
       ...state,
       metadata: {
@@ -100,7 +81,6 @@ export const reducer = createReducer<Feature>({
             data,
           }
         : state,
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
   },
   SYNCING: {
     EXCALIDRAW_CHANGE: (state, { data }): Transition =>
@@ -124,7 +104,10 @@ export const reducer = createReducer<Feature>({
       state: "ERROR",
       error,
     }),
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
+    "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION": (state): Transition => ({
+      ...state,
+      state: "EDIT",
+    }),
   },
   SYNCING_DIRTY: {
     EXCALIDRAW_CHANGE: (state, { data }): Transition =>
@@ -144,7 +127,10 @@ export const reducer = createReducer<Feature>({
       ...state,
       state: "DIRTY",
     }),
-    "STORAGE:EXCALIDRAW_DATA_UPDATE": onDataUpdate,
+    "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION": (state): Transition => ({
+      ...state,
+      state: "DIRTY",
+    }),
   },
   ERROR: {},
 });
