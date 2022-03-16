@@ -57,9 +57,9 @@ describe("Dashboard", () => {
     expect(state).toEqual<NavigationState>({
       state: "EXCALIDRAW_CREATED",
       id: "456",
-    });
+    })
     
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     expect(navigate).toBeCalledWith("/123/456");
   });
