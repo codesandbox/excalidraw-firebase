@@ -42,8 +42,9 @@ export const ExcalidrawCanvas = React.memo(
 
     useEffect(() => {
       import("@excalidraw/excalidraw").then((comp) => {
+        // When building it, it exports on default.default
         // @ts-ignore
-        setComp(comp.default);
+        setComp(comp.default?.default ?? comp.default);
       });
     }, [Comp]);
 
