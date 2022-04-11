@@ -1,12 +1,10 @@
-import { Subscription } from "react-states";
-
 export type User = {
   uid: string;
   name: string;
   avatarUrl: string | null;
 };
 
-export type AuthenticationAction =
+export type AuthenticationEvent =
   | {
       type: "AUTHENTICATION:AUTHENTICATED";
       user: User;
@@ -21,6 +19,5 @@ export type AuthenticationAction =
     };
 
 export interface Authentication {
-  subscription: Subscription<AuthenticationAction>;
   signIn(): void;
 }

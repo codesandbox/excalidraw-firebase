@@ -1,6 +1,6 @@
 import React from "react";
 import { ExcalidrawPreview as ExcalidrawPreviewComponent } from "./ExcalidrawPreview";
-import { ExcalidrawPreview } from "../../environment/storage";
+import { ExcalidrawPreview } from "../../environments/storage";
 
 export const Dashboard = ({
   excalidraws,

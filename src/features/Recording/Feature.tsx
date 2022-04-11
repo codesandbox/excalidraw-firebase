@@ -1,15 +1,16 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext } from "react";
 import {
-  createReducer,
   States,
   StatesTransition,
   useCommandEffect,
   useStateEffect,
-  useSubsription,
 } from "react-states";
-import { useDevtools } from "react-states/devtools";
-import { useEnvironment } from "../../environment";
-import { LoomAction, LoomVideo } from "../../environment/loom";
+import {
+  useEnvironment,
+  useReducer,
+  createReducer,
+} from "../../environment-interface";
+import { LoomVideo } from "../../environment-interface/loom";
 
 export type State =
   | {
@@ -32,17 +33,15 @@ type Command = {
   video: LoomVideo;
 };
 
-type PublicAction = {
+type Action = {
   type: "RECORD";
 };
 
-export type PublicFeature = States<State, PublicAction>;
-
-export type Feature = States<State, PublicAction | LoomAction, Command>;
+export type Feature = States<State, Action, Command>;
 
 type Transition = StatesTransition<Feature>;
 
-const featureContext = createContext({} as PublicFeature);
+const featureContext = createContext({} as Feature);
 
 const reducer = createReducer<Feature>({
   DISABLED: {},
@@ -94,15 +93,9 @@ export const Feature = ({
   initialState?: State;
 }) => {
   const { loom } = useEnvironment();
-  const feature = useReducer(reducer, initialState);
+  const feature = useReducer("Recording", reducer, initialState);
 
-  if (process.env.NODE_ENV === "development") {
-    useDevtools("recording", feature);
-  }
-
-  const [state, dispatch] = feature;
-
-  useSubsription(loom.subscription, dispatch);
+  const [state] = feature;
 
   useStateEffect(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
     loom.configure(apiKey, buttonId);

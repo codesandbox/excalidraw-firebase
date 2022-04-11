@@ -1,15 +1,11 @@
-import React, { createContext, useReducer } from "react";
+import React, { createContext } from "react";
+import { States, StatesTransition, useStateEffect } from "react-states";
+import { ExcalidrawPreviews } from "../../environment-interface/storage";
 import {
+  useEnvironment,
+  useReducer,
   createReducer,
-  PickState,
-  States,
-  StatesTransition,
-  useStateEffect,
-  useSubsription,
-} from "react-states";
-import { ExcalidrawPreviews, StorageAction } from "../../environment/storage";
-import { useEnvironment } from "../../environment";
-import { useDevtools } from "react-states/devtools";
+} from "../../environment-interface";
 
 export type State =
   | {
@@ -24,13 +20,11 @@ export type State =
       error: string;
     };
 
-export type PublicAction = {
+export type Action = {
   type: "CREATE_EXCALIDRAW";
 };
 
-export type PublicFeature = States<State, PublicAction>;
-
-export type Feature = States<State, PublicAction | StorageAction>;
+export type Feature = States<State, Action>;
 
 type Transition = StatesTransition<Feature>;
 
@@ -52,7 +46,7 @@ const reducer = createReducer<Feature>({
   PREVIEWS_ERROR: {},
 });
 
-const featureContext = createContext({} as PublicFeature);
+const featureContext = createContext({} as Feature);
 
 export const useFeature = () => React.useContext(featureContext);
 
@@ -68,15 +62,9 @@ export const FeatureProvider = ({
   initialState?: State;
 }) => {
   const { storage } = useEnvironment();
-  const feature = useReducer(reducer, initialState);
-
-  if (process.env.NODE_ENV === "development") {
-    useDevtools("dashboard", feature);
-  }
+  const feature = useReducer("UserDashboard", reducer, initialState);
 
   const [state, dispatch] = feature;
-
-  useSubsription(storage.subscription, dispatch);
 
   useStateEffect(state, "LOADING_PREVIEWS", () =>
     storage.fetchUserPreviews(uid)

@@ -1,5 +1,5 @@
 import { createSubscription } from "react-states";
-import { Storage } from ".";
+import { Storage } from "../storage";
 
 export const createStorage = (): Storage => ({
   subscription: createSubscription(),

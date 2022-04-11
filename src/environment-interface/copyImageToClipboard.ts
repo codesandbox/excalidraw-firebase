@@ -1,3 +1,4 @@
 export interface CopyImageToClipboard {
-  (image: Blob): void;
-}
+    (image: Blob): void;
+  }
+  

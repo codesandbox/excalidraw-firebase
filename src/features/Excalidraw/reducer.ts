@@ -1,8 +1,7 @@
-import { createReducer } from "react-states";
-import { ExcalidrawData } from "../../environment/storage";
-import { State, BaseState, Transition, Feature } from "./types";
+import { createReducer } from "../../environment-interface";
+import { Transition, Feature } from "./types";
 
-import { getChangedData, hasChangedExcalidraw } from "../../utils";
+import { hasChangedExcalidraw } from "../../utils";
 
 export const reducer = createReducer<Feature>({
   LOADING: {

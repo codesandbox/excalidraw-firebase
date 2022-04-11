@@ -1,15 +1,12 @@
-import React, { createContext, useReducer } from "react";
-import {
-  createReducer,
-  States,
-  StatesTransition,
-  useStateEffect,
-  useSubsription,
-} from "react-states";
+import React, { createContext } from "react";
+import { States, StatesTransition, useStateEffect } from "react-states";
 
-import { useDevtools } from "react-states/devtools";
-import { useEnvironment } from "../../environment";
-import { AuthenticationAction, User } from "../../environment/authentication";
+import {
+  useEnvironment,
+  createReducer,
+  useReducer,
+} from "../../environment-interface";
+import { User } from "../../environment-interface/authentication";
 
 export type State =
   | {
@@ -31,13 +28,11 @@ export type State =
       error: string;
     };
 
-export type PublicAction = {
+export type Action = {
   type: "SIGN_IN";
 };
 
-export type PublicFeature = States<State, PublicAction>;
-
-export type Feature = States<State, PublicAction | AuthenticationAction>;
+export type Feature = States<State, Action>;
 
 export type Transition = StatesTransition<Feature>;
 
@@ -84,15 +79,9 @@ export const FeatureProvider = ({
   initialState?: State;
 }) => {
   const { authentication } = useEnvironment();
-  const feature = useReducer(reducer, initialState);
+  const feature = useReducer("Authentication", reducer, initialState);
 
-  if (process.env.NODE_ENV === "development") {
-    useDevtools("auth", feature);
-  }
-
-  const [state, dispatch] = feature;
-
-  useSubsription(authentication.subscription, dispatch);
+  const [state] = feature;
 
   useStateEffect(state, "SIGNING_IN", () => authentication.signIn());
 

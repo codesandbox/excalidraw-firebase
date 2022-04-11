@@ -9,7 +9,7 @@ import {
 import { Navigation } from "./Navigation";
 import { NavigationFeature } from "../../features/Navigation";
 import { useHistory, useRouteMatch } from "react-router";
-import { Auth } from "../../features/Auth";
+import { AuthFeature } from "../../features/Auth";
 
 const SharedDashboard = () => {
   const [state] = useDashboard();
@@ -42,7 +42,7 @@ const UserDashboard = () => {
 export const DashboardPage = ({
   auth,
 }: {
-  auth: PickState<Auth, "AUTHENTICATED">;
+  auth: PickState<AuthFeature, "AUTHENTICATED">;
 }) => {
   const history = useHistory();
   const match = useRouteMatch<{ userId: string }>("/:userId");

@@ -1,9 +1,9 @@
 import React from "react";
 import { renderHook } from "react-states/test";
 import { act } from "@testing-library/react";
-import { EnvironmentProvider } from "../../environment";
+import { EnvironmentProvider } from "../../environments";
 import { useAuth, AuthProvider, AuthState } from ".";
-import { createAuthentication } from "../../environment/authentication/test";
+import { createAuthentication } from "../../environments/authentication/test";
 
 describe("Auth", () => {
   test("Should go to AUTHENTICATED when mounted and is logged in", () => {

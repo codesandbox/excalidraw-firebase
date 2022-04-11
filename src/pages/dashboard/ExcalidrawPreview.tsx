@@ -1,18 +1,15 @@
 import * as React from "react";
-import {
-  match,
-  createReducer,
-  StatesTransition,
-  useSubsription,
-  useStateEffect,
-  States,
-} from "react-states";
-import { ExcalidrawMetadata, StorageAction } from "../../environment/storage";
+import { match, StatesTransition, useStateEffect, States } from "react-states";
+import { ExcalidrawMetadata } from "../../environment-interface/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 import { Link } from "react-router-dom";
-import { useEnvironment } from "../../environment";
-import { User } from "../../environment/authentication";
+import {
+  useEnvironment,
+  createReducer,
+  useReducer,
+} from "../../environment-interface";
+import { User } from "../../environment-interface/authentication";
 
 type State =
   | {
@@ -28,7 +25,7 @@ type State =
       error: string;
     };
 
-type ExcalidrawPreview = States<State, StorageAction>;
+type ExcalidrawPreview = States<State, any>;
 
 type Transition = StatesTransition<ExcalidrawPreview>;
 
@@ -61,12 +58,14 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, dispatch] = React.useReducer(excalidrawPreviewReducer, {
-    state: "LOADING_PREVIEW",
-    id: metadata.id,
-  });
-
-  useSubsription(storage.subscription, dispatch);
+  const [preview] = useReducer(
+    `ExcalidrawPreview-${metadata.id}`,
+    excalidrawPreviewReducer,
+    {
+      state: "LOADING_PREVIEW",
+      id: metadata.id,
+    }
+  );
 
   useStateEffect(preview, "LOADING_PREVIEW", () => {
     storage.getImageSrc(user.uid, metadata.id);

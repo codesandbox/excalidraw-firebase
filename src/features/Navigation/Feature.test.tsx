@@ -1,8 +1,8 @@
 import * as React from "react";
 import { act } from "@testing-library/react";
-import { EnvironmentProvider } from "../../environment";
-import { createStorage } from "../../environment/storage/test";
-import { createAuthentication } from "../../environment/authentication/test";
+import { EnvironmentProvider } from "../../environments";
+import { createStorage } from "../../environments/storage/test";
+import { createAuthentication } from "../../environments/authentication/test";
 import { createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import { NavigationState, NavigationFeature, useNavigation } from ".";

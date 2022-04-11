@@ -1,10 +1,8 @@
-import React, { createContext, useContext, useReducer } from "react";
-import { useDevtools } from "react-states/devtools";
+import React, { createContext, useContext } from "react";
 import { reducer } from "./reducer";
 import { State, Feature } from "./types";
-import { useClipboardEffect, useStorageEffects } from "./effects";
-import { useSubsription } from "react-states";
-import { useEnvironment } from "../../environment";
+import { useEnvironment, useReducer } from "../../environment-interface";
+import { useCommandEffect, useStateEffect } from "react-states";
 
 export * from "./types";
 
@@ -25,19 +23,35 @@ export const FeatureProvider = ({
   children: React.ReactNode;
   initialState?: State;
 }) => {
-  const { storage } = useEnvironment();
-  const feature = useReducer(reducer, initialState);
+  const { storage, copyImageToClipboard } = useEnvironment();
+  const feature = useReducer("Excalidraw", reducer, initialState);
+  const [state, dispatch] = feature;
 
-  if (process.env.NODE_ENV === "development") {
-    useDevtools("excalidraw", feature);
-  }
+  useCommandEffect(state, "COPY_TO_CLIPBOARD", ({ image }) => {
+    copyImageToClipboard(image);
+  });
 
-  const [, dispatch] = feature;
+  useStateEffect(state, "LOADING", () => storage.fetchExcalidraw(userId, id));
 
-  useSubsription(storage.subscription, dispatch);
+  useStateEffect(state, "SYNCING", ({ data }) => {
+    storage.saveExcalidraw(userId, id, data);
+  });
 
-  useClipboardEffect(feature);
-  useStorageEffects(userId, id, feature);
+  useCommandEffect(state, "SAVE_TITLE", ({ title }) => {
+    storage.saveTitle(userId, id, title);
+  });
+
+  useStateEffect(state, "DIRTY", () => {
+    const id = setTimeout(() => {
+      dispatch({
+        type: "SYNC",
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(id);
+    };
+  });
 
   return (
     <featureContext.Provider value={feature}>

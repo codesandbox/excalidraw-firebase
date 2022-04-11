@@ -1,6 +1,10 @@
-import { createSubscription } from "react-states";
+import { Emit } from "react-states";
 import firebase from "firebase/app";
-import { Authentication, AuthenticationAction, User } from ".";
+import {
+  Authentication,
+  AuthenticationEvent,
+  User,
+} from "../../environment-interface/authentication";
 
 const USERS_COLLECTION = "users";
 const CONFIG_COLLECTION = "config";
@@ -28,9 +32,9 @@ const updateUserData = (user: User) => {
   );
 };
 
-export const createAuthentication = (): Authentication => {
-  const subscription = createSubscription<AuthenticationAction>();
-
+export const createAuthentication = (
+  emit: Emit<AuthenticationEvent>
+): Authentication => {
   firebase.auth().onAuthStateChanged((firebaseUser) => {
     if (firebaseUser) {
       const user = getUser(firebaseUser);
@@ -42,28 +46,27 @@ export const createAuthentication = (): Authentication => {
         .get()
         .then((doc) => {
           const data = doc.data();
-          subscription.emit({
+          emit({
             type: "AUTHENTICATION:AUTHENTICATED",
             user,
             loomApiKey: data?.loom ?? null,
           });
         });
     } else {
-      subscription.emit({
+      emit({
         type: "AUTHENTICATION:UNAUTHENTICATED",
       });
     }
   });
 
   return {
-    subscription,
     signIn: () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       firebase
         .auth()
         .signInWithPopup(provider)
         .catch((error: Error) => {
-          subscription.emit({
+          emit({
             type: "AUTHENTICATION:SIGN_IN_ERROR",
             error: error.message,
           });

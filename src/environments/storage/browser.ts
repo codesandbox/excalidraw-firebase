@@ -4,11 +4,11 @@ import {
   ExcalidrawMetadata,
   ExcalidrawPreview,
   Storage,
-} from ".";
-import { createSubscription } from "react-states";
+  StorageEvent,
+} from "../../environment-interface/storage";
 import { exportToBlob, getSceneVersion } from "@excalidraw/excalidraw";
-import { getChangedData } from "../../utils";
 import { subMonths } from "date-fns";
+import { Emit } from "react-states";
 
 export const createExcalidrawImage = (
   elements: readonly any[],
@@ -24,7 +24,7 @@ const EXCALIDRAWS_COLLECTION = "excalidraws";
 const EXCALIDRAWS_DATA_COLLECTION = "excalidrawsData";
 const USERS_COLLECTION = "users";
 
-export const createStorage = (): Storage => {
+export const createStorage = (emit: Emit<StorageEvent>): Storage => {
   const excalidrawSnapshotSubscriptions: {
     [id: string]: () => void;
   } = {};
@@ -87,7 +87,6 @@ export const createStorage = (): Storage => {
   }
 
   return {
-    subscription: createSubscription(),
     createExcalidraw(userId) {
       firebase
         .firestore()
@@ -98,13 +97,13 @@ export const createStorage = (): Storage => {
           last_updated: firebase.firestore.FieldValue.serverTimestamp(),
         })
         .then((ref) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS",
             id: ref.id,
           });
         })
         .catch((error: Error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:CREATE_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -169,7 +168,7 @@ export const createStorage = (): Storage => {
           );
         })
         .then(({ data, image, metadata }) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS",
             metadata,
             data,
@@ -194,7 +193,7 @@ export const createStorage = (): Storage => {
 
                 if (lastSavedVersions[id] !== data.version) {
                   lastSavedVersions[id] = data.version;
-                  this.subscription.emit({
+                  emit({
                     type: "STORAGE:EXCALIDRAW_DATA_UPDATE",
                     id,
                     data: {
@@ -208,7 +207,7 @@ export const createStorage = (): Storage => {
           }
         })
         .catch((error: Error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -300,7 +299,7 @@ export const createStorage = (): Storage => {
             })
         )
         .then(({ metadata, image }) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS",
             metadata: {
               ...(metadata as ExcalidrawMetadata),
@@ -314,14 +313,14 @@ export const createStorage = (): Storage => {
         })
         .catch((error) => {
           if (error === "NEWER_VERSION") {
-            this.subscription.emit({
+            emit({
               type: "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION",
             });
 
             return;
           }
 
-          this.subscription.emit({
+          emit({
             type: "STORAGE:SAVE_EXCALIDRAW_ERROR",
             error: error.message,
           });
@@ -354,13 +353,13 @@ export const createStorage = (): Storage => {
             )
             .sort(sortExcalidrawPreviews);
 
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_PREVIEWS_SUCCESS",
             excalidraws: flattenedAndSortedExcalidraws,
           });
         })
         .catch((error: Error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_PREVIEWS_ERROR",
             error: error.message,
           });
@@ -391,13 +390,13 @@ export const createStorage = (): Storage => {
         .then((excalidraws) => {
           const sortedExcalidraws = excalidraws.sort(sortExcalidrawPreviews);
 
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_USER_PREVIEWS_SUCCESS",
             excalidraws: sortedExcalidraws,
           });
         })
         .catch((error: Error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:FETCH_USER_PREVIEWS_ERROR",
             error: error.message,
           });
@@ -410,14 +409,14 @@ export const createStorage = (): Storage => {
         .child(`previews/${userId}/${id}`)
         .getDownloadURL()
         .then((src) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:IMAGE_SRC_SUCCESS",
             id,
             src,
           });
         })
         .catch((error: Error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:IMAGE_SRC_ERROR",
             id,
             error: error.message,
@@ -425,7 +424,7 @@ export const createStorage = (): Storage => {
         });
     },
     saveTitle(userId, id, title) {
-      this.subscription.emit({
+      emit({
         type: "STORAGE:SAVE_TITLE_SUCCESS",
         id,
         title,
@@ -447,7 +446,7 @@ export const createStorage = (): Storage => {
           }
         )
         .catch((error) => {
-          this.subscription.emit({
+          emit({
             type: "STORAGE:SAVE_TITLE_ERROR",
             id,
             title,

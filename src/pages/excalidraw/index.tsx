@@ -4,13 +4,13 @@ import { Excalidraw } from "./Excalidraw";
 import { ExcalidrawFeature } from "../../features/Excalidraw";
 import { useParams } from "react-router-dom";
 import { RecordingFeature } from "../../features/Recording";
-import { Auth } from "../../features/Auth";
+import { AuthFeature } from "../../features/Auth";
 import { PickState } from "react-states";
 
 export const ExcalidrawPage = ({
   auth,
 }: {
-  auth: PickState<Auth, "AUTHENTICATED">;
+  auth: PickState<AuthFeature, "AUTHENTICATED">;
 }) => {
   const { id, userId } = useParams<{ id: string; userId: string }>();
 

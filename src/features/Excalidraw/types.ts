@@ -3,8 +3,7 @@ import {
   ExcalidrawData,
   ExcalidrawElement,
   ExcalidrawMetadata,
-  StorageAction,
-} from "../../environment/storage";
+} from "../../environment-interface/storage";
 
 export type { ExcalidrawElement, ExcalidrawData, ExcalidrawMetadata };
 
@@ -61,7 +60,7 @@ export type Command =
       title: string;
     };
 
-export type PublicAction =
+export type Action =
   | {
       type: "INITIALIZE_CANVAS_SUCCESS";
     }
@@ -81,12 +80,8 @@ export type PrivateAction = {
   type: "SYNC";
 };
 
-export type PublicFeature = States<State, PublicAction>;
+export type PublicFeature = States<State, Action>;
 
-export type Feature = States<
-  State,
-  PublicAction | PrivateAction | StorageAction,
-  Command
->;
+export type Feature = States<State, Action | PrivateAction, Command>;
 
 export type Transition = StatesTransition<Feature>;

@@ -1,6 +1,5 @@
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import { AppState } from "@excalidraw/excalidraw/types/types";
-import { Subscription } from "react-states";
 
 export type StorageError = {
   type: "ERROR";
@@ -33,7 +32,7 @@ export type ExcalidrawPreview = {
 
 export type ExcalidrawPreviews = ExcalidrawPreview[];
 
-export type StorageAction =
+export type StorageEvent =
   | {
       type: "STORAGE:FETCH_EXCALIDRAW_SUCCESS";
       metadata: ExcalidrawMetadata;
@@ -108,7 +107,6 @@ export type StorageAction =
     };
 
 export interface Storage {
-  subscription: Subscription<StorageAction>;
   createExcalidraw(userId: string): void;
   fetchExcalidraw(userId: string, id: string): void;
   fetchPreviews(): void;

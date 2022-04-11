@@ -1,16 +1,18 @@
-import React, { createContext, useReducer } from "react";
+import React, { createContext } from "react";
 import {
-  createReducer,
   PickState,
   States,
   StatesTransition,
   useStateEffect,
-  useSubsription,
 } from "react-states";
-import { StorageAction } from "../../environment/storage";
-import { useEnvironment } from "../../environment";
-import { useDevtools } from "react-states/devtools";
-import { Auth, AuthState } from "../Auth";
+
+import {
+  useEnvironment,
+  useReducer,
+  createReducer,
+} from "../../environment-interface";
+
+import { AuthFeature } from "../Auth";
 
 export type State =
   | {
@@ -31,7 +33,7 @@ export type State =
       error: string;
     };
 
-export type PublicAction =
+export type Action =
   | {
       type: "CREATE_EXCALIDRAW";
     }
@@ -42,9 +44,7 @@ export type PublicAction =
       type: "SHOW_MY_EXCALIDRAWSS";
     };
 
-export type PublicFeature = States<State, PublicAction>;
-
-export type Feature = States<State, PublicAction | StorageAction>;
+export type Feature = States<State, Action>;
 
 type Transition = StatesTransition<Feature>;
 
@@ -88,7 +88,7 @@ const reducer = createReducer<Feature>({
   EXCALIDRAW_CREATED: {},
 });
 
-const featureContext = createContext({} as PublicFeature);
+const featureContext = createContext({} as Feature);
 
 export const useFeature = () => React.useContext(featureContext);
 
@@ -101,20 +101,13 @@ export const FeatureProvider = ({
   navigate,
 }: {
   children: React.ReactNode;
-  auth: PickState<Auth, "AUTHENTICATED">;
+  auth: PickState<AuthFeature, "AUTHENTICATED">;
   navigate: (url: string) => void;
   initialState?: State;
 }) => {
   const { storage } = useEnvironment();
-  const feature = useReducer(reducer, initialState);
-
-  if (process.env.NODE_ENV === "development") {
-    useDevtools("navigation", feature);
-  }
-
-  const [state, dispatch] = feature;
-
-  useSubsription(storage.subscription, dispatch);
+  const feature = useReducer("Navigation", reducer, initialState);
+  const [state] = feature;
 
   useStateEffect(state, "CREATING_EXCALIDRAW", () =>
     storage.createExcalidraw(auth.user.uid)

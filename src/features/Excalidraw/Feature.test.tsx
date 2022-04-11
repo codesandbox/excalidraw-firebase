@@ -2,10 +2,10 @@ import React from "react";
 import { act, waitFor } from "@testing-library/react";
 import { renderHook } from "react-states/test";
 import { ExcalidrawFeature, useExcalidraw, ExcalidrawState } from ".";
-import { EnvironmentProvider } from "../../environment";
-import { createStorage } from "../../environment/storage/test";
+import { EnvironmentProvider } from "../../environments";
+import { createStorage } from "../../environments/storage/test";
 import { ExcalidrawData } from "./types";
-import { ExcalidrawMetadata } from "../../environment/storage";
+import { ExcalidrawMetadata } from "../../environments/storage";
 
 describe("Excalidraw", () => {
   test("Should go to EDIT when loaded excalidraw and canvas is ready", () => {
