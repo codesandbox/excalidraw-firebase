@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { Dispatch, useMemo, useState } from "react";
 import debounce from "lodash.debounce";
 import { getSceneVersion } from "@excalidraw/excalidraw";
 import { PickState, match } from "react-states";
@@ -9,21 +9,28 @@ import {
   faClipboard,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  Excalidraw as ExcalidrawFeature,
-  useExcalidraw,
-} from "../../features/Excalidraw";
 
-import { useRecording } from "../../features/Recording";
+import { useExcalidraw } from "./useExcalidraw";
+import { ExcalidrawAction, ExcalidrawState } from "./useExcalidraw/types";
+import { useRecording } from "./useRecording";
+import { useAuthenticatedAuth } from "../useAuth";
 
 type EditExcalidrawState = PickState<
-  ExcalidrawFeature,
+  ExcalidrawState,
   "LOADED" | "EDIT" | "SYNCING" | "DIRTY" | "SYNCING_DIRTY"
 >;
 
-const EditExcalidraw = ({ state }: { state: EditExcalidrawState }) => {
-  const [_, dispatch] = useExcalidraw();
-  const [recording, dispatchRecording] = useRecording();
+type EditExcalidrawReducer = [EditExcalidrawState, Dispatch<ExcalidrawAction>];
+
+const EditExcalidraw = ({
+  excalidrawReducer: [state, dispatch],
+}: {
+  excalidrawReducer: EditExcalidrawReducer;
+}) => {
+  const auth = useAuthenticatedAuth();
+  const [recording, dispatchRecording] = useRecording({
+    apiKey: auth.loomApiKey,
+  });
   const [title, setTitle] = useState(state.metadata.title || "");
 
   const onChange = useMemo(
@@ -153,14 +160,20 @@ const EditExcalidraw = ({ state }: { state: EditExcalidrawState }) => {
   );
 };
 
-export const Excalidraw = () => {
-  const [excalidraw] = useExcalidraw();
+export const Excalidraw: React.FC<{ id: string; userId: string }> = ({
+  id,
+  userId,
+}) => {
+  const [state, dispatch] = useExcalidraw({
+    id,
+    userId,
+  });
 
   const renderExcalidraw = (state: EditExcalidrawState) => (
-    <EditExcalidraw state={state} />
+    <EditExcalidraw excalidrawReducer={[state, dispatch]} />
   );
 
-  return match(excalidraw, {
+  return match(state, {
     LOADING: () => (
       <div className="center-wrapper">
         <div className="lds-dual-ring"></div>

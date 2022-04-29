@@ -1,23 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import firebase from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/storage";
-import { DevtoolsManager, DevtoolsProvider } from "react-states/devtools";
-
+import { DevtoolsProvider } from "react-states/devtools";
 import "./index.css";
-
-import config from "./firebase.config.json";
 import { Pages } from "./pages";
-import { AuthProvider } from "./features/Auth";
-import { EnvironmentProvider } from "./environment";
-import { createStorage } from "./environment/storage/browser";
-import { createAuthentication } from "./environment/authentication/browser";
-import { createCopyImageToClipboard } from "./environment/copyImageToClipboard/browser";
-import { createLoom } from "./environment/loom/browser";
 
-firebase.initializeApp(config);
+import { EnvironmentProvider } from "./environment-interface";
+import { environment } from "./environments/browser";
 
 // Polyfill for Loom
 if (typeof (window as any).global === "undefined") {
@@ -25,30 +13,14 @@ if (typeof (window as any).global === "undefined") {
 }
 
 const app = (
-  <EnvironmentProvider
-    environment={{
-      authentication: createAuthentication(),
-      storage: createStorage(),
-      copyImageToClipboard: createCopyImageToClipboard(),
-      loom: createLoom(),
-    }}
-  >
-    <AuthProvider>
-      <Pages />
-    </AuthProvider>
+  <EnvironmentProvider environment={environment}>
+    <Pages />
   </EnvironmentProvider>
 );
 
 ReactDOM.render(
   <React.StrictMode>
-    {import.meta.env.PROD ? (
-      app
-    ) : (
-      <DevtoolsProvider>
-        <DevtoolsManager />
-        {app}
-      </DevtoolsProvider>
-    )}
+    {import.meta.env.PROD ? app : <DevtoolsProvider>{app}</DevtoolsProvider>}
   </React.StrictMode>,
   document.getElementById("root")
 );

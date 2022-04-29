@@ -1,18 +1,14 @@
 import * as React from "react";
+import { match, transition, useStateEffect } from "react-states";
 import {
-  match,
-  createReducer,
-  StatesTransition,
-  useSubsription,
-  useStateEffect,
-  States,
-} from "react-states";
-import { ExcalidrawMetadata, StorageAction } from "../../environment/storage";
+  ExcalidrawMetadata,
+  StorageEvent,
+} from "../../environment-interface/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 import { Link } from "react-router-dom";
-import { useEnvironment } from "../../environment";
-import { User } from "../../environment/authentication";
+import { User } from "../../environment-interface/authentication";
+import { useEnvironment } from "../../environment-interface";
 
 type State =
   | {
@@ -28,30 +24,27 @@ type State =
       error: string;
     };
 
-type ExcalidrawPreview = States<State, StorageAction>;
-
-type Transition = StatesTransition<ExcalidrawPreview>;
-
-const excalidrawPreviewReducer = createReducer<ExcalidrawPreview>({
-  LOADING_PREVIEW: {
-    "STORAGE:IMAGE_SRC_SUCCESS": (state, { id, src }): Transition =>
-      id === state.id
-        ? {
-            state: "PREVIEW_LOADED",
-            src,
-          }
-        : state,
-    "STORAGE:IMAGE_SRC_ERROR": (state, { id, error }): Transition =>
-      state.id === id
-        ? {
-            state: "LOADING_ERROR",
-            error,
-          }
-        : state,
-  },
-  PREVIEW_LOADED: {},
-  LOADING_ERROR: {},
-});
+const reducer = (state: State, action: StorageEvent) =>
+  transition(state, action, {
+    LOADING_PREVIEW: {
+      "STORAGE:IMAGE_SRC_SUCCESS": (state, { id, src }): State =>
+        id === state.id
+          ? {
+              state: "PREVIEW_LOADED",
+              src,
+            }
+          : state,
+      "STORAGE:IMAGE_SRC_ERROR": (state, { id, error }): State =>
+        state.id === id
+          ? {
+              state: "LOADING_ERROR",
+              error,
+            }
+          : state,
+    },
+    PREVIEW_LOADED: {},
+    LOADING_ERROR: {},
+  });
 
 export const ExcalidrawPreview = ({
   user,
@@ -61,12 +54,12 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, dispatch] = React.useReducer(excalidrawPreviewReducer, {
+  const [preview, dispatch] = React.useReducer(reducer, {
     state: "LOADING_PREVIEW",
     id: metadata.id,
   });
 
-  useSubsription(storage.subscription, dispatch);
+  React.useEffect(() => storage.subscribe(dispatch), []);
 
   useStateEffect(preview, "LOADING_PREVIEW", () => {
     storage.getImageSrc(user.uid, metadata.id);
