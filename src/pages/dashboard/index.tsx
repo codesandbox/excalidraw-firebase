@@ -1,18 +1,15 @@
 import React from "react";
 import { Dashboard } from "./Dashboard";
-import { DashboardFeature, useDashboard } from "../../features/Dashboard";
 import { match, PickState } from "react-states";
-import {
-  UserDashboardFeature,
-  useUserDashboard,
-} from "../../features/UserDashboard";
+
 import { Navigation } from "./Navigation";
-import { NavigationFeature } from "../../features/Navigation";
-import { useHistory, useRouteMatch } from "react-router";
-import { Auth } from "../../features/Auth";
+import { useRouteMatch } from "react-router";
+
+import { useDashboard } from "./useDashboard";
+import { useUserDashboard } from "./useUserDashboard";
 
 const SharedDashboard = () => {
-  const [state] = useDashboard();
+  const state = useDashboard();
 
   return match(state, {
     LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
@@ -25,8 +22,8 @@ const SharedDashboard = () => {
   });
 };
 
-const UserDashboard = () => {
-  const [state] = useUserDashboard();
+const UserDashboard: React.FC<{ uid: string }> = ({ uid }) => {
+  const [state] = useUserDashboard({ uid });
 
   return match(state, {
     LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
@@ -39,32 +36,16 @@ const UserDashboard = () => {
   });
 };
 
-export const DashboardPage = ({
-  auth,
-}: {
-  auth: PickState<Auth, "AUTHENTICATED">;
-}) => {
-  const history = useHistory();
+export const DashboardPage = () => {
   const match = useRouteMatch<{ userId: string }>("/:userId");
 
   return (
     <div className="min-h-screen p-6">
-      <NavigationFeature
-        auth={auth}
-        navigate={(path) => {
-          history.push(path);
-        }}
-      >
-        <Navigation />
-      </NavigationFeature>
+      <Navigation />
       {match ? (
-        <UserDashboardFeature uid={match.params.userId}>
-          <UserDashboard />
-        </UserDashboardFeature>
+        <UserDashboard uid={match.params.userId} />
       ) : (
-        <DashboardFeature>
-          <SharedDashboard />
-        </DashboardFeature>
+        <SharedDashboard />
       )}
     </div>
   );

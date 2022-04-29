@@ -1,5 +1,8 @@
 import { AppState } from "@excalidraw/excalidraw/types/types";
-import { ExcalidrawData, ExcalidrawElement } from "./features/Excalidraw/types";
+import {
+  ExcalidrawData,
+  ExcalidrawElement,
+} from "./providers/Excalidraw/types";
 
 export const hasChangedExcalidraw = (
   oldData: ExcalidrawData,

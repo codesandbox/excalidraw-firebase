@@ -1,9 +1,18 @@
 import React from "react";
-import { match } from "react-states";
-import { useNavigation } from "../../features/Navigation";
+import { useHistory } from "react-router";
+import { match, PickState } from "react-states";
+import { useAuthenticatedAuth } from "../useAuth";
 
-export const Navigation = () => {
-  const [state, dispatch] = useNavigation();
+import { useNavigation } from "./useNavigation";
+
+export const Navigation: React.FC = () => {
+  const auth = useAuthenticatedAuth();
+  const history = useHistory();
+  const [state, dispatch] = useNavigation({
+    navigate: (path) => {
+      history.push(path);
+    },
+  });
 
   return (
     <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
