@@ -6,7 +6,7 @@ import {
 } from "./types";
 import { StorageEvent } from "../../../environment-interface/storage";
 
-import { $COMMAND, transition } from "react-states";
+import { transition } from "react-states";
 import { hasChangedExcalidraw } from "../../../utils";
 
 export const reducer = (
@@ -55,10 +55,6 @@ export const reducer = (
         clipboard: {
           state: "COPIED",
         },
-        [$COMMAND]: {
-          cmd: "COPY_TO_CLIPBOARD",
-          image: state.image,
-        },
       }),
       "STORAGE:SAVE_TITLE_SUCCESS": (state, { title }): ExcalidrawState => ({
         ...state,
@@ -69,10 +65,6 @@ export const reducer = (
       }),
       SAVE_TITLE: (state, { title }): ExcalidrawState => ({
         ...state,
-        [$COMMAND]: {
-          cmd: "SAVE_TITLE",
-          title,
-        },
       }),
     },
     DIRTY: {
