@@ -1,10 +1,9 @@
-import React, { Dispatch, useContext, useEffect, useReducer } from "react";
+import React, { Dispatch, useEffect, useReducer } from "react";
 import {
-  $COMMAND,
   transition,
-  useCommandEffect,
   useDevtools,
   useStateEffect,
+  useTransitionEffect,
 } from "react-states";
 import { useEnvironment } from "../../environment-interface";
 
@@ -21,16 +20,10 @@ export type RecordingState =
     }
   | {
       state: "READY";
-      [$COMMAND]?: Command;
     }
   | {
       state: "RECORDING";
     };
-
-type Command = {
-  cmd: "OPEN_VIDEO";
-  video: LoomVideo;
-};
 
 type RecordingAction = {
   type: "RECORD";
@@ -46,12 +39,8 @@ const reducer = (state: RecordingState, action: RecordingAction | LoomEvent) =>
       }),
     },
     READY: {
-      "LOOM:INSERT": (state, { video }): RecordingState => ({
+      "LOOM:INSERT": (state): RecordingState => ({
         ...state,
-        [$COMMAND]: {
-          cmd: "OPEN_VIDEO",
-          video,
-        },
       }),
       "LOOM:START": (): RecordingState => ({
         state: "RECORDING",
@@ -91,12 +80,14 @@ export const useRecording = ({
 
   useEffect(() => loom.subscribe(dispatch), []);
 
-  useStateEffect(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
+  useTransitionEffect(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
     loom.configure(apiKey, buttonId);
   });
 
-  useCommandEffect(state, "OPEN_VIDEO", ({ video }) => {
-    loom.openVideo(video);
+  useTransitionEffect(state, "READY", "READY", (_, action) => {
+    if (action.type === "LOOM:INSERT") {
+      loom.openVideo(action.video);
+    }
   });
 
   return recording;
