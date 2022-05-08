@@ -1,9 +1,4 @@
-import {
-  ExcalidrawState,
-  BaseState,
-  ExcalidrawAction,
-  PrivateAction,
-} from "./types";
+import { ExcalidrawState, ExcalidrawAction, PrivateAction } from "./types";
 import { StorageEvent } from "../../../environment-interface/storage";
 
 import { transition } from "react-states";

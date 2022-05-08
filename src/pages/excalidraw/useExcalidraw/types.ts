@@ -1,4 +1,3 @@
-import { $COMMAND } from "react-states";
 import {
   ExcalidrawData,
   ExcalidrawMetadata,
@@ -35,7 +34,6 @@ export type ExcalidrawState =
           }
         | {
             state: "EDIT";
-            [$COMMAND]?: Command;
           }
         | {
             state: "DIRTY";
@@ -47,16 +45,6 @@ export type ExcalidrawState =
             state: "SYNCING_DIRTY";
           }
       ));
-
-export type Command =
-  | {
-      cmd: "COPY_TO_CLIPBOARD";
-      image: Blob;
-    }
-  | {
-      cmd: "SAVE_TITLE";
-      title: string;
-    };
 
 export type ExcalidrawAction =
   | {

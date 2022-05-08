@@ -116,6 +116,14 @@ const EditExcalidraw = ({
             onChange={(event) => {
               setTitle(event.target.value);
             }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                dispatch({
+                  type: "SAVE_TITLE",
+                  title,
+                });
+              }
+            }}
             className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-3 sm:text-sm border-gray-300 rounded-md h-10"
             placeholder="Title..."
           />

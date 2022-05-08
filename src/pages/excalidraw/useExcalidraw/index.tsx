@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  Dispatch,
-  useContext,
-  useEffect,
-  useReducer,
-} from "react";
+import { Dispatch, useEffect, useReducer } from "react";
 
 import { reducer } from "./reducer";
 import { ExcalidrawAction, ExcalidrawState } from "./types";
@@ -34,13 +28,12 @@ export const useExcalidraw = ({
 
   useEffect(() => storage.subscribe(dispatch), []);
 
-  useTransitionEffect(state, "EDIT", "EDIT", ({ image }, action) => {
-    if (action.type === "COPY_TO_CLIPBOARD") {
-      copyImageToClipboard(image);
-    }
-    if (action.type === "SAVE_TITLE") {
-      storage.saveTitle(userId, id, action.title);
-    }
+  useTransitionEffect(state, "EDIT", "COPY_TO_CLIPBOARD", ({ image }) => {
+    copyImageToClipboard(image);
+  });
+
+  useTransitionEffect(state, "EDIT", "SAVE_TITLE", (_, { title }) => {
+    storage.saveTitle(userId, id, title);
   });
 
   useTransitionEffect(state, "LOADING", () =>
