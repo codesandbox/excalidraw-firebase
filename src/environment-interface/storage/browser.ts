@@ -5,11 +5,11 @@ import {
   ExcalidrawPreview,
   Storage,
   StorageEvent,
-} from "../../environment-interface/storage";
+} from ".";
 import { exportToBlob, getSceneVersion } from "@excalidraw/excalidraw";
 
 import { subMonths } from "date-fns";
-import { createEmitter } from "react-states";
+import { createEmitter } from "react-environment-interface";
 
 export const createExcalidrawImage = (
   elements: readonly any[],

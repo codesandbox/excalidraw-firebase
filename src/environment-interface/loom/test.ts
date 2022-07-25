@@ -1,5 +1,5 @@
-import { createEmitter } from "react-states";
-import { Loom } from "../../environment-interface/loom";
+import { createEmitter } from "react-environment-interface";
+import { Loom } from ".";
 
 export const createLoom = (): Loom => ({
   ...createEmitter(),

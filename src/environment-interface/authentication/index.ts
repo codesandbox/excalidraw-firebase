@@ -1,4 +1,4 @@
-import { TEmit, TSubscribe } from "react-states";
+import { TEmit, TSubscribe } from "react-environment-interface";
 
 export type User = {
   uid: string;
@@ -21,7 +21,7 @@ export type AuthenticationEvent =
     };
 
 export interface Authentication {
-  subscribe: TSubscribe<AuthenticationEvent>
-  emit: TEmit<AuthenticationEvent>
+  subscribe: TSubscribe<AuthenticationEvent>;
+  emit: TEmit<AuthenticationEvent>;
   signIn(): void;
 }

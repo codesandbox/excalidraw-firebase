@@ -1,13 +1,13 @@
 import React from "react";
-import { useHistory } from "react-router";
 import { match, PickState } from "react-states";
-import { useAuthenticatedAuth } from "../useAuth";
+import { useAuthenticatedAuth } from "../../hooks/useAuth";
+import { useCurrentPage } from "../../hooks/useCurrentPage";
 
-import { useNavigation } from "./useNavigation";
+import { useNavigation } from "../../hooks/useNavigation";
 
 export const Navigation: React.FC = () => {
   const auth = useAuthenticatedAuth();
-  const history = useHistory();
+  const page = useCurrentPage();
   const [state, dispatch] = useNavigation({
     navigate: (path) => {
       history.push(path);

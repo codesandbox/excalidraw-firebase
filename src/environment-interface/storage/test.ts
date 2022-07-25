@@ -1,5 +1,5 @@
-import { createEmitter } from "react-states";
-import { Storage } from "../../environment-interface/storage";
+import { createEmitter } from "react-environment-interface";
+import { Storage } from ".";
 
 export const createStorage = (): Storage => ({
   ...createEmitter(),

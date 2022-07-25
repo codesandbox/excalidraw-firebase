@@ -1,7 +1,6 @@
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import { AppState } from "@excalidraw/excalidraw/types/types";
-import { TEmit, TSubscribe } from "react-states";
-
+import { TEmit, TSubscribe } from "react-environment-interface";
 
 export type StorageError = {
   type: "ERROR";
@@ -109,8 +108,8 @@ export type StorageEvent =
     };
 
 export interface Storage {
-  subscribe: TSubscribe<StorageEvent>
-  emit: TEmit<StorageEvent>
+  emit: TEmit<StorageEvent>;
+  subscribe: TSubscribe<StorageEvent>;
   createExcalidraw(userId: string): void;
   fetchExcalidraw(userId: string, id: string): void;
   fetchPreviews(): void;

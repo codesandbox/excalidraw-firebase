@@ -5,22 +5,42 @@ import "./index.css";
 import { Pages } from "./pages";
 
 import { EnvironmentProvider } from "./environment-interface";
-import { environment } from "./environments/browser";
+import { createBrowserEnvironment } from "./environment-interface/browser";
+import { Provider as HooksProvider } from "./hooks";
+import { useHistory } from "react-router";
 
 // Polyfill for Loom
 if (typeof (window as any).global === "undefined") {
   (window as any).global = window;
 }
 
-const app = (
-  <EnvironmentProvider environment={environment}>
-    <Pages />
-  </EnvironmentProvider>
-);
+const environment = createBrowserEnvironment();
+
+const App = () => {
+  const history = useHistory();
+
+  return (
+    <EnvironmentProvider environment={environment}>
+      <HooksProvider
+        navigate={(url) => {
+          history.push(url);
+        }}
+      >
+        <Pages />
+      </HooksProvider>
+    </EnvironmentProvider>
+  );
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    {import.meta.env.PROD ? app : <DevtoolsProvider>{app}</DevtoolsProvider>}
+    {import.meta.env.PROD ? (
+      <App />
+    ) : (
+      <DevtoolsProvider>
+        <App />
+      </DevtoolsProvider>
+    )}
   </React.StrictMode>,
   document.getElementById("root")
 );

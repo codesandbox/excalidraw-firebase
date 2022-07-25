@@ -1,10 +1,6 @@
 import firebase from "firebase/app";
-import { createEmitter } from "react-states";
-import {
-  Authentication,
-  AuthenticationEvent,
-  User,
-} from "../../environment-interface/authentication";
+import { createEmitter } from "react-environment-interface";
+import { Authentication, AuthenticationEvent, User } from ".";
 
 const USERS_COLLECTION = "users";
 const CONFIG_COLLECTION = "config";

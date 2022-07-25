@@ -1,4 +1,4 @@
-import { TEmit, TSubscribe } from "react-states";
+import { TEmit, TSubscribe } from "react-environment-interface";
 
 export interface LoomVideo {
   id: string;
@@ -37,8 +37,8 @@ export type LoomEvent =
     };
 
 export interface Loom {
+  emit: TEmit<LoomEvent>;
   subscribe: TSubscribe<LoomEvent>;
-  emit: TEmit<LoomEvent>
   configure(apiKey: string, buttonId: string): void;
   openVideo(video: LoomVideo): void;
 }

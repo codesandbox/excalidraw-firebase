@@ -1805,6 +1805,11 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
 
+"@types/page@^1.11.5":
+  version "1.11.5"
+  resolved "https://registry.yarnpkg.com/@types/page/-/page-1.11.5.tgz#7e60f8c78a05f5b0c26a0b4334647490e074de68"
+  integrity sha512-v0uoRBrJOnYWI/HcqmhLFbkWPW6tF183FdorVLYsep+HKxW1vFT/G+yaUymvS26uL8NPKj8hit4QEtphGDTwxA==
+
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
@@ -7016,6 +7021,13 @@ package-json@^6.3.0:
     registry-url "^5.0.0"
     semver "^6.2.0"
 
+page@^1.11.6:
+  version "1.11.6"
+  resolved "https://registry.yarnpkg.com/page/-/page-1.11.6.tgz#5ef4efc7073749b8085ccdaa0dcd7c9e0de12fe3"
+  integrity sha512-P6e2JfzkBrPeFCIPplLP7vDDiU84RUUZMrWdsH4ZBGJ8OosnwFkcUkBHp1DTIjuipLliw9yQn/ZJsXZvarsO+g==
+  dependencies:
+    path-to-regexp "~1.2.1"
+
 parent-module@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parent-module/-/parent-module-1.0.1.tgz#691d2709e78c79fae3a156622452d00762caaaa2"
@@ -7092,6 +7104,13 @@ path-to-regexp@^1.7.0, path-to-regexp@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-1.8.0.tgz#887b3ba9d84393e87a0a0b9f4cb756198b53548a"
   integrity sha512-n43JRhlUKUAlibEJhPeir1ncUID16QnEjNpwzNdO3Lm4ywrBpBZ5oLD0I6br9evr1Y9JTqwRtAh7JLoOzAQdVA==
+  dependencies:
+    isarray "0.0.1"
+
+path-to-regexp@~1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-1.2.1.tgz#b33705c140234d873c8721c7b9fd8b541ed3aff9"
+  integrity sha512-DBw9IhWfevR2zCVwEZURTuQNseCvu/Q9f5ZgqMCK0Rh61bDa4uyjPAOy9b55yKiPT59zZn+7uYKxmWwsguInwg==
   dependencies:
     isarray "0.0.1"
 
@@ -7507,6 +7526,16 @@ react-dom@^17.0.0:
     object-assign "^4.1.1"
     scheduler "^0.20.1"
 
+react-environment-interface@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/react-environment-interface/-/react-environment-interface-0.1.4.tgz#9b40236cc489d50418e2913f86f1a625261ab6c3"
+  integrity sha512-rNOKrRLpKz6grt0rgzvsqvSIUtglPHZHVKgI5147tdq1HuDmEs0jomeIPUdFGyI5Dq8iw+fpFMfwdXNgAwzHYQ==
+
+react-hooks-provider@^1.0.0-rc1:
+  version "1.0.0-rc1"
+  resolved "https://registry.yarnpkg.com/react-hooks-provider/-/react-hooks-provider-1.0.0-rc1.tgz#533fd4de95ece390f3594202b8e4bfab485c6c4f"
+  integrity sha512-AK1TLooYTUzzu9ARZOCH6815QG+oNddwONyi3EN0c3wNHXDH9A0yNZ/0sW7Umu/vm8gOmZzKcvr3uuKjjjD3kQ==
+
 "react-is@^16.12.0 || ^17.0.0", react-is@^17.0.1:
   version "17.0.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.1.tgz#5b3531bd76a645a4c9fb6e693ed36419e3301339"
@@ -7559,10 +7588,10 @@ react-shallow-renderer@^16.13.1:
     object-assign "^4.1.1"
     react-is "^16.12.0 || ^17.0.0"
 
-react-states@^6.2.3:
-  version "6.2.3"
-  resolved "https://registry.yarnpkg.com/react-states/-/react-states-6.2.3.tgz#0d7859880ff0004f87fc030737cef9a68e74d760"
-  integrity sha512-NOsZzbMsLsOnkXMfOUgqx6ZBIZBLH6BYqILyE/gbGmuELyTJQCS6B+VAuoBpBxlK8C+Q5HaqY++XySVOGoaI6Q==
+react-states@^8.0.0-rc1:
+  version "8.0.0-rc1"
+  resolved "https://registry.yarnpkg.com/react-states/-/react-states-8.0.0-rc1.tgz#f27aa833cd4264f9f7067823949f7c742fea9915"
+  integrity sha512-F2KllNZ3yXwifhzSP/g5fxdlAduhUKheCbvv4a3VaVvzpMGKulYGBAlWaUFYhouMtwsMP8NYh4ZZ645vk6UHSQ==
 
 react-test-renderer@^17.0.1:
   version "17.0.1"

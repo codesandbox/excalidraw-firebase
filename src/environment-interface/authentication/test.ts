@@ -1,5 +1,5 @@
 import { createEmitter } from "react-states";
-import { Authentication } from "../../environment-interface/authentication";
+import { Authentication } from ".";
 
 export const createAuthentication = (): Authentication => ({
   ...createEmitter(),

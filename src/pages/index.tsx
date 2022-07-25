@@ -1,12 +1,14 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { match } from "react-states";
-import { AuthenticatedAuthProvider, useAuth } from "./useAuth";
+import { useAuth } from "../hooks/useAuth";
+
+import { useNavigation } from "../hooks/useNavigation";
 import { DashboardPage } from "./dashboard";
 import { ExcalidrawPage } from "./excalidraw";
 
 export const Pages = () => {
   const [auth, dispatch] = useAuth();
+  const [navigation] = useNavigation();
 
   return (
     <div className="bg-gray-100">
@@ -26,23 +28,17 @@ export const Pages = () => {
             <div className="lds-dual-ring"></div>
           </div>
         ),
-        AUTHENTICATED: (authenticatedAuth) => (
-          <AuthenticatedAuthProvider auth={authenticatedAuth}>
-            <Router>
-              <Switch>
-                <Route exact path="/">
-                  <DashboardPage />
-                </Route>
-                <Route exact path="/:userId">
-                  <DashboardPage />
-                </Route>
-                <Route path="/:userId/:id">
-                  <ExcalidrawPage />
-                </Route>
-              </Switch>
-            </Router>
-          </AuthenticatedAuthProvider>
-        ),
+        AUTHENTICATED: () => {
+          switch (currentPage.name) {
+            case "USER_EXCALIDRAWS":
+            case "ALL_EXCALIDRAWS":
+              return <DashboardPage />;
+            case "EXCALIDRAW":
+              return <ExcalidrawPage />;
+            default:
+              return "Not found...";
+          }
+        },
         SIGNING_IN: () => (
           <div className="h-screen flex items-center justify-center">
             <div className="lds-dual-ring"></div>

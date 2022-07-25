@@ -1,6 +1,6 @@
 import { setup } from "@loomhq/loom-sdk";
-import { createEmitter } from "react-states";
-import { Loom, LoomEvent } from "../../environment-interface/loom";
+import { createEmitter } from "react-environment-interface";
+import { Loom, LoomEvent } from ".";
 
 type ButtonFn = ReturnType<typeof setup> extends Promise<infer R>
   ? R extends { configureButton: any }
