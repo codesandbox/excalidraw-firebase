@@ -1,7 +1,7 @@
 import { createEmitter } from "react-environment-interface";
-import { Router, Page } from ".";
+import { Router, RouterPage } from ".";
 
-export const createRouter = (initialPage: Page): Router => ({
+export const createRouter = (initialPage: RouterPage): Router => ({
   ...createEmitter(),
   page: initialPage,
   open: jest.fn(),

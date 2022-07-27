@@ -1,37 +1,37 @@
 import router from "page";
 import { createEmitter } from "react-environment-interface";
-import { Router, RouterEvent, NotFoundPage, Page } from ".";
+import { Router, RouterEvent, RouterPage } from ".";
 
 export const createRouter = (): Router => {
   const { emit, subscribe } = createEmitter<RouterEvent>();
-  let currentPage: Page | NotFoundPage;
+  let currentPage: RouterPage;
 
-  function setPage(page: Page | NotFoundPage) {
+  function setState(page: RouterPage) {
     currentPage = page;
     emit({
-      type: "PAGE_CHANGED",
+      type: "ROUTER:PAGE_CHANGED",
       page,
     });
   }
 
   router("/", () => {
-    setPage({ name: "ALL_EXCALIDRAWS" });
+    setState({ state: "ALL_EXCALIDRAWS" });
   });
 
   router("/:userId", ({ params }) => {
-    setPage({ name: "USER_EXCALIDRAWS", userId: params.userId });
+    setState({ state: "USER_EXCALIDRAWS", userId: params.userId });
   });
 
   router("/:userId/:excalidrawId", ({ params }) => {
-    setPage({
-      name: "EXCALIDRAW",
+    setState({
+      state: "EXCALIDRAW",
       userId: params.userId,
       excalidrawId: params.excalidrawId,
     });
   });
 
   router("*", () => {
-    setPage({ name: "NOT_FOUND" });
+    setState({ state: "NOT_FOUND" });
   });
 
   page.start();

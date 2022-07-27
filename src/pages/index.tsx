@@ -1,14 +1,13 @@
 import React from "react";
 import { match } from "react-states";
 import { useAuth } from "../hooks/useAuth";
-
-import { useNavigation } from "../hooks/useNavigation";
-import { DashboardPage } from "./dashboard";
+import { useRouter } from "../hooks/useRouter";
+import { SharedDashboard, UserDashboard } from "./dashboard";
 import { ExcalidrawPage } from "./excalidraw";
 
 export const Pages = () => {
   const [auth, dispatch] = useAuth();
-  const [navigation] = useNavigation();
+  const router = useRouter();
 
   return (
     <div className="bg-gray-100">
@@ -29,15 +28,24 @@ export const Pages = () => {
           </div>
         ),
         AUTHENTICATED: () => {
-          switch (currentPage.name) {
-            case "USER_EXCALIDRAWS":
-            case "ALL_EXCALIDRAWS":
-              return <DashboardPage />;
-            case "EXCALIDRAW":
-              return <ExcalidrawPage />;
-            default:
-              return "Not found...";
+          let page: React.ReactNode = "Not found...";
+
+          switch (router.page.name) {
+            case "ALL_EXCALIDRAWS": {
+              page = <SharedDashboard />;
+              break;
+            }
+            case "USER_EXCALIDRAWS": {
+              page = <UserDashboard uid={router.page.userId} />;
+              break;
+            }
+            case "EXCALIDRAW": {
+              page = <ExcalidrawPage />;
+              break;
+            }
           }
+
+          return <div className="min-h-screen p-6">{page}</div>;
         },
         SIGNING_IN: () => (
           <div className="h-screen flex items-center justify-center">

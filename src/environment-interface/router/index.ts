@@ -1,10 +1,6 @@
 import { TEmit, TSubscribe } from "react-environment-interface";
 
-export type NotFoundPage = {
-  name: "NOT_FOUND";
-};
-
-export type Page =
+export type RouterPage =
   | {
       name: "ALL_EXCALIDRAWS";
     }
@@ -16,16 +12,19 @@ export type Page =
       name: "EXCALIDRAW";
       userId: string;
       excalidrawId: string;
+    }
+  | {
+      name: "NOT_FOUND";
     };
 
 export type RouterEvent = {
-  type: "PAGE_CHANGED";
-  page: Page | NotFoundPage;
+  type: "ROUTER:PAGE_CHANGED";
+  page: RouterPage;
 };
 
 export interface Router {
   emit: TEmit<RouterEvent>;
   subscribe: TSubscribe<RouterEvent>;
-  page: Page | NotFoundPage;
-  open: (page: Page) => void;
+  page: RouterPage;
+  open: (page: RouterPage) => void;
 }

@@ -332,7 +332,7 @@ export const createStorage = (app: firebase.app.App): Storage => {
         });
     },
     fetchPreviews() {
-      app
+      return app
         .firestore()
         .collection(USERS_COLLECTION)
         .get()
@@ -351,27 +351,16 @@ export const createStorage = (app: firebase.app.App): Storage => {
           )
         )
         .then((excalidraws) => {
-          const flattenedAndSortedExcalidraws = excalidraws
+          return excalidraws
             .reduce<ExcalidrawPreview[]>(
               (aggr, userExcalidraws) => aggr.concat(userExcalidraws),
               []
             )
             .sort(sortExcalidrawPreviews);
-
-          emit({
-            type: "STORAGE:FETCH_PREVIEWS_SUCCESS",
-            excalidraws: flattenedAndSortedExcalidraws,
-          });
-        })
-        .catch((error: Error) => {
-          emit({
-            type: "STORAGE:FETCH_PREVIEWS_ERROR",
-            error: error.message,
-          });
         });
     },
     fetchUserPreviews(uid) {
-      app
+      return app
         .firestore()
         .collection(USERS_COLLECTION)
         .doc(uid)
@@ -393,18 +382,7 @@ export const createStorage = (app: firebase.app.App): Storage => {
           throw new Error("Invalid user");
         })
         .then((excalidraws) => {
-          const sortedExcalidraws = excalidraws.sort(sortExcalidrawPreviews);
-
-          emit({
-            type: "STORAGE:FETCH_USER_PREVIEWS_SUCCESS",
-            excalidraws: sortedExcalidraws,
-          });
-        })
-        .catch((error: Error) => {
-          emit({
-            type: "STORAGE:FETCH_USER_PREVIEWS_ERROR",
-            error: error.message,
-          });
+          return excalidraws.sort(sortExcalidrawPreviews);
         });
     },
     getImageSrc(userId, id) {

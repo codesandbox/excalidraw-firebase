@@ -1,52 +1,37 @@
 import React from "react";
 import { Dashboard } from "./Dashboard";
-import { match, PickState } from "react-states";
-
-import { Navigation } from "./Navigation";
-import { useRouteMatch } from "react-router";
+import { match, usePromise } from "react-states";
 
 import { useDashboard } from "./useDashboard";
 import { useUserDashboard } from "./useUserDashboard";
+import { useEnvironment } from "../../environment-interface";
 
-const SharedDashboard = () => {
-  const state = useDashboard();
+export const SharedDashboard = () => {
+  const { storage } = useEnvironment();
+  const [state] = usePromise(() => storage.fetchPreviews());
 
   return match(state, {
-    LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
-    PREVIEWS_ERROR: ({ error }) => (
+    PENDING: () => <div className="lds-dual-ring"></div>,
+    REJECTED: ({ error }) => (
       <p style={{ color: "tomato" }}>There was an error: {error}</p>
     ),
-    PREVIEWS_LOADED: ({ excalidraws }) => (
+    RESOLVED: ({ value: excalidraws }) => (
       <Dashboard excalidraws={excalidraws} />
     ),
   });
 };
 
-const UserDashboard: React.FC<{ uid: string }> = ({ uid }) => {
-  const [state] = useUserDashboard({ uid });
+export const UserDashboard: React.FC<{ uid: string }> = ({ uid }) => {
+  const { storage } = useEnvironment();
+  const [state] = usePromise(() => storage.fetchUserPreviews(uid), [uid]);
 
   return match(state, {
-    LOADING_PREVIEWS: () => <div className="lds-dual-ring"></div>,
-    PREVIEWS_ERROR: ({ error }) => (
+    PENDING: () => <div className="lds-dual-ring"></div>,
+    REJECTED: ({ error }) => (
       <p style={{ color: "tomato" }}>There was an error: {error}</p>
     ),
-    PREVIEWS_LOADED: ({ excalidraws }) => (
+    RESOLVED: ({ value: excalidraws }) => (
       <Dashboard excalidraws={excalidraws} />
     ),
   });
-};
-
-export const DashboardPage = () => {
-  const match = useRouteMatch<{ userId: string }>("/:userId");
-
-  return (
-    <div className="min-h-screen p-6">
-      <Navigation />
-      {match ? (
-        <UserDashboard uid={match.params.userId} />
-      ) : (
-        <SharedDashboard />
-      )}
-    </div>
-  );
 };

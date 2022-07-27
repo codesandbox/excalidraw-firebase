@@ -1,5 +1,5 @@
 import { Dispatch, useEffect, useReducer } from "react";
-import { transition, useEnterState } from "react-states";
+import { transition, useStateTransition } from "react-states";
 import { useDevtools } from "react-states/devtools";
 import { registerHook } from ".";
 import { useEnvironment } from "../environment-interface";
@@ -81,7 +81,7 @@ export const useAuth = registerHook(
 
     useEffect(() => authentication.subscribe(dispatch), []);
 
-    useEnterState(state, "SIGNING_IN", () => authentication.signIn());
+    useStateTransition(state, "SIGNING_IN", () => authentication.signIn());
 
     return auth;
   }
