@@ -4,7 +4,7 @@ import { reducer } from "./reducer";
 import { ExcalidrawAction, ExcalidrawState } from "./types";
 
 import { useEnvironment } from "../../../environment-interface";
-import { useDevtools, useTransitionEffect } from "react-states";
+import { useStateTransition, useDevtools } from "react-states";
 
 export const useExcalidraw = ({
   id,
@@ -28,23 +28,39 @@ export const useExcalidraw = ({
 
   useEffect(() => storage.subscribe(dispatch), []);
 
-  useTransitionEffect(state, "EDIT", "COPY_TO_CLIPBOARD", ({ image }) => {
-    copyImageToClipboard(image);
-  });
+  useStateTransition(
+    state,
+    {
+      EDIT: {
+        COPY_TO_CLIPBOARD: "EDIT",
+      },
+    },
+    ({ image }) => {
+      copyImageToClipboard(image);
+    }
+  );
 
-  useTransitionEffect(state, "EDIT", "SAVE_TITLE", (_, { title }) => {
-    storage.saveTitle(userId, id, title);
-  });
+  useStateTransition(
+    state,
+    {
+      EDIT: {
+        SAVE_TITLE: "EDIT",
+      },
+    },
+    (_, { title }) => {
+      storage.saveTitle(userId, id, title);
+    }
+  );
 
-  useTransitionEffect(state, "LOADING", () =>
+  useStateTransition(state, "LOADING", () =>
     storage.fetchExcalidraw(userId, id)
   );
 
-  useTransitionEffect(state, "SYNCING", ({ data }) => {
+  useStateTransition(state, "SYNCING", ({ data }) => {
     storage.saveExcalidraw(userId, id, data);
   });
 
-  useTransitionEffect(state, "DIRTY", () => {
+  useStateTransition(state, "DIRTY", () => {
     const id = setTimeout(() => {
       dispatch({
         type: "SYNC",

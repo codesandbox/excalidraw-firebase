@@ -1,18 +1,14 @@
 import React from "react";
-import { match, PickState } from "react-states";
+import { match } from "react-states";
 import { useAuthenticatedAuth } from "../../hooks/useAuth";
-import { useCurrentPage } from "../../hooks/useCurrentPage";
+import { useCreateExcalidraw } from "../../hooks/useCreateExcalidraw";
 
-import { useNavigation } from "../../hooks/useNavigation";
+import { useRouter } from "../../hooks/useRouter";
 
 export const Navigation: React.FC = () => {
   const auth = useAuthenticatedAuth();
-  const page = useCurrentPage();
-  const [state, dispatch] = useNavigation({
-    navigate: (path) => {
-      history.push(path);
-    },
-  });
+  const router = useRouter();
+  const [createExcalidrawState, createExcalidraw] = useCreateExcalidraw();
 
   return (
     <div className="border-b border-gray-200 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
@@ -51,30 +47,37 @@ export const Navigation: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              dispatch({ type: "SHOW_ALL_EXCALIDRAWS" });
+              router.open({
+                name: "ALL_EXCALIDRAWS",
+              });
             }}
-            className={`${match(state, {
-              ALL_EXCALIDRAWS: () => "font-bold",
-              CREATE_EXCALIDRAW_ERROR: () => "",
-              CREATING_EXCALIDRAW: () => "opacity-50",
-              EXCALIDRAW_CREATED: () => "opacity-50",
-              USER_EXCALIDRAWS: () => "",
-            })} order-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500  sm:order-1 sm:ml-3`}
+            className={`${match(createExcalidrawState, {
+              IDLE: () => "",
+              REJECTED: () => "",
+              PENDING: () => "opacity-50",
+              RESOLVED: () => "opacity-50",
+            })} ${
+              router.page.name === "ALL_EXCALIDRAWS" ? "font-bold" : ""
+            } order-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500  sm:order-1 sm:ml-3`}
           >
             All Excalidraws
           </button>
           <button
             type="button"
             onClick={() => {
-              dispatch({ type: "SHOW_MY_EXCALIDRAWSS" });
+              router.open({
+                name: "USER_EXCALIDRAWS",
+                userId: auth.user.uid,
+              });
             }}
-            className={`${match(state, {
-              ALL_EXCALIDRAWS: () => "",
-              CREATE_EXCALIDRAW_ERROR: () => "",
-              CREATING_EXCALIDRAW: () => "opacity-50",
-              EXCALIDRAW_CREATED: () => "opacity-50",
-              USER_EXCALIDRAWS: () => "font-bold",
-            })} order-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500  sm:order-1 sm:ml-3`}
+            className={`${match(createExcalidrawState, {
+              IDLE: () => "",
+              REJECTED: () => "",
+              PENDING: () => "opacity-50",
+              RESOLVED: () => "opacity-50",
+            })} ${
+              router.page.name === "USER_EXCALIDRAWS" ? "font-bold" : ""
+            } order-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500  sm:order-1 sm:ml-3`}
           >
             My Excalidraws
           </button>
@@ -82,9 +85,7 @@ export const Navigation: React.FC = () => {
         <div className="mt-4 flex sm:mt-0 sm:ml-4">
           <button
             type="button"
-            onClick={() => {
-              dispatch({ type: "CREATE_EXCALIDRAW" });
-            }}
+            onClick={() => createExcalidraw()}
             className="order-0 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:order-1 sm:ml-3"
           >
             Create

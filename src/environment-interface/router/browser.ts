@@ -15,26 +15,26 @@ export const createRouter = (): Router => {
   }
 
   router("/", () => {
-    setState({ state: "ALL_EXCALIDRAWS" });
+    setState({ name: "ALL_EXCALIDRAWS" });
   });
 
   router("/:userId", ({ params }) => {
-    setState({ state: "USER_EXCALIDRAWS", userId: params.userId });
+    setState({ name: "USER_EXCALIDRAWS", userId: params.userId });
   });
 
   router("/:userId/:excalidrawId", ({ params }) => {
     setState({
-      state: "EXCALIDRAW",
+      name: "EXCALIDRAW",
       userId: params.userId,
       excalidrawId: params.excalidrawId,
     });
   });
 
   router("*", () => {
-    setState({ state: "NOT_FOUND" });
+    setState({ name: "NOT_FOUND" });
   });
 
-  page.start();
+  router.start();
 
   return {
     emit,

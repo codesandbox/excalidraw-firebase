@@ -1666,6 +1666,14 @@
     lz-string "^1.4.4"
     pretty-format "^26.6.2"
 
+"@testing-library/react-hooks@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@testing-library/react-hooks/-/react-hooks-8.0.1.tgz#0924bbd5b55e0c0c0502d1754657ada66947ca12"
+  integrity sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    react-error-boundary "^3.1.0"
+
 "@testing-library/react@^11.2.5":
   version "11.2.5"
   resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-11.2.5.tgz#ae1c36a66c7790ddb6662c416c27863d87818eb9"
@@ -7482,10 +7490,17 @@ react-environment-interface@^0.1.4:
   resolved "https://registry.yarnpkg.com/react-environment-interface/-/react-environment-interface-0.1.4.tgz#9b40236cc489d50418e2913f86f1a625261ab6c3"
   integrity sha512-rNOKrRLpKz6grt0rgzvsqvSIUtglPHZHVKgI5147tdq1HuDmEs0jomeIPUdFGyI5Dq8iw+fpFMfwdXNgAwzHYQ==
 
-react-hooks-provider@^1.0.0-rc1:
-  version "1.0.0-rc1"
-  resolved "https://registry.yarnpkg.com/react-hooks-provider/-/react-hooks-provider-1.0.0-rc1.tgz#533fd4de95ece390f3594202b8e4bfab485c6c4f"
-  integrity sha512-AK1TLooYTUzzu9ARZOCH6815QG+oNddwONyi3EN0c3wNHXDH9A0yNZ/0sW7Umu/vm8gOmZzKcvr3uuKjjjD3kQ==
+react-error-boundary@^3.1.0:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-3.1.4.tgz#255db92b23197108757a888b01e5b729919abde0"
+  integrity sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+
+react-hooks-provider@^1.0.0-rc2:
+  version "1.0.0-rc2"
+  resolved "https://registry.yarnpkg.com/react-hooks-provider/-/react-hooks-provider-1.0.0-rc2.tgz#34c40e50e9aea0d73e400d8f783e46c22a1b3000"
+  integrity sha512-7wAYJp/ZPH8ogc7eMkYBEtN5QeHj+hHVDXqpN2VobE9EWeUd4DbNZyd8JJr0ci542xG9GoewKAibdUqXGkdAuw==
 
 "react-is@^16.12.0 || ^17.0.0", react-is@^17.0.1:
   version "17.0.1"
@@ -7510,10 +7525,10 @@ react-shallow-renderer@^16.13.1:
     object-assign "^4.1.1"
     react-is "^16.12.0 || ^17.0.0"
 
-react-states@^8.0.0-rc6:
-  version "8.0.0-rc6"
-  resolved "https://registry.yarnpkg.com/react-states/-/react-states-8.0.0-rc6.tgz#8b59bc6e4fd8dff6c8132172261dd263b62495ac"
-  integrity sha512-seJPVa04UhTB8lCjMCuAzKSDOLyiLziigcVAi3w83QqUg6rHxItm/Gth/XjCICkHc4yjyK2pUyQuVKzXckZxYQ==
+react-states@^8.0.0-rc11:
+  version "8.0.0-rc11"
+  resolved "https://registry.yarnpkg.com/react-states/-/react-states-8.0.0-rc11.tgz#545ed1570fc2553b898fd05062a00308a9a4cb4d"
+  integrity sha512-KwdPq8bPtj8/qZLBbPSGLXMp45noJ6X/u5ZrE2EZrrw6IRuMQG8LjYUKJ2o6OTUKDyV0u9N3ZioqD8kQGJ1peA==
 
 react-test-renderer@^17.0.1:
   version "17.0.1"

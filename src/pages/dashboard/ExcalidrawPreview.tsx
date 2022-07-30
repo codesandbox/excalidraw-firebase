@@ -1,50 +1,10 @@
 import * as React from "react";
-import { match, transition, useStateEffect } from "react-states";
-import {
-  ExcalidrawMetadata,
-  StorageEvent,
-} from "../../environment-interface/storage";
+import { match, usePromise } from "react-states";
+import { ExcalidrawMetadata } from "../../environment-interface/storage";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
-import { Link } from "react-router-dom";
 import { User } from "../../environment-interface/authentication";
 import { useEnvironment } from "../../environment-interface";
-
-type State =
-  | {
-      state: "LOADING_PREVIEW";
-      id: string;
-    }
-  | {
-      state: "PREVIEW_LOADED";
-      src: string;
-    }
-  | {
-      state: "LOADING_ERROR";
-      error: string;
-    };
-
-const reducer = (state: State, action: StorageEvent) =>
-  transition(state, action, {
-    LOADING_PREVIEW: {
-      "STORAGE:IMAGE_SRC_SUCCESS": (state, { id, src }): State =>
-        id === state.id
-          ? {
-              state: "PREVIEW_LOADED",
-              src,
-            }
-          : state,
-      "STORAGE:IMAGE_SRC_ERROR": (state, { id, error }): State =>
-        state.id === id
-          ? {
-              state: "LOADING_ERROR",
-              error,
-            }
-          : state,
-    },
-    PREVIEW_LOADED: {},
-    LOADING_ERROR: {},
-  });
 
 export const ExcalidrawPreview = ({
   user,
@@ -54,23 +14,17 @@ export const ExcalidrawPreview = ({
   metadata: ExcalidrawMetadata;
 }) => {
   const { storage } = useEnvironment();
-  const [preview, dispatch] = React.useReducer(reducer, {
-    state: "LOADING_PREVIEW",
-    id: metadata.id,
-  });
-
-  React.useEffect(() => storage.subscribe(dispatch), []);
-
-  useStateEffect(preview, "LOADING_PREVIEW", () => {
-    storage.getImageSrc(user.uid, metadata.id);
-  });
+  const [preview] = usePromise(
+    () => storage.getImageSrc(user.uid, metadata.id),
+    [user.uid, metadata.id]
+  );
 
   const renderPreview = (background: string) => (
     <div className="w-full h-full" style={{ background }}></div>
   );
 
   return (
-    <Link to={`/${user.uid}/${metadata.id}`}>
+    <a href={`/${user.uid}/${metadata.id}`}>
       <div className="relative rounded-lg group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-cyan-500">
         <div className="mb-2 flex items-center">
           {user.avatarUrl ? (
@@ -87,10 +41,10 @@ export const ExcalidrawPreview = ({
         </div>
         <div className="relative h-32">
           {match(preview, {
-            LOADING_PREVIEW: () => <div className="lds-dual-ring"></div>,
-            PREVIEW_LOADED: ({ src }) =>
+            PENDING: () => <div className="lds-dual-ring"></div>,
+            RESOLVED: ({ value: src }) =>
               renderPreview(`center / contain no-repeat url(${src})`),
-            LOADING_ERROR: () => renderPreview("#FFF"),
+            REJECTED: () => renderPreview("#FFF"),
           })}
         </div>
         <div className="absolute bottom-6 right-6 flex justify-between items-center">
@@ -99,6 +53,6 @@ export const ExcalidrawPreview = ({
           </span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 };

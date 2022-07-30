@@ -50,14 +50,6 @@ export type StorageEvent =
       data: ExcalidrawData;
     }
   | {
-      type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS";
-      id: string;
-    }
-  | {
-      type: "STORAGE:CREATE_EXCALIDRAW_ERROR";
-      error: string;
-    }
-  | {
       type: "STORAGE:SAVE_EXCALIDRAW_SUCCESS";
       metadata: ExcalidrawMetadata;
       image: Blob;
@@ -68,16 +60,6 @@ export type StorageEvent =
     }
   | {
       type: "STORAGE:SAVE_EXCALIDRAW_OLD_VERSION";
-    }
-  | {
-      type: "STORAGE:IMAGE_SRC_SUCCESS";
-      id: string;
-      src: string;
-    }
-  | {
-      type: "STORAGE:IMAGE_SRC_ERROR";
-      id: string;
-      error: string;
     }
   | {
       type: "STORAGE:SAVE_TITLE_SUCCESS";
@@ -94,11 +76,17 @@ export type StorageEvent =
 export interface Storage {
   emit: TEmit<StorageEvent>;
   subscribe: TSubscribe<StorageEvent>;
-  createExcalidraw(userId: string): void;
+  createExcalidraw(userId: string): Promise<string>;
   fetchExcalidraw(userId: string, id: string): void;
   fetchPreviews(): Promise<ExcalidrawPreviews>;
   fetchUserPreviews(uid: string): Promise<ExcalidrawPreviews>;
   saveExcalidraw(userId: string, id: string, data: ExcalidrawData): void;
-  getImageSrc(userId: string, id: string): void;
+  getImageSrc(
+    userId: string,
+    id: string
+  ): Promise<{
+    id: string;
+    src: string;
+  }>;
   saveTitle(userId: string, id: string, title: string): void;
 }

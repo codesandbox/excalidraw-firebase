@@ -1,8 +1,9 @@
-import React, { Dispatch, useEffect, useReducer } from "react";
-import { transition, useDevtools, useTransitionEffect } from "react-states";
+import { Dispatch, useEffect, useReducer } from "react";
+import { transition, useStateTransition, useDevtools } from "react-states";
+
 import { useEnvironment } from "../../environment-interface";
 
-import { LoomEvent, LoomVideo } from "../../environment-interface/loom";
+import { LoomEvent } from "../../environment-interface/loom";
 
 export type RecordingState =
   | {
@@ -75,13 +76,21 @@ export const useRecording = ({
 
   useEffect(() => loom.subscribe(dispatch), []);
 
-  useTransitionEffect(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
+  useStateTransition(state, "NOT_CONFIGURED", ({ apiKey, buttonId }) => {
     loom.configure(apiKey, buttonId);
   });
 
-  useTransitionEffect(state, "READY", "LOOM:INSERT", (_, { video }) => {
-    loom.openVideo(video);
-  });
+  useStateTransition(
+    state,
+    {
+      READY: {
+        "LOOM:INSERT": "READY",
+      },
+    },
+    (_, { video }) => {
+      loom.openVideo(video);
+    }
+  );
 
   return recording;
 };

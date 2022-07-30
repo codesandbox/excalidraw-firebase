@@ -7,7 +7,6 @@ import { Pages } from "./pages";
 import { EnvironmentProvider } from "./environment-interface";
 import { createBrowserEnvironment } from "./environment-interface/browser";
 import { Provider as HooksProvider } from "./hooks";
-import { useHistory } from "react-router";
 
 // Polyfill for Loom
 if (typeof (window as any).global === "undefined") {
@@ -17,15 +16,9 @@ if (typeof (window as any).global === "undefined") {
 const environment = createBrowserEnvironment();
 
 const App = () => {
-  const history = useHistory();
-
   return (
     <EnvironmentProvider environment={environment}>
-      <HooksProvider
-        navigate={(url) => {
-          history.push(url);
-        }}
-      >
+      <HooksProvider>
         <Pages />
       </HooksProvider>
     </EnvironmentProvider>

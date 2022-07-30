@@ -1,6 +1,5 @@
 import { Dispatch, useEffect, useReducer } from "react";
-import { transition, useStateTransition } from "react-states";
-import { useDevtools } from "react-states/devtools";
+import { transition, useStateTransition, useDevtools } from "react-states";
 import { registerHook } from ".";
 import { useEnvironment } from "../environment-interface";
 import {
@@ -61,7 +60,11 @@ const reducer = (
         error,
       }),
     },
-    AUTHENTICATED: {},
+    AUTHENTICATED: {
+      "AUTHENTICATION:UNAUTHENTICATED": () => ({
+        state: "UNAUTHENTICATED",
+      }),
+    },
     ERROR: {},
   });
 
@@ -75,7 +78,7 @@ export const useAuth = registerHook(
       }
     );
 
-    useDevtools("auth", auth);
+    // useDevtools("auth", auth);
 
     const [state, dispatch] = auth;
 
@@ -87,10 +90,12 @@ export const useAuth = registerHook(
   }
 );
 
-export const useAuthenticatedAuth = registerHook(useAuth, ([state]) => {
+export const useAuthenticatedAuth = () => {
+  const [state] = useAuth();
+
   if (state.state === "AUTHENTICATED") {
     return state;
   }
 
   throw new Error("You are using authenticated state in an invalid cont");
-});
+};

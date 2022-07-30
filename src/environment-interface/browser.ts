@@ -8,6 +8,7 @@ import config from "../firebase.config.json";
 import { createAuthentication } from "./authentication/browser";
 import { createCopyImageToClipboard } from "./copyImageToClipboard/browser";
 import { createLoom } from "./loom/browser";
+import { createRouter } from "./router/browser";
 import { createStorage } from "./storage/browser";
 
 export const createBrowserEnvironment = (): Environment => {
@@ -18,5 +19,6 @@ export const createBrowserEnvironment = (): Environment => {
     copyImageToClipboard: createCopyImageToClipboard(),
     loom: createLoom(),
     storage: createStorage(app),
+    router: createRouter(),
   };
 };

@@ -93,7 +93,7 @@ export const createStorage = (app: firebase.app.App): Storage => {
     subscribe,
     emit,
     createExcalidraw(userId) {
-      app
+      return app
         .firestore()
         .collection(USERS_COLLECTION)
         .doc(userId)
@@ -101,18 +101,7 @@ export const createStorage = (app: firebase.app.App): Storage => {
         .add({
           last_updated: firebase.firestore.FieldValue.serverTimestamp(),
         })
-        .then((ref) => {
-          emit({
-            type: "STORAGE:CREATE_EXCALIDRAW_SUCCESS",
-            id: ref.id,
-          });
-        })
-        .catch((error: Error) => {
-          emit({
-            type: "STORAGE:CREATE_EXCALIDRAW_ERROR",
-            error: error.message,
-          });
-        });
+        .then((ref) => ref.id);
     },
     fetchExcalidraw(userId: string, id: string) {
       Promise.all([
@@ -386,25 +375,11 @@ export const createStorage = (app: firebase.app.App): Storage => {
         });
     },
     getImageSrc(userId, id) {
-      firebase
+      return firebase
         .storage()
         .ref()
         .child(`previews/${userId}/${id}`)
-        .getDownloadURL()
-        .then((src) => {
-          emit({
-            type: "STORAGE:IMAGE_SRC_SUCCESS",
-            id,
-            src,
-          });
-        })
-        .catch((error: Error) => {
-          emit({
-            type: "STORAGE:IMAGE_SRC_ERROR",
-            id,
-            error: error.message,
-          });
-        });
+        .getDownloadURL();
     },
     saveTitle(userId, id, title) {
       emit({

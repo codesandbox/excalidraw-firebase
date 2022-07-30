@@ -1,9 +1,6 @@
 import React from "react";
 import { Dashboard } from "./Dashboard";
 import { match, usePromise } from "react-states";
-
-import { useDashboard } from "./useDashboard";
-import { useUserDashboard } from "./useUserDashboard";
 import { useEnvironment } from "../../environment-interface";
 
 export const SharedDashboard = () => {

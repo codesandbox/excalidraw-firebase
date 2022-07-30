@@ -25,6 +25,7 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loomhq/loom-sdk": "^1.4.11",
     "@testing-library/react": "^11.2.5",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/lodash.debounce": "^4.0.6",
     "autoprefixer": "^10.2.6",
     "browser-fs-access": "^0.18.0",
@@ -39,8 +40,8 @@
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-environment-interface": "^0.1.4",
-    "react-hooks-provider": "^1.0.0-rc1",
-    "react-states": "^8.0.0-rc6",
+    "react-hooks-provider": "^1.0.0-rc2",
+    "react-states": "^8.0.0-rc11",
     "roughjs": "^4.4.1",
     "sass": "^1.32.8",
     "tailwindcss": "^2.2.4"

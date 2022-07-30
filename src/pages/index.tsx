@@ -3,6 +3,7 @@ import { match } from "react-states";
 import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "../hooks/useRouter";
 import { SharedDashboard, UserDashboard } from "./dashboard";
+import { Navigation } from "./dashboard/Navigation";
 import { ExcalidrawPage } from "./excalidraw";
 
 export const Pages = () => {
@@ -32,20 +33,35 @@ export const Pages = () => {
 
           switch (router.page.name) {
             case "ALL_EXCALIDRAWS": {
-              page = <SharedDashboard />;
+              page = (
+                <div className="p-6">
+                  <Navigation />
+                  <SharedDashboard />
+                </div>
+              );
               break;
             }
             case "USER_EXCALIDRAWS": {
-              page = <UserDashboard uid={router.page.userId} />;
+              page = (
+                <div className="p-6">
+                  <Navigation />
+                  <UserDashboard uid={router.page.userId} />
+                </div>
+              );
               break;
             }
             case "EXCALIDRAW": {
-              page = <ExcalidrawPage />;
+              page = (
+                <ExcalidrawPage
+                  userId={router.page.userId}
+                  id={router.page.excalidrawId}
+                />
+              );
               break;
             }
           }
 
-          return <div className="min-h-screen p-6">{page}</div>;
+          return <div className="min-h-screen">{page}</div>;
         },
         SIGNING_IN: () => (
           <div className="h-screen flex items-center justify-center">
