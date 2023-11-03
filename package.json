@@ -5,18 +5,7 @@
     "dev": "vite",
     "build": "vite build",
     "deploy": "yarn build && firebase deploy",
-    "serve": "vite preview",
-    "test": "jest"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/src/environment/"
-    ],
-    "moduleNameMapper": {
-      "react-states/devtools": "react-states/cjs/devtools",
-      "react-states/test": "react-states/cjs/test"
-    }
+    "serve": "vite preview"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.15.3",
@@ -25,12 +14,10 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loomhq/loom-sdk": "^1.4.11",
     "@testing-library/react": "^11.2.5",
-    "@types/lodash.debounce": "^4.0.6",
     "autoprefixer": "^10.2.6",
     "browser-fs-access": "^0.18.0",
     "date-fns": "^2.19.0",
     "firebase": "^8.2.9",
-    "firebase-tools": "^10.2.2",
     "lodash.debounce": "^4.0.8",
     "open-color": "^1.8.0",
     "perfect-freehand": "0.4.7",
@@ -45,21 +32,13 @@
     "tailwindcss": "^2.2.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@babel/preset-env": "^7.13.10",
-    "@babel/preset-react": "^7.12.13",
-    "@babel/preset-typescript": "^7.13.0",
-    "@types/jest": "^26.0.20",
+    "@types/lodash.debounce": "^4.0.6",
     "@types/node": "^14.14.34",
     "@types/react": "^18.2.34",
     "@types/react-dom": "^18.2.14",
     "@types/react-router-dom": "^5.1.7",
-    "@types/react-test-renderer": "^17.0.1",
-    "@vitejs/plugin-react-refresh": "^1.1.0",
-    "babel-jest": "^26.6.3",
-    "jest": "^26.6.3",
-    "react-test-renderer": "^17.0.1",
+    "@vitejs/plugin-react": "^4.1.1",
     "typescript": "^4.1.2",
-    "vite": "^2.8.6"
+    "vite": "^4.5.0"
   }
 }
