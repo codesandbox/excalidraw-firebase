@@ -11,7 +11,7 @@
   "tasks": {
     "auth": {
       "name": "auth",
-      "command": "firebase login:ci",
+      "command": "npx firebase login:ci",
       "preview": {
         "port": 9005
       }
