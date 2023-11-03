@@ -11,7 +11,7 @@
   "tasks": {
     "auth": {
       "name": "auth",
-      "command": "npx firebase login:ci",
+      "command": "npx firebase login --no-localhost",
       "preview": {
         "port": 9005
       }
