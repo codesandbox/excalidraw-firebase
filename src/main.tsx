@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { DevtoolsProvider } from "react-states/devtools";
 import "./index.css";
 import { Pages } from "./pages";
@@ -18,9 +18,10 @@ const app = (
   </EnvironmentProvider>
 );
 
-ReactDOM.render(
+const container = document.getElementById("root")!;
+const root = createRoot(container); // createRoot(container!) if you use TypeScript
+root.render(
   <React.StrictMode>
     {import.meta.env.PROD ? app : <DevtoolsProvider>{app}</DevtoolsProvider>}
   </React.StrictMode>,
-  document.getElementById("root")
 );

@@ -28,9 +28,7 @@ const EditExcalidraw = ({
   excalidrawReducer: EditExcalidrawReducer;
 }) => {
   const auth = useAuthenticatedAuth();
-  const [recording, dispatchRecording] = useRecording({
-    apiKey: auth.loomApiKey,
-  });
+
   const [title, setTitle] = useState(state.metadata.title || "");
 
   const onChange = useMemo(
@@ -45,7 +43,7 @@ const EditExcalidraw = ({
           },
         });
       }, 100),
-    []
+    [],
   );
 
   const copyToClipboard = () => {
@@ -85,24 +83,12 @@ const EditExcalidraw = ({
       }),
   });
 
-  const isRecordingDisabled = match(recording, {
-    DISABLED: () => true,
-    RECORDING: () => true,
-    NOT_CONFIGURED: () => false,
-    READY: () => false,
-  });
-
   return (
     <div>
       <ExcalidrawCanvas
         data={state.data}
         onChange={onChange}
-        readOnly={match(recording, {
-          RECORDING: () => true,
-          DISABLED: () => false,
-          NOT_CONFIGURED: () => false,
-          READY: () => false,
-        })}
+        readOnly={false}
         onInitialized={() => {
           dispatch({ type: "INITIALIZE_CANVAS_SUCCESS" });
         }}
@@ -141,22 +127,6 @@ const EditExcalidraw = ({
             </div>
           )}
         </div>
-        <button
-          id="loom-record"
-          disabled={isRecordingDisabled}
-          onClick={() => {
-            dispatchRecording({
-              type: "RECORD",
-            });
-          }}
-          className={`${
-            isRecordingDisabled
-              ? "text-gray-500 bg-gray-200 hover:bg-red-100 focus:ring-red-100"
-              : "text-white bg-red-500 hover:bg-red-400 focus:ring-red-400"
-          } mr-3  ginline-flex items-center justify-center w-12 h-10 p-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
-        >
-          <FontAwesomeIcon icon={faVideo} size="lg" />
-        </button>
         <button
           onClick={variant.onClick}
           className={`${variant.className} relative inline-flex items-center justify-center w-12 h-10 p-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
