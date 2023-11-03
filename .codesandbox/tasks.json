@@ -9,6 +9,13 @@
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
+    "auth": {
+      "name": "auth",
+      "command": "firebase login:ci",
+      "preview": {
+        "port": 9005
+      }
+    },
     "dev": {
       "name": "dev",
       "command": "yarn dev",
