@@ -3,7 +3,7 @@ import { Dashboard } from "./Dashboard";
 import { match, PickState } from "react-states";
 
 import { Navigation } from "./Navigation";
-import { useRouteMatch } from "react-router";
+import { useMatch } from "react-router-dom";
 
 import { useDashboard } from "./useDashboard";
 import { useUserDashboard } from "./useUserDashboard";
@@ -37,12 +37,12 @@ const UserDashboard: React.FC<{ uid: string }> = ({ uid }) => {
 };
 
 export const DashboardPage = () => {
-  const match = useRouteMatch<{ userId: string }>("/:userId");
+  const match = useMatch("/:userId");
 
   return (
     <div className="min-h-screen p-6">
       <Navigation />
-      {match ? (
+      {match?.params.userId ? (
         <UserDashboard uid={match.params.userId} />
       ) : (
         <SharedDashboard />

@@ -1,16 +1,14 @@
 import React from "react";
-import { useHistory } from "react-router";
-import { match, PickState } from "react-states";
-import { useAuthenticatedAuth } from "../useAuth";
+import { useNavigate } from "react-router-dom";
+import { match } from "react-states";
 
 import { useNavigation } from "./useNavigation";
 
 export const Navigation: React.FC = () => {
-  const auth = useAuthenticatedAuth();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [state, dispatch] = useNavigation({
     navigate: (path) => {
-      history.push(path);
+      navigate(path);
     },
   });
 

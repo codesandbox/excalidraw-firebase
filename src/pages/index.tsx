@@ -1,9 +1,24 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { match } from "react-states";
 import { AuthenticatedAuthProvider, useAuth } from "./useAuth";
 import { DashboardPage } from "./dashboard";
 import { ExcalidrawPage } from "./excalidraw";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <DashboardPage />,
+  },
+  {
+    path: "/:userId",
+    element: <DashboardPage />,
+  },
+  {
+    path: "/:userId/:id",
+    element: <ExcalidrawPage />,
+  },
+]);
 
 export const Pages = () => {
   const [auth, dispatch] = useAuth();
@@ -28,19 +43,7 @@ export const Pages = () => {
         ),
         AUTHENTICATED: (authenticatedAuth) => (
           <AuthenticatedAuthProvider auth={authenticatedAuth}>
-            <Router>
-              <Switch>
-                <Route exact path="/">
-                  <DashboardPage />
-                </Route>
-                <Route exact path="/:userId">
-                  <DashboardPage />
-                </Route>
-                <Route path="/:userId/:id">
-                  <ExcalidrawPage />
-                </Route>
-              </Switch>
-            </Router>
+            <RouterProvider router={router} />
           </AuthenticatedAuthProvider>
         ),
         SIGNING_IN: () => (
