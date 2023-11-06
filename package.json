@@ -8,16 +8,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@excalidraw/excalidraw": "^0.15.3",
+    "@excalidraw/excalidraw": "^0.16.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loomhq/loom-sdk": "^1.4.11",
-    "autoprefixer": "^10.2.6",
     "date-fns": "^2.19.0",
     "firebase": "^8.2.9",
     "lodash.debounce": "^4.0.8",
-    "postcss": "^8.3.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.2.0",
@@ -32,6 +30,8 @@
     "@types/react-dom": "^18.2.14",
     "@types/react-router-dom": "^5.1.7",
     "@vitejs/plugin-react": "^4.1.1",
+    "autoprefixer": "^10.2.6",
+    "postcss": "^8.3.5",
     "typescript": "^4.1.2",
     "vite": "^4.5.0"
   }
